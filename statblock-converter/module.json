@@ -5,7 +5,7 @@
     "version": "0.1",
     "author": "Lavaeolous",
     "systems": ["pf1"],
-    "scripts": ["./scripts/readInput.js"],
+    "scripts": ["./scripts/main.js"],
     "styles": [],
     "packs": [],
     "manifest": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json",
