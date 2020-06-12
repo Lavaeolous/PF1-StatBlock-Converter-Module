@@ -11,6 +11,9 @@ Hooks.on("ready", function() {
 const SBC = this.SBC || {};
 
 class statBlockConverterInitializer {
+    
+    console.log("initializer started");
+    
     constructor() {}
 
     static initalize() {
@@ -25,6 +28,7 @@ class statBlockConverterInitializer {
          */
 
         Hooks.on("renderActorDirectory", (app, html, data) => {
+            console.log("HOOK RENDER ACTOR DIRECTORY")
             const importButton = $('<button  style="min-width: 96%; margin: 10px 6px;">Import Statblock</button>');
             html.find(".directory-footer").append(importButton);
             importButton.click((ev) => {
