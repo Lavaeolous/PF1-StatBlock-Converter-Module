@@ -1,20 +1,17 @@
-console.log("Hello World! This code runs immediately when the file is loaded.");
-
-Hooks.on("init", function() {
-  console.log("This code runs once the Foundry VTT software begins it's initialization workflow.");
-});
-
-Hooks.on("ready", function() {
-  console.log("This code runs once core initialization is ready and game data is available.");
-});
-
 const SBC = this.SBC || {};
 
 class statBlockConverterInitializer {
+    constructor() {
+        /*  --------------------------------------  */
+        /*            Global settings               */
+        /*  --------------------------------------  */
+        this.DEBUG = true; // Enable to see logs
+    }
     
-    console.log("initializer started");
     
-    constructor() {}
+    
+    if (this.DEBUG) console.log('Initializing SBC.');
+
 
     static initalize() {
         statBlockConverterInitializer.hookReady();
@@ -28,12 +25,12 @@ class statBlockConverterInitializer {
          */
 
         Hooks.on("renderActorDirectory", (app, html, data) => {
-            console.log("HOOK RENDER ACTOR DIRECTORY")
+            if (this.DEBUG) console.log("HOOK RENDER ACTOR DIRECTORY");
             const importButton = $('<button  style="min-width: 96%; margin: 10px 6px;">Import Statblock</button>');
             html.find(".directory-footer").append(importButton);
             importButton.click((ev) => {
                 //SBC.playlistImporter.playlistDirectoryInterface();
-                console.log("CLICK!");
+                if (this.DEBUG) console.log("CLICK!");
             });
         });
     }
