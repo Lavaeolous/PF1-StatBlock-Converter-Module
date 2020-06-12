@@ -6,7 +6,7 @@
     "author": "Lavaeolous",
     "systems": ["pf1"],
     "scripts": ["./scripts/main.js"],
-    "styles": [],
+    "styles": ["./css/sbc.css"],
     "packs": [],
     "manifest": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json",
     "download": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/statblock-converter.zip",

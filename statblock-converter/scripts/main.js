@@ -5,18 +5,19 @@ class statBlockConverterInitializer {
         /*  --------------------------------------  */
         /*            Global settings               */
         /*  --------------------------------------  */
-        this.DEBUG = true; // Enable to see logs
+        //this.DEBUG = true; // Enable to see logs
     }
     
     
     
-    if (this.DEBUG) console.log('Initializing SBC.');
+    
 
 
     static initalize() {
-        statBlockConverterInitializer.hookReady();
-        statBlockConverterInitializer.hookRenderPlaylistDirectory();
-        statBlockConverterInitializer.hookRenderSettings();
+        console.log('Initializing SBC.');
+        //statBlockConverterInitializer.hookReady();
+        statBlockConverterInitializer.hookRenderSBCButton();
+        //statBlockConverterInitializer.hookRenderSettings();
     }
 
     static hookRenderSBCButton() {
@@ -25,16 +26,46 @@ class statBlockConverterInitializer {
          */
 
         Hooks.on("renderActorDirectory", (app, html, data) => {
-            if (this.DEBUG) console.log("HOOK RENDER ACTOR DIRECTORY");
-            const importButton = $('<button  style="min-width: 96%; margin: 10px 6px;">Import Statblock</button>');
+            console.log("HOOK RENDER ACTOR DIRECTORY");
+            const importButton = $('<button class="create-entity sbc-button"><i class="fas fa-user"></i>Import Statblock</button>');
             html.find(".directory-footer").append(importButton);
             importButton.click((ev) => {
                 //SBC.playlistImporter.playlistDirectoryInterface();
-                if (this.DEBUG) console.log("CLICK!");
+                console.log("CLICK!");
+                statBlockConverterModalDialog.openModalDialog();
             });
         });
     }
     
+}
+
+class statBlockConverterModalDialog {
+    constructor() {}
+    
+    static openModalDialog() {
+        const options = {
+            width: 500,
+            height: 400
+        };
+        
+        const content = "<p>Enter the StatBlock you want to import and convert</p><textarea id='input' class='statBlockInput'></textarea>";
+        
+        let d = new Dialog({
+            title: "PF1 StatBlock Converter",
+            content: content,
+            buttons: {
+                import: {
+                    icon: '<i class="fas fa-check"></i>',
+                    label: "Import",
+                    callback: () => console.log("Chose One")
+                }
+            },
+            default: "import",
+            
+            close: () => console.log("This always is logged no matter which option is chosen")
+        }, options);
+        d.render(true);
+    }
 }
 
 statBlockConverterInitializer.initalize();
