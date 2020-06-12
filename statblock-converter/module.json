@@ -1,0 +1,12 @@
+{
+    "name": "statblock-importer",
+    "title": "Stackblock Importer",
+    "description": "A module to convert raw Statblocks to Actors",
+    "author": "Primer",
+    "version": "0.0.1",
+    "minimumCoreVersion": "0.6.2",
+    "compatibleCoreVersion": "0.6.2",
+    "scripts": [
+        "scripts/readInput.js"
+    ]
+}

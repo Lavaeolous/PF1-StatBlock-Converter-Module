@@ -1,0 +1,50 @@
+<html>
+    <head>
+    </head>
+
+    <body>
+        <div class="title">PF1 STATBLOCK CONVERTER</div>
+
+        <hr>
+        
+        <div>
+            This Tool converts Stat Blocks from the SRD or PDFs to JSON Files compatible with FoundryVTT<br/>
+            Currently only for the following Game Systems:<br/>
+            <ul>
+                <li>PF1, Pathfinder 1. Edition</li>
+            </ul>
+            
+            Tested with the following Setup:
+            <ul>
+                <li>Core Version FoundryVTT: 0.5.7</li>
+                <li>System Version PF1: 0.51</li>
+            </ul>
+            </div>
+        
+        <hr>
+        
+        <div class="gridContainer">
+            <div class="oneHalf">
+                <label class="statBlockInputLabel">Input</label>
+                <textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Paste Statblock here">
+D
+                </textarea>
+                <form onsubmit="return false" onClick="convertStatBlock(input)" id="statBlockInputForm">
+                    <input type="submit" class="submitButton" value="Convert Stat Block"/>
+                </form>
+            </div>
+
+            <div class="oneHalf">
+                <label class="statBlockLabel">Output</label>
+                <textarea class="statBlockInput" id="output" placeholder="JSON will appear here" disabled></textarea>
+                <form onsubmit="return false" onClick="saveJSON(output)" id="statBlockOutputForm">
+                    <input type="submit" class="submitButton" value="Save JSON"/>
+                </form>
+            </div>
+        </div>
+        <div class="gridContainer">
+            <div class="fullWidth statusOutput" id="statusOutput"><br/>STATUS<br/><br/></div>
+        </div>
+
+    </body>
+</html>
