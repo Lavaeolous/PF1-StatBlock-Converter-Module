@@ -1,12 +1,7 @@
 const SBC = this.SBC || {};
 
 class statBlockConverterInitializer {
-    constructor() {
-        /*  --------------------------------------  */
-        /*            Global settings               */
-        /*  --------------------------------------  */
-        //this.DEBUG = true; // Enable to see logs
-    }
+    constructor() {}
     
     
     
@@ -48,7 +43,7 @@ class statBlockConverterModalDialog {
             height: 400
         };
         
-        const content = "<p>Enter the StatBlock you want to import and convert</p><textarea id='input' class='statBlockInput'></textarea>";
+        const content = '<p>Enter the StatBlock you want to import and convert</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Paste Statblock here"></textarea><form onsubmit="return false" onClick="convertStatBlock(input)" id="statBlockInputForm"><input type="submit" class="submitButton" value="Convert Stat Block"/></form>';
         
         let d = new Dialog({
             title: "PF1 StatBlock Converter",
