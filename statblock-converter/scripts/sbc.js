@@ -1570,7 +1570,7 @@ function setConversionItem () {
         itemEntry.data.changes.push(saveChange);  
     });
     
-    itemEntry.data.active = false;
+    //itemEntry.data.active = false;
     
     dataOutput.items.push(itemEntry);
 }
@@ -2283,7 +2283,8 @@ async function createNewActor () {
     let newActor = await Actor.create(dataOutput);
     console.log("newActor.id: " + newActor.id);
     
-    game.actors.get(newActor.id);
+    console.log("UPDATING SHEET");
+    game.actors.get(newActor.id).update(dataOutput);
     
 }
 
