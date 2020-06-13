@@ -28,6 +28,11 @@ Currently, the tool only parses the following data and generates equivalent Foun
 *  **Statistics Data:** Attributes (Str, Dex, Con, Int, Wis, Cha), BAB, CMD and CMB (context notes WIP), Feats<sup>4</sup>, Skills<sup>2</sup> (context notes WIP), Languages, Special Qualities
 *  **Offense Data:** Speed(s), Melee Attacks (Weapon, Natural, Swarm), Ranged Attacks, Damage Types [Rest is WIP]
 
+[1]: A new Item is created for these Values including the needed calculations for Hit Dice, HP, etc.  
+[2]: Including the needed calculations  
+[3]: Including changes to the token (e.g. size and vision)  
+[4]: Creates empty Items for now
+
 # Known Bugs
 *  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the console (F12).
 *  A lot more ... see Issues. If you find anythings thats not noted there, please include it
