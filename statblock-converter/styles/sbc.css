@@ -1,9 +1,15 @@
-.sbc-button {
+
+
+.sidebar-tab .directory-footer .sbcButton {
     flex-basis: 100%;
     margin-top: 5px;
 }
 
+#sbcModal .dialog-buttons {
+    flex: 0
+}
+
 .statBlockInput {
     width: 100%;
-    height: 100%;
+    height: 85%;
 }
