@@ -49,6 +49,7 @@ Primer#2220 | FoundryVTT Discord
 # Change Log
 
 2020_06_13:
+*  Bug-Fixing for Multiclassed Characters and "Knowledge (any X)" Skills
 *  Build a module out of the [SBC Web-Version](https://github.com/Lavaeolous/Foundry-PF1-StatBlock-Converter) 
 
 2020_06_11:

@@ -128,6 +128,19 @@ var enumSaveModifier = [
         "wis"
     ];
 
+var enumKnowledgeSubskills = [
+    "arcana",
+    "dungeoneering",
+    "engineering",
+    "geography",
+    "history",
+    "local",
+    "nature",
+    "nobility",
+    "planes",
+    "religion"
+]
+
 // Get HTML Elements
 var inputTextArea = document.getElementById("input");
 // Make function visible outside the esmodule
@@ -755,33 +768,40 @@ function splitDefenseData(stringDefenseData) {
     
     // Find the Dicepool for class(es)
     if (dataInputHasClasses == true) {
+
         let classKey = Object.keys(formattedInput.classes);
         let hitDicePoolKey = Object.keys(hitDicePool);
         
         for (let i = 0; i < classKey.length; i++) {
-        
+            
             let tempLevel = formattedInput.classes[classKey[i]].level;
             
+            let foundClassHD = 0;
+            
             for (let j = 0; j < hitDicePoolKey.length; j++) {
+                
                 let tempRegEx = new RegExp("(?:" + tempLevel + "d)(\\d+)", "i");
-                if (hitDicePool[j].match(tempRegEx)) {
+                
+                if ( (hitDicePool[j].search(tempRegEx) !== -1) && (foundClassHD !== classKey.length) ) {
                     // Set HP for classItem
                     let tempDiceSize = hitDicePool[j].match(tempRegEx)[1];
                     formattedInput.hp.class = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
                     formattedInput.hp.race = 0;
                     inputHDTotal += +tempLevel;
-                } else {
+                    foundClassHD++;
+                } else if ( foundClassHD === classKey.length ) {
                     // Set HP for RacialHDItem                    
                     let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
                     let tempRacialHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
                     
-                    formattedInput.hp.race = Math.floor(tempRacialHD * getDiceAverage(tempDiceSize));
+                    formattedInput.hp.race = Math.floor(+tempRacialHD * +getDiceAverage(tempDiceSize));
                     inputHDTotal += +tempRacialHD;
                 }
             }
         }
 
     } else {
+
         // Set racialHD when no class is given
         let hitDicePoolKey = Object.keys(hitDicePool);
         for (let j = 0; j < hitDicePoolKey.length; j++) {
@@ -790,7 +810,7 @@ function splitDefenseData(stringDefenseData) {
             let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
             let tempRacialHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
             
-            formattedInput.hp.race = Math.floor(tempRacialHD * getDiceAverage(tempDiceSize));
+            formattedInput.hp.race = Math.floor(+tempRacialHD * +getDiceAverage(tempDiceSize));
             inputHDTotal += +tempRacialHD;
         }
     }
@@ -1054,15 +1074,15 @@ function splitStatisticsData(stringStatisticsData) {
             splitRacialModifiers = splitSkills.split(/\bracial\b \bmodifier\b|\bracial\b \bmodifiers\b/i)[1];
             splitSkills = splitSkills.split(/\bracial\b \bmodifier\b|\bracial\b \bmodifiers\b/i)[0].replace(/,$| $/,"");
         }
-                
+         
         // Check if there are Skills with additional info in parenthesis
         if (splitSkills.search(/\(([^)]+)\)/) !== -1) {
             
             // If the parenthesis are followed by a modifier, the info in parenthesis is a subset of the skill
+            // For Example Knowledge (planes, engineering) +13, Knowledge (all) +3, or Knowledge (any two) +3
             if (splitSkills.search(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+)/g) !== -1) {
                 let tempSkillMultiples = splitSkills.match(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+)/g);
-                splitSkills = splitSkills.replace(/(\b\w*\b \([a-zA-Z0-9,;]+\) [+-]\d+),/g, "");
-
+                splitSkills = splitSkills.replace(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+),/g, "");
                 tempSkillMultiples.forEach ( function (item, index) {
                     let tempSkillName = item.match(/(\b[a-zA-Z]+\b)(?: \(.*\))/)[1];
                     let tempSkillModifier = item.match(/\-\d+|\+\d+/);
@@ -1071,7 +1091,7 @@ function splitStatisticsData(stringStatisticsData) {
                     tempSubtypes.forEach( function (tempSubtype) {
                         splitSkills += ", " + tempSkillName + " (" + tempSubtype + ") " + tempSkillModifier;
                     })
-
+                    
                 });
             } else if (splitSkills.search(/(\b\w*\b [+-]\d+ \([+-]\d+[a-zA-Z0-9,; ]+\))/) !== -1) {
                 if(DEBUG==true) { console.log("sbc-pf1 | ADD SUPPORT FOR context Modifier") };
@@ -1082,9 +1102,9 @@ function splitStatisticsData(stringStatisticsData) {
         }
                 
         splitSkills = splitSkills.split(/,/);
-
+        
         splitSkills.forEach (function (item, index) {
-            
+                        
             let skillTotal = item.match(/(-\d+|\d+)/)[0];
             let skillName = item.replace(/(^\s*|\s*-[\d].*|\s*\+.*)/g, "");
 
@@ -1093,6 +1113,8 @@ function splitStatisticsData(stringStatisticsData) {
                 let skillSubtype = skillName.match(/\(([^)]+)\)/)[1].replace(/^ | $/g,"");
                 let tempSkillName = skillName.replace(/\s*\(([^)]+)\)/g, "");
                 tempSkillName = tempSkillName.replace(/^ | $/g, "");
+                
+                // Parse Knowledge, because these may have special notations
                 if (skillName.search(/\bKnowledge\b/i) !== -1) {
                     
                     // Check if its for ALL knowledge skills
@@ -1108,14 +1130,55 @@ function splitStatisticsData(stringStatisticsData) {
                         formattedInput.skills.knowledge.nobility.total = +skillTotal;
                         formattedInput.skills.knowledge.planes.total = +skillTotal;
                         formattedInput.skills.knowledge.religion.total = +skillTotal;
+                    } else if (skillSubtype.match(/\bany\b\s.*/i) !== null){
+                        
+                        // Find the number of knowledge subskills
+                        let stringOfKnowledgeSubskills = skillSubtype.match(/(?:\bany\b )(.*)/i)[1];
+                        let numberOfKnowledgeSubskills = 0;
+                        
+                        switch (stringOfKnowledgeSubskills) {
+                            case "one": numberOfKnowledgeSubskills = 1; break;
+                            case "two": numberOfKnowledgeSubskills = 2; break;
+                            case "three": numberOfKnowledgeSubskills = 3; break;
+                            case "four": numberOfKnowledgeSubskills = 4; break;
+                            case "five": numberOfKnowledgeSubskills = 5; break;
+                            case "six": numberOfKnowledgeSubskills = 6; break;
+                            case "seven": numberOfKnowledgeSubskills = 7; break;
+                            case "eight": numberOfKnowledgeSubskills = 8; break;
+                            case "nine": numberOfKnowledgeSubskills = 9; break;
+                            default: break;
+                        };                        
+                        
+                        // Pick Subskills at random
+                        let alreadyPickedSubskills = "";
+                        
+                        for (let i=0; i < numberOfKnowledgeSubskills; i++) {
+                            let randomSubskill = Math.floor(Math.random() * 10);                            
+                            
+                            if (alreadyPickedSubskills.search(randomSubskill) === -1) {
+                                
+                                formattedInput.skills.knowledge[enumKnowledgeSubskills[i]].total = +skillTotal;
+                                alreadyPickedSubskills += randomSubskill;
+                            
+                            } else {
+                                i--;
+                            }
+                            
+                            
+                        }
+                        
+                        
                     } else {
+                        // No special notation, just a normal knowledge subkey
                         formattedInput.skills[tempSkillName.toLowerCase()][skillSubtype.toLowerCase()].total = +skillTotal;
                     }
                 } else {
+                    // Not a knowledge skill
                     formattedInput.skills[tempSkillName.toLowerCase()][skillSubtype.toLowerCase()] = +skillTotal;
                 }
                 
             } else {
+                // Skill without subskills
                 formattedInput.skills[skillName.toLocaleLowerCase()].total = +skillTotal;
             }
 

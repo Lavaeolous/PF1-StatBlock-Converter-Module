@@ -2,7 +2,7 @@
     "name": "statblockimporter",
     "title": "Stackblock Importer",
     "description": "A module to convert raw Statblocks to Actors",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "author": "Lavaeolous",
     "systems": ["pf1"],
     "esmodules": ["./scripts/sbc.js"],
