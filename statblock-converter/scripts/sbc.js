@@ -130,7 +130,7 @@ var enumSaveModifier = [
 
 // Get HTML Elements
 var inputTextArea = document.getElementById("input");
-
+// Make function visible outside the esmodule
 window.convertStatBlock = convertStatBlock;
 
 /* ------------------------------------ */
@@ -149,7 +149,7 @@ Hooks.once('init', async function() {
     
 	
 	// Register custom module settings
-	
+	hookRenderSBCButton();
 	
 	// Preload Handlebars templates
 
@@ -162,8 +162,8 @@ Hooks.once('init', async function() {
 /* ------------------------------------ */
 Hooks.once('setup', function() {
 	// Do anything after initialization but before
-  // ready
-
+    // ready
+    
 });
 
 /* ------------------------------------ */
@@ -171,7 +171,7 @@ Hooks.once('setup', function() {
 /* ------------------------------------ */
 Hooks.once('ready', function() {
   // Do anything once the module is ready
-  hookRenderSBCButton();
+  //hookRenderSBCButton();
 });
 
 // Add any additional hooks if necessary
@@ -179,7 +179,7 @@ function hookRenderSBCButton() {
         
     // Appends a button onto the actor directory to open the modal dialog.
     Hooks.on("renderActorDirectory", (app, html, data) => {
-        console.log("HOOK RENDER ACTOR DIRECTORY");
+        console.log('sbc-pf1 | Statblock Converter PF1 Ready');
         const importButton = $('<button class="create-entity sbcButton"><i class="fas fa-user"></i>Import StatBlock</button>');
         html.find(".directory-footer").append(importButton);
         importButton.click((ev) => {
@@ -196,9 +196,7 @@ class statBlockConverterModalDialog {
     constructor() {}
     
     static openModalDialog() {
-        
-        if(DEBUG==true) { console.log(dataInput) };
-        
+                
         const options = {
             width: 500,
             height: 400,
@@ -219,7 +217,7 @@ class statBlockConverterModalDialog {
             },
             default: "import",
             
-            close: () => console.log("This always is logged no matter which option is chosen")
+            close: () => console.log("sbc-pf1 | Dialog closed")
         }, options);
         d.render(true);
     }
@@ -231,35 +229,13 @@ class statBlockConverterModalDialog {
 
 async function resetSBC() {
     
-    console.log("!!! RESETTING !!!");
+    if(DEBUG==true) { console.log("sbc-pf1 | resetSBC()") };
     
     delete window.dataInput;
-    
     delete window.dataOutput;
     delete window.dataTemplate;
     delete window.formattedInput;
     
-    //dataTemplate = await JSON.parse(JSON.stringify(templateActor));
-    
-    /*
-    if(DEBUG==true) { console.log(templateActor) };
-    if(DEBUG==true) { console.log(dataTemplate) };
-    */
-    
-    
-    //formattedInput = await JSON.parse( await JSON.stringify(templateData));
-    
-    /*
-    if(DEBUG==true) { console.log(templateData) };
-    if(DEBUG==true) { console.log(formattedInput) };
-    */
-    
-    //dataOutput = await JSON.parse(JSON.stringify(dataTemplate));
-    
-    /*
-    if(DEBUG==true) { console.log(dataTemplate) };
-    if(DEBUG==true) { console.log(dataOutput) };
-    */
 }
 
 /* ------------------------------------ */
@@ -268,7 +244,7 @@ async function resetSBC() {
 
 async function initializeSBC() {
     
-    console.log("!!! INITIALIZING !!!");
+    if(DEBUG==true) { console.log("sbc-pf1 | initializeSBC()") };
     
     dataInput = "";
     dataInputHasClasses = false;
@@ -281,11 +257,8 @@ async function initializeSBC() {
     dataInputHasSpecialAbilities = false;
     dataInputHasEcology = false;
     
-    
     dataTemplate = await JSON.parse(JSON.stringify(templateActor));
-    
     formattedInput = await JSON.parse( await JSON.stringify(templateData));
-    
     dataOutput = await JSON.parse(JSON.stringify(dataTemplate));
     
 }
@@ -296,31 +269,25 @@ async function initializeSBC() {
 
 async function convertStatBlock(input) {
     
+    // Reset everything when opening the modal dialog
     await resetSBC();
-    
     await initializeSBC();
     
+    // Initial Clean-up of input
     dataInput = input.value.replace(/^\s*[\r\n]/gm,"")
     // Replace different dash-glyphs with the minus-glyph
     dataInput = dataInput.replace(/–|—/gm,"-");
     // Remove weird multiplication signs
     dataInput = dataInput.replace(/×/, "x");
-    if(DEBUG==true) { console.log("dataTemplate: " + dataTemplate) };
-    
-    
-    if(DEBUG==true) { console.log("dataInput: " + dataInput) };
-    
+        
     /*
      * SPLIT INPUT INTO MANAGEABLE CHUNKS OF DATA
-     
-     /* Separate into Blocks
      * 
      * stringGeneralData: Name, CR, XP, Alignment, Type, Subtype, Init, Senses, Aura
      * stringDefenseData: AC, Touch, Flat-Footed, AC-Bonus-Types, HP, Hit Dice, Saves, Immunities, Resistances, Weaknesses, SR
      */
     
     let splitInput = "";
-    
     let stringGeneralData = "";
     let stringDefenseData = "";
     let stringOffenseData = "";
@@ -351,18 +318,7 @@ async function convertStatBlock(input) {
     
     // 
     if( (foundDefenseData == false) || (foundOffenseData == false) || (foundStatisticsData == false) ) {
-        console.log("Not enough Data, check if at least a block marked with defense, offense and statistics is included in the input");
-        /*
-        statusOutput.innerHTML += "<p class='criticalErrorMsg'>Could not find enough Data or the Input is malformed.</p>";
-        statusOutput.innerHTML += "Input-Analysis:<br/>Mandatory: <ul>";
-        statusOutput.innerHTML += "<li>Offense-Data found: " + foundOffenseData + "</li>";
-        statusOutput.innerHTML += "<li>Defense-Data found: " + foundDefenseData + "</li>";
-        statusOutput.innerHTML += "<li>Statistic-Data found: " + foundStatisticsData + "</li></ul><br/>";
-        statusOutput.innerHTML += "Optional: <ul>";
-        statusOutput.innerHTML += "<li>Tactics-Data found: " + foundTacticsData + "</li>";
-        statusOutput.innerHTML += "<li>Special Abilities-Data found: " + foundSpecialAbilitiesData + "</li>";
-        statusOutput.innerHTML += "<li>Ecology-Data found: " + foundEcologyData + "</li></ul>";
-        */
+        ui.notifications.info("Something went wrong! Please activate the Debug-Mode and check the console (F12)")
         return;
     }
     
@@ -487,18 +443,24 @@ async function convertStatBlock(input) {
     // Map SchemaData to TemplateData
     await mapInputToTemplateFoundryVTT(formattedInput);
     
-    if(DEBUG==true) { console.log(formattedInput) };
-    if(DEBUG==true) { console.log(dataOutput) };
-    
+    if(DEBUG==true) { 
+        console.log("sbc-pf1 | CHECK HERE FOR DIFFERENCES BETWEEN RAW INPUT, PARSED AND SAVED DATA");
+        console.log("==============================================================================================");
+        console.log("sbc-pf1 | RAW INPUT AFTER MINOR CLEANUP");
+        console.log(dataInput);
+        console.log("sbc-pf1 | PARSED AND FORMATTED DATA IN NEUTRAL TEMPLATE");
+        console.log(formattedInput);
+        console.log("==============================================================================================");
+        console.log("sbc-pf1 | DATA CONVERTED INTO A PF1 ACTOR");
+        console.log(dataOutput);
+        console.log("==============================================================================================");
+    };  
     
     // CREATE NEW ACTOR
     await createNewActor();
     
     await resetSBC();
     await initializeSBC();
-    
-    console.log("dataInput! !!! !!!");
-    console.log(dataInput);
 }
 
 
@@ -509,7 +471,7 @@ async function convertStatBlock(input) {
 
 // Split General Data and extract Name, CR, XP and Stuff
 function splitGeneralData(stringGeneralData) {
-    console.log("parsing General Data");
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing general data") };
     // Separate Name and Challenge Rating
     
     let splitGeneralData = stringGeneralData.replace(/\n/gm,"");
@@ -575,8 +537,6 @@ function splitGeneralData(stringGeneralData) {
                 let regExClassAndLevel = new RegExp("(" + item + ")" + "(?:[\\s]*?)([\\w\\s()]*?)(?:[\\s]*?)(\\d+)", "ig");
                 
                 classNameAndLevel = splitGeneralData.match(regExClassAndLevel);
-                console.log("regex: " + regExClassAndLevel);
-                console.log("classNameAndLevel: " + classNameAndLevel);
                 
                 if (item.search(/Medium/i) !== -1) {
                     className = "Medium";
@@ -697,10 +657,7 @@ function splitGeneralData(stringGeneralData) {
     } else {
         formattedInput.cr = splitCR;
     }
-    
-    
-    console.log("cr: " + formattedInput.cr);
-    
+        
     // For now, use cr as level
     formattedInput.level = splitCR;
             
@@ -715,12 +672,12 @@ function splitGeneralData(stringGeneralData) {
     formattedInput.senses = splitSenses;
     formattedInput.aura = splitAura;
     
-    console.log("done");
+    if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing general data") };
 }
 
 // Split Defense Data and extract AC, HP, Immunities and Stuff
 function splitDefenseData(stringDefenseData) {
-    console.log("parsing Defense Data");
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing defense data") };
     
     stringDefenseData = stringDefenseData.replace(/^ | $|^\n*/,"");
         
@@ -928,18 +885,16 @@ function splitDefenseData(stringDefenseData) {
         formattedInput.defensive_abilities = splitDefensiveAbilities;
     }
 
-    console.log("done");
+    if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing defense data") };
 }
 
 // NEW FUNCTION FOR THE OFFENSE BLOCK
 function splitOffenseData(stringOffenseData) {
-    console.log("parsing Offense Data");
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing offense data") };
     
     
     let splitOffenseData = stringOffenseData.replace(/^ | $|^\n*/,"");
-    
-    console.log("splitOffenseData: " + splitOffenseData);
-    
+        
     // Speed
     let splitSpeed = splitOffenseData.match(/(?:\bSpeed\b )(.*)(?:\n|$)/i)[1];
     let landSpeed = splitSpeed.match(/\d+/);
@@ -982,10 +937,15 @@ function splitOffenseData(stringOffenseData) {
     
     if (splitOffenseData.search(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
         splitMeleeAttacks = splitOffenseData.match(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
+        // Replace ", or " with " or "
+        splitMeleeAttacks = splitMeleeAttacks.replace(/, or /, " or ");
+        
     }
     
     if (splitOffenseData.search(/(?:Ranged )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
         splitRangedAttacks = splitOffenseData.match(/(?:Ranged )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
+        // Replace ", or " with " or "
+        splitRangedAttacks = splitRangedAttacks.replace(/, or /, " or ");
     }
     
     if (splitOffenseData.search(/(?:Special Attacks )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
@@ -999,15 +959,16 @@ function splitOffenseData(stringOffenseData) {
     formattedInput.meleeAttacks = splitMeleeAttacks.replace(/Melee /i, "");
     formattedInput.rangedAttacks = splitRangedAttacks.replace(/Ranged /i, "");
     formattedInput.specialAttacks = splitSpecialAttacks;
-    console.log("splitMeleeAttacks: " + splitMeleeAttacks);
-    console.log("splitRangedAttacks: " + splitRangedAttacks);
-    console.log("splitSpecialAttacks: " + splitSpecialAttacks);
-                                            
+    if(DEBUG==true) { console.log("sbc-pf1 | splitMeleeAttacks: " + splitMeleeAttacks) };
+    if(DEBUG==true) { console.log("sbc-pf1 | splitRangedAttacks: " + splitRangedAttacks) };
+    if(DEBUG==true) { console.log("sbc-pf1 | splitSpecialAttacks: " + splitSpecialAttacks) };
+    
+    if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing offense data") };
 }
 
 // Split Tactics Data and extract Tactics
 function splitTacticsData(stringTacticsData) {
-    console.log("parsing Tactics Data");
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing tactics data") };
     
     let splitTacticsData = stringTacticsData.replace(/^ | $|^\n*/,"");
     
@@ -1037,11 +998,12 @@ function splitTacticsData(stringTacticsData) {
         formattedInput.tactics.default = splitTacticsData.replace(/\n/,"");
     }
     
-    console.log("done");
+    if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing tactics data") };
 }
 
 // Split Statistics
 function splitStatisticsData(stringStatisticsData) {
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing statistics data") };
     
     // Attributes
     let splitAttributes = stringStatisticsData.match(/(\bStr\b)[\s\S]*(\bCha\b [0-9-—]{1,2})/gmi)[0].replace(/\n/,"").split(/,/);
@@ -1086,9 +1048,7 @@ function splitStatisticsData(stringStatisticsData) {
         splitSkills = splitSkills.replace(/Skills\s*/i, "");
         splitSkills = splitSkills.replace(/,\s|;\s/g, ",");
         splitSkills = splitSkills.replace(/\n/, "");
-        
-        console.log("splitSkills: " + splitSkills);
-        
+                
         let splitRacialModifiers = "";
         if (splitSkills.search(/\bracial\b \bmodifier\b|\bracial\b \bmodifiers\b/i) !== -1) {
             splitRacialModifiers = splitSkills.split(/\bracial\b \bmodifier\b|\bracial\b \bmodifiers\b/i)[1];
@@ -1114,7 +1074,7 @@ function splitStatisticsData(stringStatisticsData) {
 
                 });
             } else if (splitSkills.search(/(\b\w*\b [+-]\d+ \([+-]\d+[a-zA-Z0-9,; ]+\))/) !== -1) {
-                console.log("context Modifier");
+                if(DEBUG==true) { console.log("sbc-pf1 | ADD SUPPORT FOR context Modifier") };
                 
                 // !!!! ADD SUPPORT FOR CONTEXT MODIFIER HERE
             }
@@ -1191,7 +1151,7 @@ function splitStatisticsData(stringStatisticsData) {
     
     // Gear
 
-    console.log("done");
+    if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing statistics data") };
 }
 
 /* ------------------------------------ */
@@ -1240,8 +1200,6 @@ function mapGeneralData() {
     // Top of the Character Sheet
     dataOutput.name = dataOutput.token.name = formattedInput.name.replace(/^ | $/, "");
     
-    
-    
     // Token Data
     dataOutput.token.name = dataOutput.token.name = formattedInput.name;
     dataOutput.token.width = dataOutput.token.height = enumTokenSize[formattedInput.size].w;
@@ -1253,9 +1211,6 @@ function mapGeneralData() {
     dataOutput.data.details.cr = +formattedInput.cr;
     dataOutput.data.details.xp.value = formattedInput.xp;
     dataOutput.data.details.alignment = formattedInput.alignment;
-    
-    console.log("dataoutput.cr: " + dataOutput.data.details.cr);
-    console.log("dataoutput.level: " + dataOutput.data.details.level.value);
     
     // Changes for Undead Creatures
     let tempHPTotal = 0;
@@ -1316,8 +1271,6 @@ function setClassData (classInput) {
                 
         let tempClassName = classKey[i];
         
-        console.log("classInput[tempClassName]: " + JSON.stringify(classInput[tempClassName]));
-
         delete Object.assign(classEntry, {[tempClassName] : classEntry.classOrRacialHD }).classOrRacialHD;
         classEntry.level = classInput[tempClassName].level;
         classEntry.name = classInput[tempClassName].name;
@@ -1375,7 +1328,7 @@ function setRaceItem (raceInput) {
         // DEEP COPY
         itemEntry = JSON.parse(JSON.stringify(templateRaceItem[raceInput.toLowerCase()]));
     } else {
-        console.log("something went wrong parsing the race");
+        if(DEBUG==true) { console.log("sbc-pf1 | Something went wrong parsing the race") };
     }
     
     let raceChanges = itemEntry.data.changes;
@@ -1421,19 +1374,8 @@ function setRaceItem (raceInput) {
 async function setRacialHDItem () {
     
     // Create Item for the Class starting from the template
-    
-    console.log("formattedInput.creature_type.toLowerCase(): " + formattedInput.creature_type.toLowerCase());
-    console.log(templateRacialHDItem[formattedInput.creature_type.toLowerCase()]);
-    console.log(JSON.parse(JSON.stringify(templateRacialHDItem[formattedInput.creature_type.toLowerCase()])));
-    
     // DEEP COPY
     let itemEntry = JSON.parse(JSON.stringify(templateRacialHDItem[formattedInput.creature_type.toLowerCase()]));
-    
-    console.log("SET RACIAL HD ITEM !!!!");
-    console.log("ITEM ENTRY");
-    console.log(itemEntry);
-
-    console.log("inputClassHD: " + inputClassHD);
     
     itemEntry.data.level = +formattedInput.hit_dice.hd - inputClassHD;
     itemEntry.data.hp = +formattedInput.hp.race;
@@ -1474,23 +1416,18 @@ function setConversionItem () {
     // and compare that to the hp.total from the inputf
     let calculatedHPTotal = 0;
     if (formattedInput.con.total === "-" && formattedInput.creature_type === "undead") {
-        console.log("calculating hp total for undead with no con (so with cha instead)");
+        // calculating hp total for undead with no con (so with cha instead)
         calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.cha.total));
     } else if (formattedInput.con.total === "-") {
-        console.log("calculating hp total for con = - ");
+        // calculating hp total for con = -
         calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(10));
     } else {
         calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.con.total));
     }
     
-    console.log("calculatedHPTotal: " + calculatedHPTotal);
-    console.log("formattedInput.hp.total: " + formattedInput.hp.total);
-    
     if (+calculatedHPTotal !== +formattedInput.hp.total) {
 
         let tempHPDifference = +formattedInput.hp.total - +calculatedHPTotal;
-
-        console.log("tempHPDifference: " + tempHPDifference);
         
         let hpChange = [
             tempHPDifference.toString(),
@@ -1714,25 +1651,16 @@ function mapOffenseData () {
     // e.g. 2 Slams +10 (1d8+18), 2 Wings +5 (1d4+18) or Bite +10 (1d8+24 plus Grab)
     // Where the attack groups are seperated by "or"
     let meleeAttackGroups = formattedInput.meleeAttacks.split(/\bor\b/g);
-    
     setAttackItem(meleeAttackGroups, "mwak");
     
-    let rangedAttackGroups = formattedInput.rangedAttacks.split(/\bor\b/g);
-    
-    console.log("formattedInput.rangedAttacks: " + formattedInput.rangedAttacks);
-    
+    let rangedAttackGroups = formattedInput.rangedAttacks.split(/\bor\b/g);    
     setAttackItem(rangedAttackGroups, "rwak");
-    
-    
-        
-    
+       
 }
 
 // Set Attack Items
 function setAttackItem (attackGroups, attackType) {
-    
-    console.log("attackGroups: " + attackGroups);
-    
+        
     let attackGroupKeys = Object.keys(attackGroups);
 
     for (let i = 0; i < attackGroupKeys.length; i++) {
@@ -1782,8 +1710,6 @@ function setAttackItem (attackGroups, attackType) {
             } else if (attackType == "rwak") {
                 attackAttrModifier = +getModifier(formattedInput.dex.total);
             }
-
-            console.log("attack: " + attack);
             
             // numberOfAttacks
             if (attack.match(/(^\d+)/) !== null) {
@@ -1941,8 +1867,6 @@ function setAttackItem (attackGroups, attackType) {
             let strDamageBonus = getModifier(formattedInput.str.total);
             let calculatedDamageBonus = +strDamageBonus + +enhancementBonus;
             damageModifier = +damageBonus - +calculatedDamageBonus;
-            console.log("calculatedDamageBonus: " + calculatedDamageBonus);
-            console.log("damageBonus: " + damageBonus);
             
             // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
             let tempAttackDamageTypeKeys = Object.keys(enumAttackDamageTypes);
@@ -2177,9 +2101,8 @@ function mapStatisticData () {
             // Check if the Skill is a classSkill in any of the items
             let searchString = '"' + tempAttrShort + '":true';
             let tempClassSkillModifier = 0;
-            
+            // If yes, use the bonus added to classSkills for further calculations
             if (JSON.stringify(dataOutput.items).search(searchString) !== -1) {
-                //console.log(skillKey + " is a classSkill");
                 tempClassSkillModifier = 3;
             }
             
@@ -2280,10 +2203,11 @@ function mapNotesData() {
 
 async function createNewActor () {
     // Create Actor
-    let newActor = await Actor.create(dataOutput);
-    console.log("newActor.id: " + newActor.id);
     
-    console.log("UPDATING SHEET");
+    let newActor = await Actor.create(dataOutput);
+    if(DEBUG==true) { console.log("sbc-pf1 | Creating a new Actor with id=" + newActor.id) };
+    
+    if(DEBUG==true) { console.log("sbc-pf1 | Updating the Actor to include conversion changes") };
     game.actors.get(newActor.id).update(dataOutput);
     
 }
