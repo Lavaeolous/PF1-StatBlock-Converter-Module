@@ -528,18 +528,24 @@ function splitGeneralData(stringGeneralData) {
     
     // Split Classes, if available
     // Special Case: (Medium)(?: \d+?) 
-    let regExClasses = new RegExp(enumClasses.join("|"), "gi");
-    let splitClasses = splitGeneralData.match(regExClasses);
+    let regExClassesAndLevel = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")(?:\\s*\\d+)"), "gi");
+    let regExClasses = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")"), "gi");
+    let splitClasses = splitGeneralData.match(regExClassesAndLevel);
+    
+    console.log("regExClassesAndLevel: " + regExClassesAndLevel);
+    console.log("splitClasses: " + splitClasses);
+    
     // If there are classes, get them, their level and the race / gender as well
     if ( (splitClasses !== null) && (splitClasses !== "") ) {
+        // Set Flag
         dataInputHasClasses = true;
         // Get Class(es)
         splitClasses.forEach( function(item, index) {
-            if (item.search(/Medium/i) !== -1) {
-                item = "medium";
-            }
                         
             if ( item !== undefined ) {
+                
+                console.log("item: " + item);
+                
                 // Check for className (first for classes with two words e.g. vampire hunter)
                 let classNameAndLevel = "";
                 let className = "";
@@ -547,18 +553,20 @@ function splitGeneralData(stringGeneralData) {
                 let classLevel = "";
 
                 // Get Classlevel and words in between class an level
-                let regExClassAndLevel = new RegExp("(" + item + ")" + "(?:[\\s]*?)([\\w\\s()]*?)(?:[\\s]*?)(\\d+)", "ig");
+                //let regExClassAndLevel = new RegExp("(" + item + ")" + "(?:[\\s]*?)([\\w\\s()]*?)(?:[\\s]*?)(\\d+)", "ig");
                 
-                classNameAndLevel = splitGeneralData.match(regExClassAndLevel);
+                //classNameAndLevel = splitGeneralData.match(regExClassAndLevel);
+                classNameAndLevel = item;
+                
+                console.log("classNameAndLevel: " + classNameAndLevel);
                 
                 if (item.search(/Medium/i) !== -1) {
                     className = "Medium";
                 } else {
-                    className = classNameAndLevel[0].split(/[\s](?:\d)/)[0].match(regExClasses);
-                    
+                    className = classNameAndLevel.split(/[\s](?:\d)/)[0].match(regExClasses);
                 }
-                classNameSuffix = classNameAndLevel[0].split(/[\s](?:\d)/)[0].replace(regExClasses, "").replace(/^ | $/, "");
-                classLevel = classNameAndLevel[0].match(/(\d+?)/)[0];
+                classNameSuffix = classNameAndLevel.split(/[\s](?:\d)/)[0].replace(regExClasses, "").replace(/^ | $/, "");
+                classLevel = classNameAndLevel.match(/(\d+?)/)[0];
 
                 // If it's an NPC Class, add Npc to the Name
                 // Because thats the notation used in the gameSystem
@@ -641,19 +649,19 @@ function splitGeneralData(stringGeneralData) {
     }
     
     // Initiative (positive and negative)
-    
     let splitInit = splitGeneralData.match(/(?:Init\s*)(\+\d+|-\d+)/)[1];
     
-    let splitSenses = "";
     // Senses
+    let splitSenses = "";
     if (splitGeneralData.search(/\bSenses\b/gmi) !== -1) {
-        splitSenses = splitGeneralData.match(/(?:\bSenses\b\s*)(.*?)(?:\n|$|\sAura)/igm)[0].replace(/\bSenses\b\s*|\s*\bAura\b/g,"");
+        splitSenses = splitGeneralData.match(/(?:\bSenses\b\s*)(.*?)(?:\n|$|\s*Aura)/igm)[0].replace(/\bSenses\b\s*|\s*Aura\b/g,"");
     }
     
     // Aura
     let splitAura = "";
-    if (splitGeneralData.search(/\bAura\b/igm) !== -1) {
-        splitAura = splitGeneralData.match(/(?:Aura\s*)(.*?)(?:;|\n|$)/igm)[0].replace("Aura\s*","");
+    if (splitGeneralData.search(/Aura\b/igm) !== -1) {
+        splitAura = splitGeneralData.match(/(?:Aura\s*)(.*?)(?:;|\n|$)/igm)[0].replace(/Aura\s*/,"");
+        console.log("splitAura: " + splitAura);
     }
         
     // Save the found entries into formattedInput
@@ -766,7 +774,7 @@ function splitDefenseData(stringDefenseData) {
     
     // Get different DicePools, e.g. XdY combinations, mostly for combinations of racial and class hitDice
     let hitDicePool = JSON.stringify(stringHitDice).match(/(\d+?d\d+)/gi);
-    
+        
     // Find the Dicepool for class(es)
     if (dataInputHasClasses == true) {
 
@@ -1327,6 +1335,11 @@ function mapGeneralData() {
     dataOutput.token.dimSight = 120;
     dataOutput.token.brightSight = 60;
     
+    // Aura
+    if (formattedInput.aura !== "") {
+        // CURRENTLY THERE IS NO SEPARATE FIELD IN THE SHEET FOR AURAS
+    }
+    
 }
 
 // Map data.classes.class
@@ -1489,8 +1502,10 @@ function setConversionItem () {
     // and compare that to the hp.total from the inputf
     let calculatedHPTotal = 0;
     if (formattedInput.con.total === "-" && formattedInput.creature_type === "undead") {
+        
         // calculating hp total for undead with no con (so with cha instead)
         calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.cha.total));
+        
     } else if (formattedInput.con.total === "-") {
         // calculating hp total for con = -
         calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(10));
@@ -1783,15 +1798,22 @@ function setAttackItem (attackGroups, attackType) {
             let mwkWeapon = false;
             let numberOfIterativeAttacks = 0;
             let attackNotes = "";
-            
-            if (DEBUG == true) { console.log("attack: " + attack) };
-            
+                        
             // Check if its Melee or Ranged
             let attackAttrModifier = 0;
             if (attackType == "mwak") {
-                attackAttrModifier = +getModifier(formattedInput.str.total);
+                if (formattedInput.str.total !== "-") {
+                    attackAttrModifier = +getModifier(formattedInput.str.total);
+                } else {
+                    attackAttrModifier = 0;
+                }
+                
             } else if (attackType == "rwak") {
-                attackAttrModifier = +getModifier(formattedInput.dex.total);
+                if (formattedInput.dex.total !== "-") {
+                    attackAttrModifier = +getModifier(formattedInput.dex.total);
+                } else {
+                    attackAttrModifier = 0;
+                }
             }
             
             // numberOfAttacks
@@ -1812,8 +1834,15 @@ function setAttackItem (attackGroups, attackType) {
             // attackName
             if (attack.match(/(\b[a-zA-Z]+)(?:[ +0-9(/]+\()/) !== null) {
                 attackName = attack.match(/(\b[a-zA-Z ]+)(?:[ +0-9(/]+\()/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "");
+                
+                // Special ActionType for swarmAttacks
+                if (attackName.search(/\bSwarm\b/i) !== -1) {
+                    attackType = "other";
+                }
+                
                 attackNotes += attackName + " ";
             }
+            
             // attackModifier
             if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/) !== null) {
                 attackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1];
@@ -1834,35 +1863,101 @@ function setAttackItem (attackGroups, attackType) {
                     attackNotes += "/+" + (attackModifier-(attackModifier-(5*i)));
                 }
             }
-            // NumberOfDamageDice and DamageDie
-            if (attack.match(/\d+d\d+/) !== null) {
-                numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1];
-                damageDie = attack.match(/(\d+)d(\d+)/)[2];
-                attackNotes += " (" + numberOfDamageDice + "d" + damageDie;
-            }
-            // damageBonus
-            if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - enhancementBonus;
-                attackNotes += damageBonus;
-            }
-            // critRange
-            if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
-                critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1];
-                attackNotes += "/" + critRange + "-20";
-            }
-            // critMult
-            if (attack.match(/(?:\/x)(\d+)/) !== null) {
-                critMult = attack.match(/(?:\/x)(\d+)/)[1];
-                attackNotes += "/x" + critMult;
-            }
-            // attackEffects
-            if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
-                attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1];
-                attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ");
+            
+            // If Strength is "-" do special undead stuff, otherwise calculate damage as normal
+            if (formattedInput.str.total !== "-") {
                 
-                // Create InlineRolls if needed
-                attackNotes += " plus " + attackEffects;
+                /* ------------------------------------ */
+                /* Normal Damage Calculation			*/
+                /* ------------------------------------ */
+                 
+                // NumberOfDamageDice and DamageDie
+                if (attack.match(/\d+d\d+/) !== null) {
+                    numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1];
+                    damageDie = attack.match(/(\d+)d(\d+)/)[2];
+                    attackNotes += " (" + numberOfDamageDice + "d" + damageDie;
+                }
+                // damageBonus
+                if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - enhancementBonus;
+                    attackNotes += damageBonus;
+                }
+                // critRange
+                if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                    critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1];
+                    attackNotes += "/" + critRange + "-20";
+                }
+                // critMult
+                if (attack.match(/(?:\/x)(\d+)/) !== null) {
+                    critMult = attack.match(/(?:\/x)(\d+)/)[1];
+                    attackNotes += "/x" + critMult;
+                }
+                // attackEffects
+                if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
+                    attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1];
+                    attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ");
+                    attackNotes += " plus " + attackEffects;
+                }
+            } else {
+                
+                /* ------------------------------------ */
+                /* Damage Calculation for Str = "-"		*/
+                /* ------------------------------------ */
+                
+                
+                if (attack.match(/\d+d\d+/) !== null) {
+                    
+                    // If the attack has damage dice
+                    attackNotes += " (";
+                    
+                    let damagePool = attack.match(/(\d+d\d+[^0-9)]*)/g);
+                                        
+                    damagePool.forEach ( function ( damageComponent, index ) {
+                        
+                        let tempItem = damageComponent.split(/ plus /);
+                        
+                        tempItem.forEach ( function ( damageSubComponent, subIndex) {
+                            
+                            // If there are damageDice
+                            if (damageSubComponent.match(/(\d+d\d+)/) !== null) {
+                                let specialDamage = damageSubComponent.match(/(\d+d\d+)/)[0];
+                                attackNotes += specialDamage + " ";
+                                attackEffects += specialDamage + " ";
+                                
+                                if (damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/) !== null) {
+                                    // If there are damageDice and a damageType
+                                    let specialDamageType = damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/)[1];
+                                    attackNotes += specialDamageType;
+                                    attackEffects += specialDamageType;
+                                }
+                            } else {
+                                // If there is just a specialEffect
+                                let specialEffect = damageSubComponent;
+                                attackNotes += specialEffect;
+                                attackEffects += specialEffect;
+                            }
+
+                            if (subIndex < tempItem.length-1) {
+                                attackNotes += " plus ";
+                                attackEffects += ", ";
+                            }
+                            
+                        });
+
+                    });
+                    
+                } else {
+                    // If there is just a specialEffect
+                    let specialEffect = attack;
+                    attackNotes += " (" + specialEffect + ")";
+                    attackEffects += specialEffect;
+                }
+                
+                // Add special damage to effectNotes
+                
             }
+            
+            
             
             attackNotes += ")";
             
@@ -1968,12 +2063,16 @@ function setAttackItem (attackGroups, attackType) {
                 }
             }
 
-            tempAttackItem.data.damage.parts.push(
-                [
-                    "sizeRoll(" + numberOfDamageDice + ", " + damageDie + ", 0, @critMult) + " + damageModifier,
-                    damageType
-                ]
-            )
+            // If it's a normal attack, push Damage as normal
+            if (formattedInput.str.total !== "-") {
+                tempAttackItem.data.damage.parts.push(
+                    [
+                        "sizeRoll(" + numberOfDamageDice + ", " + damageDie + ", 0, @critMult) + " + damageModifier,
+                        damageType
+                    ]
+                )
+            }
+            
 
             // Push critRange and critMult
             tempAttackItem.data.ability.critRange = critRange;
