@@ -258,6 +258,6 @@ export default {
     "other_abilities": "",
     "environment": "",
     "organization": "",
-    "special_abilities": "",
+    "special_abilities": {},
     "description": ""
 };

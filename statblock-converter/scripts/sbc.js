@@ -641,18 +641,19 @@ function splitGeneralData(stringGeneralData) {
     }
     
     // Initiative (positive and negative)
-    let splitInit = splitGeneralData.match(/(?:Init )(\+\d+|-\d+)/)[1];
+    
+    let splitInit = splitGeneralData.match(/(?:Init\s*)(\+\d+|-\d+)/)[1];
     
     let splitSenses = "";
     // Senses
     if (splitGeneralData.search(/\bSenses\b/gmi) !== -1) {
-        splitSenses = splitGeneralData.match(/(?:\bSenses\b )(.*?)(?:\n|$|\sAura)/igm)[0].replace(/\bSenses\b | \bAura\b/g,"");
+        splitSenses = splitGeneralData.match(/(?:\bSenses\b\s*)(.*?)(?:\n|$|\sAura)/igm)[0].replace(/\bSenses\b\s*|\s*\bAura\b/g,"");
     }
     
     // Aura
     let splitAura = "";
     if (splitGeneralData.search(/\bAura\b/igm) !== -1) {
-        splitAura = splitGeneralData.match(/(?:Aura )(.*?)(?:;|\n|$)/igm)[0].replace("Aura ","");
+        splitAura = splitGeneralData.match(/(?:Aura\s*)(.*?)(?:;|\n|$)/igm)[0].replace("Aura\s*","");
     }
         
     // Save the found entries into formattedInput
@@ -664,6 +665,8 @@ function splitGeneralData(stringGeneralData) {
         let denominator = splitCR.match(/\/(\d)/)[1];
         if (denominator == 3) {
             formattedInput.cr = 0.3375;
+        } else if (denominator == 6) {
+            formattedInput.cr = 0.1625;
         } else {
             formattedInput.cr = +nominator / +denominator;
         }
@@ -697,8 +700,6 @@ function splitDefenseData(stringDefenseData) {
     // Clean up the Input if there are extra linebreaks (often when copy and pasted from pdfs)
     // Remove linebreaks in parenthesis
     stringDefenseData = stringDefenseData.replace(/(\([^(.]+?)(?:\n)([^(.]+?\))+?/mi, "$1 $2");
-    
-    
     
     let splitDefenseData = stringDefenseData.split(/\n/);
     
@@ -912,7 +913,6 @@ function splitDefenseData(stringDefenseData) {
 function splitOffenseData(stringOffenseData) {
     if(DEBUG==true) { console.log("sbc-pf1 | Parsing offense data") };
     
-    
     let splitOffenseData = stringOffenseData.replace(/^ | $|^\n*/,"");
         
     // Speed
@@ -922,11 +922,19 @@ function splitOffenseData(stringOffenseData) {
     // Check for other Speeds
     if (splitSpeed.search(/,/g) !== -1) {
         let splitSpeeds = splitSpeed.replace(/, /g, ",").replace(/\d+ ft.,/, "").split(/,/g);
-        
+                
         splitSpeeds.forEach ( function (item, index) {
             let speedType = item.match(/\b\w*\b/);
             let speedSpeed = item.match(/\d+/);
-            formattedInput.speed[speedType].base = speedSpeed;
+                        
+            if (speedSpeed !== "" && speedSpeed !== null) {
+                // If its a movementType with speed (e.g. land, fly, climb or burrow)
+                formattedInput.speed[speedType].base = speedSpeed;
+            } else {
+                // If it's not one of the normal movementTypes the probability is high, that it's a special ability
+                formattedInput.special_abilities[item] = { "name": item };
+            }
+            
             
             if (item.search(/fly/) !== -1) {
                 let flyManeuverability = item.match(/(?:\((.+)\))/)[1];
@@ -978,7 +986,7 @@ function splitOffenseData(stringOffenseData) {
         
     formattedInput.meleeAttacks = splitMeleeAttacks.replace(/Melee /i, "");
     formattedInput.rangedAttacks = splitRangedAttacks.replace(/Ranged /i, "");
-    formattedInput.specialAttacks = splitSpecialAttacks;
+    formattedInput.specialAttacks = splitSpecialAttacks.replace(/Special Attacks /i, "");
     if(DEBUG==true) { console.log("sbc-pf1 | splitMeleeAttacks: " + splitMeleeAttacks) };
     if(DEBUG==true) { console.log("sbc-pf1 | splitRangedAttacks: " + splitRangedAttacks) };
     if(DEBUG==true) { console.log("sbc-pf1 | splitSpecialAttacks: " + splitSpecialAttacks) };
@@ -1054,7 +1062,9 @@ function splitStatisticsData(stringStatisticsData) {
     
     // Feats (String from "Feats" to next linebreak)
     if (stringStatisticsData.search(/(?:Feats )/) !== -1) {
-        let splitFeats = stringStatisticsData.match(/(?:Feats )(.*)(?:\n+?)/gim)[0];
+        let splitFeats = stringStatisticsData.match(/(?:Feats )([\s\S]*)(?:Skills)/gim)[0];
+        // Cleanup and remove stray linebreaks
+        splitFeats = splitFeats.replace(/Skills$/i, "").replace(/\n/g, " ");
         splitFeats = splitFeats.replace(/Feats /i, "");
         splitFeats = splitFeats.replace(/,\s|;\s/g, ",");
         splitFeats = splitFeats.split(/,/);
@@ -1713,27 +1723,36 @@ function mapOffenseData () {
     // For Attacks that can be made in one Full Attack
     // e.g. 2 Slams +10 (1d8+18), 2 Wings +5 (1d4+18) or Bite +10 (1d8+24 plus Grab)
     // Where the attack groups are seperated by "or"
-    let meleeAttackGroups = formattedInput.meleeAttacks.split(/\bor\b/g);
-    setAttackItem(meleeAttackGroups, "mwak");
+    if (formattedInput.meleeAttacks !== "") {
+        let meleeAttackGroups = formattedInput.meleeAttacks.split(/\bor\b/g);
+        setAttackItem(meleeAttackGroups, "mwak");
+    }
     
-    let rangedAttackGroups = formattedInput.rangedAttacks.split(/\bor\b/g);    
-    setAttackItem(rangedAttackGroups, "rwak");
+    if (formattedInput.rangedAttacks !== "") {
+        let rangedAttackGroups = formattedInput.rangedAttacks.split(/\bor\b/g);    
+        setAttackItem(rangedAttackGroups, "rwak");
+    }
        
 }
 
 // Set Attack Items
 function setAttackItem (attackGroups, attackType) {
-        
+    
     let attackGroupKeys = Object.keys(attackGroups);
-
-    for (let i = 0; i < attackGroupKeys.length; i++) {
+    
+    for (var i = 0; i < attackGroupKeys.length; i++) {
         
-        // Melee Attacks
-        
-        let attacks = attackGroups[i].replace(/\band\b (?![^(]*\)|\()/g,",").split(/,/g);
+        // Attacks
+        let attacks = attackGroups[i];
+        // Clean-up the input for cases where "," and "and" follow each other
+        attacks = attacks.replace(/, \band\b /, " and ");
+        // Clean-up the input to replace "and" with a ","
+        attacks = attacks.replace(/\band\b (?![^(]*\)|\()/g,",");
+        // Split the attacks into single attacks
+        attacks = attacks.split(/,/g);
         let attackKeys = Object.keys(attacks);
-
-        // Loop over all melee attacks
+        
+        // Loop over all attacks in the attackGroup
         for (let j = 0; j < attackKeys.length; j++) {
 
             // DIFFERENT ATTACK FORMATS
@@ -1765,6 +1784,7 @@ function setAttackItem (attackGroups, attackType) {
             let numberOfIterativeAttacks = 0;
             let attackNotes = "";
             
+            if (DEBUG == true) { console.log("attack: " + attack) };
             
             // Check if its Melee or Ranged
             let attackAttrModifier = 0;
@@ -1822,8 +1842,8 @@ function setAttackItem (attackGroups, attackType) {
             }
             // damageBonus
             if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                damageBonus = attack.match(/(?:d\d+\+|\-)(\d+)/)[1] - enhancementBonus;
-                attackNotes += "+" + damageBonus;
+                damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - enhancementBonus;
+                attackNotes += damageBonus;
             }
             // critRange
             if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
@@ -1841,7 +1861,6 @@ function setAttackItem (attackGroups, attackType) {
                 attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ");
                 
                 // Create InlineRolls if needed
-                
                 attackNotes += " plus " + attackEffects;
             }
             
@@ -1989,7 +2008,8 @@ function mapStatisticData () {
     dataOutput.data.abilities.str.carryBonus = 0;
     
     enumAttributes.forEach ( function (item, index) {
-        if (formattedInput[item] !== "-") {
+                
+        if (formattedInput[item].total !== "-") {
             dataOutput.data.abilities[item].total = +formattedInput[item].total - +formattedInput[item].race;
             dataOutput.data.abilities[item].value = +formattedInput[item].total - +formattedInput[item].race;
             dataOutput.data.abilities[item].mod = getModifier(formattedInput[item].total);
@@ -1999,6 +2019,7 @@ function mapStatisticData () {
             }
             
         } else {
+            
             // The sheet currently doesn't support - as input, so set everything to 0
             dataOutput.data.abilities[item].total = 0;
             dataOutput.data.abilities[item].value = 0;
@@ -2273,6 +2294,8 @@ async function createNewActor () {
     if(DEBUG==true) { console.log("sbc-pf1 | Updating the Actor to include conversion changes") };
     game.actors.get(newActor.id).update(dataOutput);
     
+    newActor.render(true);
+    
 }
 
 /* ------------------------------------ */
@@ -2303,6 +2326,8 @@ function getDiceAverage (diceSize) {
 }
 
 function makeValueRollable(inputText) {
+        
     var output = inputText.replace(/(\d+d\d+)/, "[[$1]]");
     
+    return output;
 }
