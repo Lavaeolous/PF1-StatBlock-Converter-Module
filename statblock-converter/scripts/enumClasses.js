@@ -45,5 +45,14 @@ export default [
     "Warpriest",
     "Warrior",
     "Witch",
-    "Wizard"    
+    "Wizard",
+    "necromancer",
+    "diviner",
+    "evoker",
+    "illusionist",
+    "transmuter",
+    "abjurer",
+    "conjurer",
+    "enchanter",
+    "universalist"
 ];

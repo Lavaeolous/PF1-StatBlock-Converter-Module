@@ -41,7 +41,7 @@ import enumLanguages from "./enumLanguages.js"
 var dataInput;
 var dataInputHasClasses = false;
 var inputHDTotal = 0;
-var inputClassHD = 0;
+var inputClassHDTotal = 0;
 var dataInputHasNonPlayableRace = false;
 var dataInputHasPlayableRace = false;
 var dataInputHasRacialHD = true;
@@ -192,8 +192,8 @@ function hookRenderSBCButton() {
         
     // Appends a button onto the actor directory to open the modal dialog.
     Hooks.on("renderActorDirectory", (app, html, data) => {
-        console.log('sbc-pf1 | Statblock Converter PF1 Ready');
-        const importButton = $('<button class="create-entity sbcButton"><i class="fas fa-user"></i>Import StatBlock</button>');
+        console.log('sbc-pf1 | StatBlock Converter PF1 Ready');
+        const importButton = $('<button class="create-entity sbcButton"><i class="fas fa-file-import"></i></i>Import StatBlock</button>');
         html.find(".directory-footer").append(importButton);
         importButton.click((ev) => {
             statBlockConverterModalDialog.openModalDialog();
@@ -211,12 +211,12 @@ class statBlockConverterModalDialog {
     static openModalDialog() {
                 
         const options = {
-            width: 500,
-            height: 400,
+            width: 650,
+            height: 550,
             id: "sbcModal"
         };
         
-        const content = '<p>Enter the StatBlock you want to import and convert</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Paste Statblock here"></textarea>';
+        const content = '<p>Enter the StatBlock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is a Work-in-Progress thats not feature-complete (e.g. spells are not converted yet). It is advised to update regularily.</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste StatBlock here"></textarea>';
         
         let d = new Dialog({
             title: "PF1 StatBlock Converter",
@@ -262,7 +262,7 @@ async function initializeSBC() {
     dataInput = "";
     dataInputHasClasses = false;
     inputHDTotal = 0;
-    inputClassHD = 0;
+    inputClassHDTotal = 0;
     dataInputHasNonPlayableRace = false;
     dataInputHasPlayableRace = false;
     dataInputHasRacialHD = true;
@@ -532,9 +532,6 @@ function splitGeneralData(stringGeneralData) {
     let regExClasses = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")"), "gi");
     let splitClasses = splitGeneralData.match(regExClassesAndLevel);
     
-    console.log("regExClassesAndLevel: " + regExClassesAndLevel);
-    console.log("splitClasses: " + splitClasses);
-    
     // If there are classes, get them, their level and the race / gender as well
     if ( (splitClasses !== null) && (splitClasses !== "") ) {
         // Set Flag
@@ -543,9 +540,7 @@ function splitGeneralData(stringGeneralData) {
         splitClasses.forEach( function(item, index) {
                         
             if ( item !== undefined ) {
-                
-                console.log("item: " + item);
-                
+                                
                 // Check for className (first for classes with two words e.g. vampire hunter)
                 let classNameAndLevel = "";
                 let className = "";
@@ -557,9 +552,7 @@ function splitGeneralData(stringGeneralData) {
                 
                 //classNameAndLevel = splitGeneralData.match(regExClassAndLevel);
                 classNameAndLevel = item;
-                
-                console.log("classNameAndLevel: " + classNameAndLevel);
-                
+                                
                 if (item.search(/Medium/i) !== -1) {
                     className = "Medium";
                 } else {
@@ -573,12 +566,22 @@ function splitGeneralData(stringGeneralData) {
                 if (className[0].search(/(adept)|(commoner)|(expert)|(warrior)|(aristocrat)/i) !== -1 ) {
                     className = className[0].concat("Npc");
                 }
-
-                formattedInput.classes[className] = {
-                    "name" : className[0],
-                    "nameSuffix" : classNameSuffix,
-                    "level" : +classLevel
+                
+                if (className[0].search(/necromancer|diviner|evoker|illusionist|transmuter|abjurer|conjurer|enchanter/i) === -1) {
+                    formattedInput.classes[className] = {
+                        "name" : className[0],
+                        "nameSuffix" : classNameSuffix,
+                        "level" : +classLevel
+                    }
+                } else {
+                    formattedInput.classes.wizard = {
+                        "name" : "wizard",
+                        "nameSuffix" : "(" + className[0] + ")",
+                        "level" : +classLevel
+                    }
                 }
+                
+                
             }
 
         });
@@ -661,7 +664,7 @@ function splitGeneralData(stringGeneralData) {
     let splitAura = "";
     if (splitGeneralData.search(/Aura\b/igm) !== -1) {
         splitAura = splitGeneralData.match(/(?:Aura\s*)(.*?)(?:;|\n|$)/igm)[0].replace(/Aura\s*/,"");
-        console.log("splitAura: " + splitAura);
+
     }
         
     // Save the found entries into formattedInput
@@ -748,6 +751,7 @@ function splitDefenseData(stringDefenseData) {
     
     // Extract Number and Size of Hit Dies as well as HP
     // Hit dice
+        
     let splitHPTotal = splitDefenseData[1].split(/(?:hp )([\d]*)/)[1];
     //let stringHitDice = JSON.stringify(splitDefenseData[1].match(/\([\s\S]*?\)/));
     let stringHitDice = JSON.parse(JSON.stringify(splitDefenseData[1].match(/\([\s\S]*?\)/)));
@@ -794,11 +798,29 @@ function splitDefenseData(stringDefenseData) {
                 if ( (hitDicePool[j].search(tempRegEx) !== -1) && (foundClassHD !== classKey.length) ) {
                     // Set HP for classItem
                     let tempDiceSize = hitDicePool[j].match(tempRegEx)[1];
-                    formattedInput.hp.class = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
+                    
+                    formattedInput.hp.class[i] = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
+
                     formattedInput.hp.race = 0;
+                    
+                    inputClassHDTotal += +tempLevel;
                     inputHDTotal += +tempLevel;
+                    
                     foundClassHD++;
-                } else if ( foundClassHD === classKey.length ) {
+                } else if ( inputClassHDTotal !== inputHDTotal && foundClassHD !== classKey.length ) {
+                                       
+                    // If there is no match between classLevels and available hitDice combinations (e.g. fighter 3 and a 5d10+X hitDicePool)
+                    // then assume that classHD and racialHD are of the same size
+                    let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
+                    let tempTotalHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
+                    
+                    formattedInput.hp.class = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
+                    formattedInput.hp.race = Math.floor( (+tempTotalHD - +tempLevel) * +getDiceAverage(tempDiceSize));
+                    
+                    inputHDTotal = +inputHDTotal + +tempTotalHD;
+                    foundClassHD++;
+                    
+                } else if ( inputClassHDTotal !== inputHDTotal && foundClassHD === classKey.length ) {
                     // Set HP for RacialHDItem                    
                     let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
                     let tempRacialHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
@@ -810,7 +832,6 @@ function splitDefenseData(stringDefenseData) {
         }
 
     } else {
-
         // Set racialHD when no class is given
         let hitDicePoolKey = Object.keys(hitDicePool);
         for (let j = 0; j < hitDicePoolKey.length; j++) {
@@ -824,8 +845,9 @@ function splitDefenseData(stringDefenseData) {
         }
     }
     
-    formattedInput.hit_dice.hd = inputHDTotal;
-        
+    // Set the total Hit Dice
+    formattedInput.hit_dice.hd = +inputHDTotal;
+    
     //let hitDiceBonusPool = JSON.stringify(stringHitDice).match(/[^d+\(](\d+)/gi);
     let hitDiceBonusPool = stringHitDice[0].replace(/(\d+d\d+)/gi,"").match(/\d+/g);
     
@@ -839,7 +861,7 @@ function splitDefenseData(stringDefenseData) {
         }
     
     }
-
+    
     formattedInput.hp.total = splitHPTotal;
     
     // Extract Saves    
@@ -964,27 +986,42 @@ function splitOffenseData(stringOffenseData) {
     let splitSpaceAndReach = "";
     
     // Melee, Ranged and Special
-    
-    /* THIS NEEDS TO BE WAY MORE ROBUST
-     * SPLITTING IS INCONSISTEN DEPENDING ON WHERE WHICH STRING IS FOUND
-     */
-    
     // REWORKED SPLITTING
     
-    if (splitOffenseData.search(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
-        splitMeleeAttacks = splitOffenseData.match(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
+    // FIRST, SPLIT SPELL STUFF FROM ATTACKS
+    let splitOffenseAttacks = "";
+    let splitOffenseSpells = "";
+    
+    if (splitOffenseData.search(/\bSpell\b/i) !== -1) {
+        splitOffenseAttacks = splitOffenseData.split(/\bSpell\b/i)[0];
+        splitOffenseSpells = "Spell" + splitOffenseData.split(/\bSpell\b/i)[1];
+    } else {
+        splitOffenseAttacks = splitOffenseData;
+    }
+    
+    
+    
+    console.log("splitOffenseAttacks: " + splitOffenseAttacks);
+    console.log("splitOffenseSpells: " + splitOffenseSpells);
+    
+    if (splitOffenseAttacks.search(/(?:Melee )/im) !== -1) {
+                
+        // splitMeleeAttacks = splitOffenseData.match(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
+        splitMeleeAttacks = splitOffenseAttacks.match(/(?:Melee\s*)([\s\S]*?)(?:Ranged|Space|Special Attacks|$)/i)[1].replace(/\n/, " ");
+        console.log("splitMeleeAttacks: " + splitMeleeAttacks);
         // Replace ", or " with " or "
         splitMeleeAttacks = splitMeleeAttacks.replace(/, or /, " or ");
         
     }
     
-    if (splitOffenseData.search(/(?:Ranged )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
-        splitRangedAttacks = splitOffenseData.match(/(?:Ranged )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
+    if (splitOffenseAttacks.search(/(?:Ranged )/im) !== -1) {
+        splitRangedAttacks = splitOffenseAttacks.match(/(?:Ranged\s*)([\s\S]*?)(?:Melee|Space|Special Attacks|$)/i)[1].replace(/\n/, " ");
+        console.log("splitRangedAttacks: " + splitRangedAttacks);
         // Replace ", or " with " or "
         splitRangedAttacks = splitRangedAttacks.replace(/, or /, " or ");
     }
     
-    if (splitOffenseData.search(/(?:Special Attacks )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im) !== -1) {
+    if (splitOffenseData.search(/(?:Special Attacks )/im) !== -1) {
         splitSpecialAttacks = splitOffenseData.match(/(?:Special Attacks )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
     }
     
@@ -1359,7 +1396,16 @@ function setClassData (classInput) {
         
         delete Object.assign(classEntry, {[tempClassName] : classEntry.classOrRacialHD }).classOrRacialHD;
         classEntry.level = classInput[tempClassName].level;
-        classEntry.name = classInput[tempClassName].name;
+        
+        // Check if the Class has a suffix
+        if (classInput[tempClassName].nameSuffix !== "") {
+            classEntry.name = classInput[tempClassName].name + " " + classInput[tempClassName].nameSuffix; 
+        } else {
+            classEntry.name = classInput[tempClassName].name;
+        }
+        
+        
+        
         classEntries[tempClassName] = classEntry;
     }
     
@@ -1370,6 +1416,7 @@ function setClassData (classInput) {
 
 // Create Class
 function setClassItem (classInput) {
+    
 
     let classKey = Object.keys(classInput);
     
@@ -1378,26 +1425,32 @@ function setClassItem (classInput) {
         // DEEP COPY
         let itemEntry = JSON.parse(JSON.stringify(templateClassItem[classKey[i].toLowerCase().replace(/npc/,"Npc")]));
         
+        let tempClassName = classKey[i];
+        // Check if the Class has a suffix
+        if (classInput[tempClassName].nameSuffix !== "") {
+            itemEntry.name = classInput[tempClassName].name + " " + classInput[tempClassName].nameSuffix; 
+        }
+
         itemEntry.data.level = classInput[classKey[i]].level;
-        inputClassHD = classInput[classKey[i]].level;
-        itemEntry.data.hp = +formattedInput.hp.class;
+                
+        itemEntry.data.hp = +formattedInput.hp.class[i];
         
         // "low"-progression: floor(@level / 3)
         // "high"-progression: 2 + floor(@level / 2)
         let saveKey = Object.keys(itemEntry.data.savingThrows);
 
-        for (var i=0; i < saveKey.length; i++) {
-            if (itemEntry.data.savingThrows[saveKey[i]].value == "low") {
-                formattedInput[saveKey[i]+"_save"].class = Math.floor(itemEntry.data.level / 3);            
-            } else if (itemEntry.data.savingThrows[saveKey[i]].value == "high") {
-                formattedInput[saveKey[i]+"_save"].class = 2 + Math.floor(itemEntry.data.level / 2);
+        for (var j=0; j < saveKey.length; j++) {
+            if (itemEntry.data.savingThrows[saveKey[j]].value == "low") {
+                formattedInput[saveKey[j]+"_save"].class[i] = Math.floor(itemEntry.data.level / 3);            
+            } else if (itemEntry.data.savingThrows[saveKey[j]].value == "high") {
+                formattedInput[saveKey[j]+"_save"].class[i] = 2 + Math.floor(itemEntry.data.level / 2);
             } else {
-                formattedInput[saveKey[i]+"_save"].class = 0;
+                formattedInput[saveKey[j]+"_save"].class[i] = 0;
             }
         }
-
+        
         dataOutput.items.push(itemEntry);
-    }
+    };
 }
 
 // Create Race Item
@@ -1463,7 +1516,7 @@ async function setRacialHDItem () {
     // DEEP COPY
     let itemEntry = JSON.parse(JSON.stringify(templateRacialHDItem[formattedInput.creature_type.toLowerCase()]));
     
-    itemEntry.data.level = +formattedInput.hit_dice.hd - inputClassHD;
+    itemEntry.data.level = +formattedInput.hit_dice.hd - inputClassHDTotal;
     itemEntry.data.hp = +formattedInput.hp.race;
 
     // Update the name to include Subtypes
@@ -1501,18 +1554,25 @@ function setConversionItem () {
     // For that calculate the HP-Total from Classes, RacialHD and Con-Mod*Level
     // and compare that to the hp.total from the inputf
     let calculatedHPTotal = 0;
+    
+    // Calculate the TotalClassHP
+    let totalClassHP = 0;
+    for (let i = 0; i < formattedInput.hp.class.length; i++) {
+        totalClassHP += +formattedInput.hp.class[i];
+    }
+        
     if (formattedInput.con.total === "-" && formattedInput.creature_type === "undead") {
         
         // calculating hp total for undead with no con (so with cha instead)
-        calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.cha.total));
+        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.cha.total));
         
     } else if (formattedInput.con.total === "-") {
         // calculating hp total for con = -
-        calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(10));
+        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(10));
     } else {
-        calculatedHPTotal = +formattedInput.hp.race + +formattedInput.hp.class + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.con.total));
+        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.con.total));
     }
-    
+        
     if (+calculatedHPTotal !== +formattedInput.hp.total) {
 
         let tempHPDifference = +formattedInput.hp.total - +calculatedHPTotal;
@@ -1578,16 +1638,25 @@ function setConversionItem () {
         let saveChange = [];
         let tempSaveString = item + "_save";
         
+        // Calculate the total to saves from classes
+        let classSaveTotal = 0;
+        for (let i = 0; i < +formattedInput[tempSaveString].class.length; i++) {
+            classSaveTotal += +formattedInput[tempSaveString].class[i];
+        }
+                
+        let tempSaveChange = 0;
         if (item === "fort" && formattedInput.con.total === "-") {
-            let tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +formattedInput[tempSaveString].class;
-            saveChange.push(tempSaveChange.toString());
+            tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal;
+            //saveChange.push(tempSaveChange.toString());
         } else {
             let attrModifier = +getModifier(formattedInput[enumSaveModifier[index]].total);
             
-            let tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +formattedInput[tempSaveString].class - +attrModifier;
-            saveChange.push(tempSaveChange.toString());
+            tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal - +attrModifier;
+            //saveChange.push(tempSaveChange.toString());
         }
         
+        
+        saveChange.push(tempSaveChange.toString());
         saveChange.push("savingThrows");
         saveChange.push(item);
         saveChange.push("untyped");
@@ -1759,6 +1828,7 @@ function setAttackItem (attackGroups, attackType) {
         
         // Attacks
         let attacks = attackGroups[i];
+                
         // Clean-up the input for cases where "," and "and" follow each other
         attacks = attacks.replace(/, \band\b /, " and ");
         // Clean-up the input to replace "and" with a ","
@@ -1816,6 +1886,12 @@ function setAttackItem (attackGroups, attackType) {
                 }
             }
             
+            // Check, if Str is "-" and set the attackAttrModifier to -5 if it is
+            if (formattedInput.str.total === "-") {
+                // -5 so that the negative modificator from strength gets negated in the final calculation of the attackModifier
+                attackAttrModifier = -5;
+            }
+                        
             // numberOfAttacks
             if (attack.match(/(^\d+)/) !== null) {
                 numberOfAttacks = attack.match(/(^\d+)/)[1];
@@ -1847,15 +1923,17 @@ function setAttackItem (attackGroups, attackType) {
             if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/) !== null) {
                 attackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1];
                 attackNotes += attackModifier;
-                // Subtract BAB, ATTR-MOD and SIZE-MOD
+                // Subtract BAB, ATTR-MOD and SIZE-MOD    
                 attackModifier = +attackModifier - +formattedInput.bab - +enumSizeModifiers[formattedInput.size] - attackAttrModifier;
-                                
+                
+                // Subtract Boni for Enhancement or MWK
                 if (enhancementBonus !== 0) {
                     attackModifier = (attackModifier - enhancementBonus);
                 } else if (enhancementBonus !== 0 && mwkWeapon === true) {
                     attackModifier = (attackModifier - 1);
                 }                
             }
+                
             // numberOfIterativeAttacks
             if (attack.match(/(\/\+\d+)/) !== null) {
                 numberOfIterativeAttacks = attack.match(/(\/\+\d+)/g).length;
@@ -1939,7 +2017,7 @@ function setAttackItem (attackGroups, attackType) {
 
                             if (subIndex < tempItem.length-1) {
                                 attackNotes += " plus ";
-                                attackEffects += ", ";
+                                attackEffects += "\n";
                             }
                             
                         });
@@ -1956,9 +2034,7 @@ function setAttackItem (attackGroups, attackType) {
                 // Add special damage to effectNotes
                 
             }
-            
-            
-            
+
             attackNotes += ")";
             
             // Create an attack-item for each attack in this group
@@ -2048,7 +2124,7 @@ function setAttackItem (attackGroups, attackType) {
             // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
             let tempAttackDamageTypeKeys = Object.keys(enumAttackDamageTypes);
             if (attackName !== "") {
-                let damageTypeRegex = new RegExp("(\\b" + attackName.replace(/\bmwk\b /i,"") + "\\b)", "ig");
+                let damageTypeRegex = new RegExp("(^\\b" + attackName.replace(/\bmwk\b /i,"") + "\\b$)", "ig");
             
                 for (let i=0; i < tempAttackDamageTypeKeys.length; i++) {
                     if (tempAttackDamageTypeKeys[i].search(damageTypeRegex) !== -1) {
@@ -2057,7 +2133,7 @@ function setAttackItem (attackGroups, attackType) {
                         
                         // If the weapon has special properties, add that to the attackNotes
                         if (weaponSpecial !== "-") {
-                            attackNotes += " [" + weaponSpecial + "]";
+                            attackNotes += "\nWeapon Qualities: [" + weaponSpecial + "]";
                         }
                     }
                 }

@@ -17,7 +17,7 @@ export default {
     "hp": {
         "total": 0,
         "racial": 0,
-        "class": 0
+        "class": []
     },
     "hit_dice" : {
         "hd": 0,
@@ -32,17 +32,17 @@ export default {
     "fort_save": {
         "total": 0,
         "racial": 0,
-        "class": 0
+        "class": []
     },
     "ref_save": {
         "total": 0,
         "racial": 0,
-        "class": 0
+        "class": []
     },
     "will_save": {
         "total": 0,
         "racial": 0,
-        "class": 0
+        "class": []
     },
     "defensive_abilities": "",
     "immunities": "",
