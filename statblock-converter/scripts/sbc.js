@@ -753,7 +753,9 @@ function splitDefenseData(stringDefenseData) {
     // Hit dice
         
     let splitHPTotal = splitDefenseData[1].split(/(?:hp )([\d]*)/)[1];
-    //let stringHitDice = JSON.stringify(splitDefenseData[1].match(/\([\s\S]*?\)/));
+    formattedInput.hp.total = splitHPTotal;
+    
+    
     let stringHitDice = JSON.parse(JSON.stringify(splitDefenseData[1].match(/\([\s\S]*?\)/)));
 
     // If available, extract Regeneration
@@ -767,86 +769,137 @@ function splitDefenseData(stringDefenseData) {
         formattedInput.fast_healing = tempFastHealing[1];
     }
     
-    // Extract HitDie and separate DicePools containing number and size of the die as well as the bonus
-    let splitHitDice = {};
-    let splitHitDie = {
-        "hd": 0,
-        "hdSize": 0,
-    }
-    
-    // Calculate HP for Class and Race Items
-    
+    // Calculate HP and HD for Class and Race Items
+
     // Get different DicePools, e.g. XdY combinations, mostly for combinations of racial and class hitDice
     let hitDicePool = JSON.stringify(stringHitDice).match(/(\d+?d\d+)/gi);
+    
+    // Get the total HD
+    let totalHD = 0;
+    let totalClassHD = 0;
+    // Loop over the available XdY Combinations
+    hitDicePool.forEach ( function (hitDiceItem, hitDiceIndex) {
+        console.log("item: " + hitDiceItem);
+        // Increment the totalHD Counter
+        totalHD += +hitDiceItem.match(/(\d+)(?:d\d+)/i)[1];
+    });
+    
+    // Get the total HD of classHD
+    let classKeys = Object.keys(formattedInput.classes);
+    classKeys.forEach( function (classKey, classKeyIndex) {
+        let numberOfClassLevels = formattedInput.classes[classKey].level;
+        totalClassHD += +numberOfClassLevels;
+    });
         
-    // Find the Dicepool for class(es)
-    if (dataInputHasClasses == true) {
-
-        let classKey = Object.keys(formattedInput.classes);
+    // If there are no classes, all HD are racialHD
+    if (totalClassHD === 0) {
+        // ONLY RACIALHD        
         let hitDicePoolKey = Object.keys(hitDicePool);
-        
-        for (let i = 0; i < classKey.length; i++) {
-            
-            let tempLevel = formattedInput.classes[classKey[i]].level;
-            
-            let foundClassHD = 0;
-            
-            for (let j = 0; j < hitDicePoolKey.length; j++) {
-                
-                let tempRegEx = new RegExp("(?:" + tempLevel + "d)(\\d+)", "i");
-                
-                if ( (hitDicePool[j].search(tempRegEx) !== -1) && (foundClassHD !== classKey.length) ) {
-                    // Set HP for classItem
-                    let tempDiceSize = hitDicePool[j].match(tempRegEx)[1];
-                    
-                    formattedInput.hp.class[i] = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
-
-                    formattedInput.hp.race = 0;
-                    
-                    inputClassHDTotal += +tempLevel;
-                    inputHDTotal += +tempLevel;
-                    
-                    foundClassHD++;
-                } else if ( inputClassHDTotal !== inputHDTotal && foundClassHD !== classKey.length ) {
-                                       
-                    // If there is no match between classLevels and available hitDice combinations (e.g. fighter 3 and a 5d10+X hitDicePool)
-                    // then assume that classHD and racialHD are of the same size
-                    let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
-                    let tempTotalHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
-                    
-                    formattedInput.hp.class = Math.floor(+tempLevel * +getDiceAverage(tempDiceSize));
-                    formattedInput.hp.race = Math.floor( (+tempTotalHD - +tempLevel) * +getDiceAverage(tempDiceSize));
-                    
-                    inputHDTotal = +inputHDTotal + +tempTotalHD;
-                    foundClassHD++;
-                    
-                } else if ( inputClassHDTotal !== inputHDTotal && foundClassHD === classKey.length ) {
-                    // Set HP for RacialHDItem                    
-                    let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
-                    let tempRacialHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
-                    
-                    formattedInput.hp.race = Math.floor(+tempRacialHD * +getDiceAverage(tempDiceSize));
-                    inputHDTotal += +tempRacialHD;
-                }
-            }
-        }
-
-    } else {
-        // Set racialHD when no class is given
-        let hitDicePoolKey = Object.keys(hitDicePool);
-        for (let j = 0; j < hitDicePoolKey.length; j++) {
+        for (let i = 0; i < hitDicePoolKey.length; i++) {
             
             // Set HP for RacialHDItem        
-            let tempDiceSize = hitDicePool[j].match(/(?:d)(\d+)/)[1];
-            let tempRacialHD = hitDicePool[j].match(/(\d+)(?:d)/)[1];
+            let tempDiceSize = hitDicePool[i].match(/(?:d)(\d+)/)[1];
             
-            formattedInput.hp.race = Math.floor(+tempRacialHD * +getDiceAverage(tempDiceSize));
-            inputHDTotal += +tempRacialHD;
+            // Set HP, HD.Racial and HD.Total
+            formattedInput.hp.racial = Math.floor(+totalHD * +getDiceAverage(tempDiceSize));
+            formattedInput.hit_dice.hd.racial = +totalHD;
+            formattedInput.hit_dice.hd.total = +totalHD;
         }
+  
+    } else if (totalHD - totalClassHD === 0) {
+        // ONLY CLASSHD        
+        // Loop over the dicePool
+        let hitDicePoolKey = Object.keys(hitDicePool);
+        for (let i = 0; i < hitDicePoolKey.length; i++) {
+            
+            let tempNumberOfHD = hitDicePool[i].match(/(\d+)(?:d\d+)/)[1];
+            let tempHDSize = hitDicePool[i].match(/(?:\d+d)(\d+)/)[1];
+            
+            // Loop over the classes
+            let classKeys = Object.keys(formattedInput.classes);
+            for (let j = 0; j < classKeys.length; j++) {
+                
+                let classLevel = formattedInput.classes[classKeys[j]].level;
+                
+                if (tempNumberOfHD == classLevel) {        
+                    // Set HP, HD.Racial and HD.Total
+                    formattedInput.hp.class[j] = Math.floor(+classLevel * +getDiceAverage(tempHDSize));
+                    formattedInput.hit_dice.hd.class[j] = +tempNumberOfHD;
+                    formattedInput.hit_dice.hd.total += +tempNumberOfHD;
+                    
+                }
+                
+                
+            }
+            
+        }
+        
+    } else if (totalHD - totalClassHD !== 0) {
+        // CLASSHD AND RACIALHD
+        // Loop for as long as not all ClassHD are matched
+        let numberOfClasses = Object.keys(formattedInput.classes).length;
+        let numberOfMatchedHD = Object.keys(hitDicePool).length;
+        
+        
+        let counterOfMatchedHD = 0;
+        let counterOfMatchedClasses = 0;
+        
+        while (counterOfMatchedHD < numberOfMatchedHD) {
+
+            // Loop over the classKeys
+            classKeys.forEach( function (classKey, classKeyIndex) {
+                                
+                // Loop over the hitDicePool searching for matches
+                hitDicePool.forEach ( function (hitDiceItem, hitDiceIndex) {
+                                        
+                    let tempNumberOfHD = +hitDiceItem.match(/(\d+)(?:d\d+)/i)[1];
+                    let tempHDSize = +hitDiceItem.match(/(?:d)(\d+)/i)[1];
+                    let tempClassLevel = formattedInput.classes[classKey].level;
+ 
+                    if ( (tempNumberOfHD == tempClassLevel) && (+counterOfMatchedHD !== +numberOfMatchedHD) && (counterOfMatchedClasses !== numberOfClasses) ) {
+                        // IF ITS THE A DIRECT MATCH BETWEEN CLASS LEVEL AND NUMBER OF HITDICE
+                        
+                        formattedInput.hp.class[classKey] = Math.floor(+tempClassLevel * +getDiceAverage(tempHDSize));
+                        formattedInput.hit_dice.hd.class[classKey] = +tempNumberOfHD;
+                        formattedInput.hit_dice.hd.total += +tempNumberOfHD;
+                        
+                        counterOfMatchedHD++;
+                        counterOfMatchedClasses++;
+                        
+                    } else if ( (tempNumberOfHD !== tempClassLevel) && (+counterOfMatchedHD == +(numberOfMatchedHD-1)) && (counterOfMatchedClasses !== numberOfClasses) ) {
+                        // IF ITS THE LAST HD POSSIBLE AND THERE IS STILL A CLASS LEFT TO MATCH
+ 
+                        formattedInput.hp.class[classKey] = Math.floor(+tempClassLevel * +getDiceAverage(tempHDSize));
+                        formattedInput.hp.racial = Math.floor( (+tempNumberOfHD - +tempClassLevel) * +getDiceAverage(tempHDSize));
+                        formattedInput.hit_dice.hd.class[classKey] = +tempNumberOfHD;
+                        formattedInput.hit_dice.hd.racial = +tempNumberOfHD - +tempClassLevel;
+                        
+                        formattedInput.hit_dice.hd.total += +tempNumberOfHD;
+                        
+                        counterOfMatchedHD++;
+                        counterOfMatchedClasses++;
+                                                
+                    } else if ( (counterOfMatchedHD == (numberOfMatchedHD-1)) && (counterOfMatchedClasses == numberOfClasses) ) {
+                        // IF ITS THE LAST HD POSSIBLE AND THERE IS NO CLASS LEFT                    
+                        formattedInput.hp.racial = Math.floor( +tempNumberOfHD * +getDiceAverage(tempHDSize) );
+                        formattedInput.hit_dice.hd.racial = +tempNumberOfHD;
+                        formattedInput.hit_dice.hd.total += +tempNumberOfHD;
+                        
+                        counterOfMatchedHD++;
+                    }
+                    
+                    
+                }); // End of Loop over the classKeys
+                
+                
+            }); // End of Loop over the hitDicePool
+            
+            
+        }
+        
+
     }
     
-    // Set the total Hit Dice
-    formattedInput.hit_dice.hd = +inputHDTotal;
     
     //let hitDiceBonusPool = JSON.stringify(stringHitDice).match(/[^d+\(](\d+)/gi);
     let hitDiceBonusPool = stringHitDice[0].replace(/(\d+d\d+)/gi,"").match(/\d+/g);
@@ -861,8 +914,6 @@ function splitDefenseData(stringDefenseData) {
         }
     
     }
-    
-    formattedInput.hp.total = splitHPTotal;
     
     // Extract Saves    
     let splitSaves;
@@ -998,9 +1049,7 @@ function splitOffenseData(stringOffenseData) {
     } else {
         splitOffenseAttacks = splitOffenseData;
     }
-    
-    
-    
+
     console.log("splitOffenseAttacks: " + splitOffenseAttacks);
     console.log("splitOffenseSpells: " + splitOffenseSpells);
     
@@ -1403,9 +1452,7 @@ function setClassData (classInput) {
         } else {
             classEntry.name = classInput[tempClassName].name;
         }
-        
-        
-        
+
         classEntries[tempClassName] = classEntry;
     }
     
@@ -1417,7 +1464,6 @@ function setClassData (classInput) {
 // Create Class
 function setClassItem (classInput) {
     
-
     let classKey = Object.keys(classInput);
     
     for (var i=0; i < classKey.length; i++) {
@@ -1433,7 +1479,7 @@ function setClassItem (classInput) {
 
         itemEntry.data.level = classInput[classKey[i]].level;
                 
-        itemEntry.data.hp = +formattedInput.hp.class[i];
+        itemEntry.data.hp = +formattedInput.hp.class[classKey[i]];
         
         // "low"-progression: floor(@level / 3)
         // "high"-progression: 2 + floor(@level / 2)
@@ -1492,14 +1538,6 @@ function setRaceItem (raceInput) {
             }  
         } else if (item[1] == "ac") {
             // Else if change to ac (e.g. Adaro)
-            /*
-                [
-                "2",
-                "ac",
-                "nac",
-                "base"
-              ]
-              */
             formattedInput.ac_race_bonus = item[0];
         }
         
@@ -1516,8 +1554,8 @@ async function setRacialHDItem () {
     // DEEP COPY
     let itemEntry = JSON.parse(JSON.stringify(templateRacialHDItem[formattedInput.creature_type.toLowerCase()]));
     
-    itemEntry.data.level = +formattedInput.hit_dice.hd - inputClassHDTotal;
-    itemEntry.data.hp = +formattedInput.hp.race;
+    itemEntry.data.level = +formattedInput.hit_dice.hd.racial;
+    itemEntry.data.hp = +formattedInput.hp.racial;
 
     // Update the name to include Subtypes
     if (formattedInput.creature_subtype !== "") {
@@ -1557,20 +1595,21 @@ function setConversionItem () {
     
     // Calculate the TotalClassHP
     let totalClassHP = 0;
-    for (let i = 0; i < formattedInput.hp.class.length; i++) {
-        totalClassHP += +formattedInput.hp.class[i];
+    let classKey = Object.keys(formattedInput.hp.class);
+    for (let i = 0; i < classKey.length; i++) {
+        totalClassHP += +formattedInput.hp.class[classKey[i]];
     }
         
     if (formattedInput.con.total === "-" && formattedInput.creature_type === "undead") {
         
         // calculating hp total for undead with no con (so with cha instead)
-        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.cha.total));
+        calculatedHPTotal = +formattedInput.hp.racial + +totalClassHP + (+formattedInput.hit_dice.hd.total * +getModifier(formattedInput.cha.total));
         
     } else if (formattedInput.con.total === "-") {
         // calculating hp total for con = -
-        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(10));
+        calculatedHPTotal = +formattedInput.hp.racial + +totalClassHP + (+formattedInput.hit_dice.hd.total * +getModifier(10));
     } else {
-        calculatedHPTotal = +formattedInput.hp.race + +totalClassHP + (+formattedInput.hit_dice.hd * +getModifier(formattedInput.con.total));
+        calculatedHPTotal = +formattedInput.hp.racial + +totalClassHP + (+formattedInput.hit_dice.hd.total * +getModifier(formattedInput.con.total));
     }
         
     if (+calculatedHPTotal !== +formattedInput.hp.total) {
@@ -1645,15 +1684,18 @@ function setConversionItem () {
         }
                 
         let tempSaveChange = 0;
-        if (item === "fort" && formattedInput.con.total === "-") {
-            tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal;
-            //saveChange.push(tempSaveChange.toString());
-        } else {
-            let attrModifier = +getModifier(formattedInput[enumSaveModifier[index]].total);
-            
-            tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal - +attrModifier;
-            //saveChange.push(tempSaveChange.toString());
+        let attrModifier = 0;
+        if (formattedInput.creature_type === "undead" && item === "fort" && formattedInput.con.total === "-") {
+            attrModifier = +getModifier(formattedInput.cha.total);
         }
+        else if (item === "fort" && formattedInput.con.total === "-") {
+            attrModifier = 0;
+        } else {
+            attrModifier = +getModifier(formattedInput[enumSaveModifier[index]].total);
+            
+        }
+        
+        tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal - +attrModifier;
         
         
         saveChange.push(tempSaveChange.toString());
@@ -1736,22 +1778,22 @@ function mapDefenseData () {
     
     // If there is anything left in tempImmunities, treat it as a custom immunity
     if (tempImmunities.search(/(\w+)/gi) !== -1) {
-        //ability damage, ability drain, charm effects, compulsion effects, , death effects, , energy drain, petrification, and ;
-        
+        //ability damage, ability drain, charm effects, compulsion effects, , death effects, , energy drain, petrification, and ;        
         // Remove empty fields
-        tempImmunities = tempImmunities.replace(/, , |, /g, ",")
-        tempImmunities = tempImmunities.replace(/\band\b/g, "")
-        tempImmunities = tempImmunities.replace(/;$/g, "")
+        tempImmunities = tempImmunities.replace(/^(, )+|(, )+$|(, )+;/g, "");
+        tempImmunities = tempImmunities.replace(/(, )+/g, ",");
+        tempImmunities = tempImmunities.replace(/\band\b/g, "");
+        tempImmunities = tempImmunities.replace(/;$/g, "");
         tempImmunities = tempImmunities.replace(/, $/g, "");
         
-        // Now way to find out if its damage or a condition, so set it just to condition
+        // No way to find out if its damage or a condition, so set it just to condition
         dataOutput.data.traits.ci.custom = tempImmunities;
     }
     
     // Resistances    
     let tempResistances = formattedInput.resistances;
     tempResistances = tempResistances.replace(/Electricity/gi, "electric");
-
+    
     enumDamageTypes.forEach( function (item, index) {
         let tempResistanceRegEx = new RegExp("(\\b" + item + "\\b \\d+)", "ig");
         if (tempResistances.search(tempResistanceRegEx) !== -1) {
@@ -1776,7 +1818,11 @@ function mapDefenseData () {
     
     // If there is anything left in tempWeaknesses, treat it as a custom weakness
     if (tempWeaknesses.search(/(\w+)/gi) !== -1) {
-        let tempCustomWeakness = tempWeaknesses.match(/(\w+)/gi).join(", ");
+        
+        let tempCustomWeakness = tempWeaknesses.replace(/(, )+|, /g, ",")
+        tempCustomWeakness = tempCustomWeakness.replace(/\band\b/g, "")
+        tempCustomWeakness = tempCustomWeakness.replace(/;$/g, "")
+        tempCustomWeakness = tempCustomWeakness.replace(/, $/g, "");
         
         dataOutput.data.traits.dv.custom = tempCustomWeakness;
     }
@@ -1856,6 +1902,7 @@ function setAttackItem (attackGroups, attackType) {
             let enhancementBonus = 0;
             let attackName = "";
             let attackModifier = 0;
+            let inputAttackModifier = 0;
             let numberOfDamageDice = 0;
             let damageDie = 0;
             let damageBonus = 0;
@@ -1908,8 +1955,8 @@ function setAttackItem (attackGroups, attackType) {
                 attackNotes += "mwk ";
             }
             // attackName
-            if (attack.match(/(\b[a-zA-Z]+)(?:[ +0-9(/]+\()/) !== null) {
-                attackName = attack.match(/(\b[a-zA-Z ]+)(?:[ +0-9(/]+\()/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "");
+            if (attack.match(/(\b[a-zA-Z*]+)(?:[ +0-9(/]+\()/) !== null) {
+                attackName = attack.match(/(\b[a-zA-Z *]+)(?:[ +0-9(/]+\()/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "");
                 
                 // Special ActionType for swarmAttacks
                 if (attackName.search(/\bSwarm\b/i) !== -1) {
@@ -1921,17 +1968,19 @@ function setAttackItem (attackGroups, attackType) {
             
             // attackModifier
             if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/) !== null) {
-                attackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1];
-                attackNotes += attackModifier;
+                inputAttackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1];
+                attackNotes += inputAttackModifier;
+                                
                 // Subtract BAB, ATTR-MOD and SIZE-MOD    
-                attackModifier = +attackModifier - +formattedInput.bab - +enumSizeModifiers[formattedInput.size] - attackAttrModifier;
+                attackModifier = +inputAttackModifier - +formattedInput.bab - +enumSizeModifiers[formattedInput.size] - attackAttrModifier;
                 
                 // Subtract Boni for Enhancement or MWK
                 if (enhancementBonus !== 0) {
                     attackModifier = (attackModifier - enhancementBonus);
-                } else if (enhancementBonus !== 0 && mwkWeapon === true) {
+                } else if (enhancementBonus === 0 && mwkWeapon === true) {
                     attackModifier = (attackModifier - 1);
-                }                
+                }
+                
             }
                 
             // numberOfIterativeAttacks
@@ -1957,8 +2006,9 @@ function setAttackItem (attackGroups, attackType) {
                 }
                 // damageBonus
                 if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - enhancementBonus;
-                    attackNotes += damageBonus;
+                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - +enhancementBonus;
+                    let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
+                    attackNotes += notesDamageBonus;
                 }
                 // critRange
                 if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
@@ -2068,14 +2118,16 @@ function setAttackItem (attackGroups, attackType) {
                 // Calculate if there is a difference between the calculatedAttackModifier and the one noted in the input statblock
                 let calculatedAttackModifier = +formattedInput.bab + +enumSizeModifiers[formattedInput.size] + +attackAttrModifier - 5;
                 
-                if (calculatedAttackModifier !== attackModifier) {
-                    secondaryAttackModifier = +attackModifier - +calculatedAttackModifier;
+                
+                
+                if (calculatedAttackModifier !== inputAttackModifier) {
+                    secondaryAttackModifier = +inputAttackModifier - +calculatedAttackModifier;
                 }
                 
             }
             
             // Set the attackBonus: Modifier - secondaryAttackModifier 
-            tempAttackItem.data.attackBonus = (+attackModifier - +secondaryAttackModifier).toString();
+            tempAttackItem.data.attackBonus = (+attackModifier + +secondaryAttackModifier).toString();
             
             // Set the attackName
             if (enhancementBonus !== 0) {

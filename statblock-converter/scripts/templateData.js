@@ -20,8 +20,15 @@ export default {
         "class": []
     },
     "hit_dice" : {
-        "hd": 0,
-        "hd_diceSize": 0,
+        "hd": {
+            "total": 0,
+            "racial": 0,
+            "class": []
+        },
+        "hd_diceSize": {
+            "racial": 0,
+            "class": []
+        },
         "hd_bonus": 0
     },
     "ac": 0,
