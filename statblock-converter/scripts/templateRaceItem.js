@@ -7,7 +7,7 @@ export default {
         "img": "icons/svg/mystery-man.svg",
         "data": {
             "description": {
-            "value": "This Race was parsed automatically and has no detailed information",
+            "value": "sbc | This Race was parsed automatically and has no detailed information",
             "chat": "",
             "unidentified": ""
             },

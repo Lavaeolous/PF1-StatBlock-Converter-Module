@@ -21,6 +21,7 @@ import templateConversionItem from "./templateConversionItem.js"
 import templateFeatItem from "./templateFeatItem.js"
 import templateMeleeAttackItem from "./templateMeleeAttackItem.js"
 import templateNaturalAttackItem from "./templateNaturalAttackItem.js"
+import templateSpecialAbilityItem from "./templateSpecialAbilityItem.js"
 import templateSkills from "./templateSkills.js"
 import enumRaces from "./enumRaces.js"
 import enumTypes from "./enumTypes.js"
@@ -53,80 +54,80 @@ var dataTemplate;
 var formattedInput;
 
 var enumAttributes = [
-        "str",
-        "dex",
-        "con",
-        "int",
-        "wis",
-        "cha"
-    ]
+    "str",
+    "dex",
+    "con",
+    "int",
+    "wis",
+    "cha"
+];
 
 var enumSizes = [
-        "Fine",
-        "Diminutive",
-        "Tiny",
-        "Small",
-        "Medium",
-        "Large",
-        "Huge",
-        "Gargantuan",
-        "Colossal"
-    ];
+    "Fine",
+    "Diminutive",
+    "Tiny",
+    "Small",
+    "Medium",
+    "Large",
+    "Huge",
+    "Gargantuan",
+    "Colossal"
+];
 
 var enumGender = [
-        "Male or Female",
-        "Female or Male",
-        "Male",
-        "Female"
-    ]
+    "Male or Female",
+    "Female or Male",
+    "Male",
+    "Female"
+];
 
 var carrySizeModificators = {
-        "Fine": 1/8,
-        "Diminutive": 1/4,
-        "Tiny": 1/2,
-        "Small": 3/4,
-        "Medium": 1,
-        "Large": 2,
-        "Huge": 4,
-        "Gargantuan": 8,
-        "Colossal": 16
-    };
+    "Fine": 1/8,
+    "Diminutive": 1/4,
+    "Tiny": 1/2,
+    "Small": 3/4,
+    "Medium": 1,
+    "Large": 2,
+    "Huge": 4,
+    "Gargantuan": 8,
+    "Colossal": 16
+};
 
 var enumSizeModifiers = {
-        "Fine": 8,
-        "Diminutive": 4,
-        "Tiny": 2,
-        "Small": 1,
-        "Medium": 0,
-        "Large": -1,
-        "Huge": -2,
-        "Gargantuan": -4,
-        "Colossal": -8
-    };
+    "Fine": 8,
+    "Diminutive": 4,
+    "Tiny": 2,
+    "Small": 1,
+    "Medium": 0,
+    "Large": -1,
+    "Huge": -2,
+    "Gargantuan": -4,
+    "Colossal": -8
+};
 
 var enumTokenSize = {
-      "Fine": { w: 1, h: 1, scale: 0.2 },
-      "Diminutive": { w: 1, h: 1, scale: 0.4 },
-      "Tiny": { w: 1, h: 1, scale: 0.6 },
-      "Small": { w: 1, h: 1, scale: 0.8 },
-      "Medium": { w: 1, h: 1, scale: 1 },
-      "Large": { w: 2, h: 2, scale: 1 },
-      "Huge": { w: 3, h: 3, scale: 1 },
-      "Gargantuan": { w: 4, h: 4, scale: 1 },
-      "Colossal": { w: 6, h: 6, scale: 1 },
+    "Fine": { w: 1, h: 1, scale: 0.2 },
+    "Diminutive": { w: 1, h: 1, scale: 0.4 },
+    "Tiny": { w: 1, h: 1, scale: 0.6 },
+    "Small": { w: 1, h: 1, scale: 0.8 },
+    "Medium": { w: 1, h: 1, scale: 1 },
+    "Large": { w: 2, h: 2, scale: 1 },
+    "Huge": { w: 3, h: 3, scale: 1 },
+    "Gargantuan": { w: 4, h: 4, scale: 1 },
+    "Colossal": { w: 6, h: 6, scale: 1 },
     };
 
 var enumSaves = [
-        "fort",
-        "ref",
-        "will"
-    ];
+    "fort",
+    "ref",
+    "will"
+];
 
 var enumSaveModifier = [
-        "con",
-        "dex",
-        "wis"
-    ];
+    "con",
+    "dex",
+    "wis"
+];
 
 var enumKnowledgeSubskills = [
     "arcana",
@@ -139,7 +140,13 @@ var enumKnowledgeSubskills = [
     "nobility",
     "planes",
     "religion"
-]
+];
+
+var enumAbilityTypes = {
+    "ex": "Extraordinary",
+    "su": "Supernatural",
+    "sp": "Special"
+}
 
 // Get HTML Elements
 var inputTextArea = document.getElementById("input");
@@ -1847,20 +1854,22 @@ function mapOffenseData () {
             dataOutput.data.attributes.speed.fly.maneuverability = formattedInput.speed.fly.maneuverability.toLowerCase();
         }
     }
-    
-    
+
     // Melee Attack Groups
-    // For Attacks that can be made in one Full Attack
-    // e.g. 2 Slams +10 (1d8+18), 2 Wings +5 (1d4+18) or Bite +10 (1d8+24 plus Grab)
-    // Where the attack groups are seperated by "or"
     if (formattedInput.meleeAttacks !== "") {
         let meleeAttackGroups = formattedInput.meleeAttacks.split(/\bor\b/g);
         setAttackItem(meleeAttackGroups, "mwak");
     }
     
+    // Ranged Attack Groups
     if (formattedInput.rangedAttacks !== "") {
         let rangedAttackGroups = formattedInput.rangedAttacks.split(/\bor\b/g);    
         setAttackItem(rangedAttackGroups, "rwak");
+    }
+    
+    // Special Attack Groups
+    if (formattedInput.specialAttacks !== "") {
+        setSpecialAttackItem(formattedInput.specialAttacks);
     }
        
 }
@@ -2226,6 +2235,347 @@ function setAttackItem (attackGroups, attackType) {
     
 }
 
+// Set Special Attack Item
+function setSpecialAttackItem (specialAttacks) {
+    
+    console.log("specialAttacks: " + specialAttacks);
+    // Separate into separate specialAttacks
+    
+    let specialAttacksWithoutParenthesis = "";
+    let specialAttacksWithParenthesisAndComma = "";
+    let specialAttacksWithParenthesis = "";
+    
+    
+    if (specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi) !== null) {
+        // Get specialAttacks with parenthesis, e.g.
+        specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi);
+        
+        // phrenic amplification (defensive prognosticationOA)"," phrenic pool (4 points)
+        console.log("specialAttacksWithParenthesis: " + specialAttacksWithParenthesis);
+        specialAttacksWithParenthesis.forEach( function (item, index) {
+            console.log("item: " + item);
+
+            let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+
+            newSpecialAbility.name = item.toString();
+
+            dataOutput.items.push(newSpecialAbility);
+            
+            // DO MORE STUFF WITH THEM LATER
+
+        })
+    };
+        
+    if (specialAttacks.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi) !== null) {
+        // Get specialAttacks with parenthesis and commas inside the parenthesis
+        specialAttacksWithParenthesisAndComma = specialAttacks.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi);
+        
+        // Create Special Abilities for special attacks with parenthesis and a list separated by comma in there
+        // deeds (derring-do, dodging panache, kip-up, menacing swordplay, opportune parry and riposte, precise strike +4, swashbuckler initiative)
+        console.log("specialAttacksWithParenthesisAndComma: " + specialAttacksWithParenthesisAndComma);
+
+        let specialAttacksWithParenthesisAndCommaKeys = Object.keys(specialAttacksWithParenthesisAndComma);
+
+        specialAttacksWithParenthesisAndCommaKeys.forEach( function (item, index) {
+
+
+
+            let ability = specialAttacksWithParenthesisAndComma[item];
+            let abilityName = ability.match(/([\s\S]*)(?:\([^)]+\))/)[1].replace(/^ | $/g, "");
+
+            console.log("ability: " + ability);
+
+            // EDGE CASES:
+            // REND: rend (2 claws, 2d8+16 plus 4d6 fire and 1d4 Cha damage), rend (2 pincers, 2d8+15)
+            // POUNCE: 
+
+            let enumSpecialAttacks = [
+                "rend",
+                "rake",
+                "trample",
+                "pounce",
+                "swallow whole",
+                "constrict"
+            ];
+
+            let regExEdgeCases = new RegExp(enumSpecialAttacks.join("\\b|\\b"), "ig");
+            console.log("regExEdgeCases: " + regExEdgeCases);
+
+            // As long as no edge case is detected, generate subAbilities
+            if (abilityName.search(regExEdgeCases) === -1) {
+
+                
+
+                console.log("No edgeCase detected, generating subAbilities");
+
+                let subAbilities = specialAttacksWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1].split(/,/);
+
+                subAbilities.forEach ( function (item, index) {
+                    let subAbility = item.replace(/^ | $/g, "");
+                    
+                    let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+                    console.log("abilityName: " + abilityName + " - subAbility: " + subAbility);
+
+                    // Fill the item with Data
+                    newSpecialAbility.name = abilityName + " (" + subAbility + ")";
+
+                    // Push the item
+                    dataOutput.items.push(newSpecialAbility);
+
+                });
+
+            } else {
+                console.log("edgeCase detected");
+
+                let newSpecialAbility = JSON.parse(JSON.stringify(templateMeleeAttackItem));
+
+                /*
+                    rend (2 claws, 2d8+16 plus 4d6 fire and 1d4 Cha damage)
+                    rake (4d6+12)
+                    trample (4d6+18, DC 31)
+                    rend 4d8+24
+                    pounce
+                    constrict (tail slap, 2d6+10 plus crushing coils)
+                */
+
+                // Search for an attackItem with the name used in the specialAttack
+                let subAbility = specialAttacksWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1];
+
+                console.log("subAbility: " + subAbility);
+
+
+                // Data to extract from specialAttack
+                let numberOfAttacks = 1;
+                let tempDamage = "";
+                let tempDamageType = "";
+                let numberOfDamageDice = 0;
+                let damageDie = 0;
+                let damageBonus = 0;
+                let weaponSpecial = "";
+                let tempSaveDC = 0;
+                let tempSaveType = "";
+                let tempSaveDescription = "";
+                let tempAttackNotes = "";
+                let tempEffectNotes = "";
+
+                // Data Extraction and conversion
+
+                // Get the number of specialAttacks
+                if (ability.match(/\(\d+ /) !== null) {
+                    numberOfAttacks = ability.match(/(?:\()(\d+)/)[1];
+                }
+
+                // Calculate Damage
+                // If Strength is "-" do special undead stuff, otherwise calculate damage as normal
+                if (formattedInput.str.total !== "-") {
+
+                    /* ------------------------------------ */
+                    /* Normal Damage Calculation			*/
+                    /* ------------------------------------ */
+
+                    // NumberOfDamageDice and DamageDie
+                    if (ability.match(/\d+d\d+/) !== null) {
+                        numberOfDamageDice = ability.match(/(\d+)d(\d+)/)[1];
+                        damageDie = ability.match(/(\d+)d(\d+)/)[2];
+                    }
+                    // damageBonus
+                    if (ability.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                        damageBonus = ability.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];
+                        let notesDamageBonus = ability.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
+                    }
+                    // critRange
+                    if (ability.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                        critRange = ability.match(/(?:\/)(\d+)(?:-\d+)/)[1];
+                    }
+                    // critMult
+                    if (ability.match(/(?:\/x)(\d+)/) !== null) {
+                        critMult = ability.match(/(?:\/x)(\d+)/)[1];
+                    }
+                    // attackEffects
+                    if (ability.match(/(?:plus )(.+)(?:\))/) !== null) {
+                        tempEffectNotes = ability.match(/(?:plus )(.+)(?:\))/)[1];
+                        tempEffectNotes = tempEffectNotes.replace(/(\s+\band\b\s+)/i, ", ");
+                    }
+                } else {
+
+                    /* ------------------------------------ */
+                    /* Damage Calculation for Str = "-"		*/
+                    /* ------------------------------------ */
+
+                    if (ability.match(/\d+d\d+/) !== null) {
+
+                        // If the attack has damage dice
+                        tempAttackNotes += " (";
+
+                        let damagePool = ability.match(/(\d+d\d+[^0-9)]*)/g);
+
+                        damagePool.forEach ( function ( damageComponent, index ) {
+
+                            let tempItem = damageComponent.split(/ plus /);
+
+                            tempItem.forEach ( function ( damageSubComponent, subIndex) {
+
+                                // If there are damageDice
+                                if (damageSubComponent.match(/(\d+d\d+)/) !== null) {
+                                    let specialDamage = damageSubComponent.match(/(\d+d\d+)/)[0];
+                                    tempEffectNotes += specialDamage + " ";
+
+                                    if (damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/) !== null) {
+                                        // If there are damageDice and a damageType
+                                        let specialDamageType = damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/)[1];
+                                        tempEffectNotes += specialDamageType;
+                                    }
+                                } else {
+                                    // If there is just a specialEffect
+                                    let specialEffect = damageSubComponent;
+                                    tempEffectNotes += specialEffect;
+                                }
+
+                                if (subIndex < tempItem.length-1) {
+                                    tempEffectNotes += "\n";
+                                }
+
+                            });
+
+                        });
+
+                    } else {
+                        // If there is just a specialEffect
+                        let specialEffect = ability;
+                        tempEffectNotes += specialEffect;
+                    }
+
+                    // Add special damage to effectNotes
+
+                }
+
+
+                // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
+                let tempAttackDamageTypeKeys = Object.keys(enumAttackDamageTypes);
+                if (ability !== "") {
+                    let damageTypeRegex = new RegExp("(^\\b" + ability.replace(/\bmwk\b /i,"") + "\\b$)", "ig");
+
+                    for (let i=0; i < tempAttackDamageTypeKeys.length; i++) {
+                        if (tempAttackDamageTypeKeys[i].search(damageTypeRegex) !== -1) {
+                            tempDamageType = enumAttackDamageTypes[tempAttackDamageTypeKeys[i]].type;
+                            weaponSpecial = enumAttackDamageTypes[tempAttackDamageTypeKeys[i]].special;
+
+                        }
+                    }
+                }
+
+                // If it's a normal attack, push Damage as normal
+                if (formattedInput.str.total !== "-") {
+                    for (let i = 0; i < numberOfAttacks; i++) {
+                        newSpecialAbility.data.damage.parts.push(
+                            [
+                                "sizeRoll(" + numberOfDamageDice + ", " + damageDie + ", 0, @critMult) " + damageBonus,
+                                tempDamageType
+                            ]
+                        )  
+                    }
+
+                }
+
+                // Set Data for specific edge cases
+                newSpecialAbility.name = abilityName.replace(/^ | $/g, "").toUpperCase();
+
+                // General
+                newSpecialAbility.hasDamage = true;
+                newSpecialAbility.hasEffect = true;
+                newSpecialAbility.hasAction = true;
+
+                // Data
+                newSpecialAbility.data.actionType = "other";
+                newSpecialAbility.data.ability.attack = "";
+                newSpecialAbility.data.ability.damage = "";
+
+                newSpecialAbility.data.save.dc = tempSaveDC;
+                newSpecialAbility.data.save.type = tempSaveType;
+                newSpecialAbility.data.save.description = tempSaveDescription;
+
+                newSpecialAbility.data.attackNotes = ability.replace(/^ | $/, "");
+                newSpecialAbility.data.effectNotes = makeValueRollable(tempEffectNotes);
+
+                newSpecialAbility.labels.damage = tempDamage;
+                newSpecialAbility.labels.damageTypes = tempDamageType;
+
+
+                // Push the item
+                dataOutput.items.push(newSpecialAbility);
+
+
+
+            }
+
+
+            //newSpecialAbility.name = item.toString();
+
+            //dataOutput.items.push(newSpecialAbility);
+
+        })
+    };
+    
+    if (specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi) !== null) {
+        // Get specialAttacks without parenthesis
+        specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").split(",");
+        
+        // Create Special Abilities for special attacks without anything in parenthesis
+        // Example: sneak attack +1d6
+        console.log("specialAttacksWithoutParenthesis: " + specialAttacksWithoutParenthesis);
+
+        specialAttacksWithoutParenthesis.forEach( function (item, index) {
+            console.log("item: " + item);
+
+            let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+
+            newSpecialAbility.name = item.toString();
+
+            dataOutput.items.push(newSpecialAbility);
+
+        })
+    };
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+}
+
 // Map Statistics to data.attributes
 function mapStatisticData () {
     
@@ -2554,7 +2904,7 @@ function getDiceAverage (diceSize) {
 
 function makeValueRollable(inputText) {
         
-    var output = inputText.replace(/(\d+d\d+)/, "[[$1]]");
+    var output = inputText.replace(/(\d+d\d+)/g, "[[$1]]");
     
     return output;
 }
