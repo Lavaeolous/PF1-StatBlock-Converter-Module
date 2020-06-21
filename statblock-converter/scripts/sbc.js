@@ -49,6 +49,7 @@ var dataInputHasRacialHD = true;
 var dataInputHasTactics = false;
 var dataInputHasSpecialAbilities = false;
 var dataInputHasEcology = false;
+var dataInputHasDescription = false;
 var dataOutput;
 var dataTemplate;
 var formattedInput;
@@ -292,7 +293,7 @@ async function convertStatBlock(input) {
     // Reset everything when opening the modal dialog
     await resetSBC();
     await initializeSBC();
-    
+        
     // Initial Clean-up of input
     dataInput = input.value.replace(/^\s*[\r\n]/gm,"")
     // Replace different dash-glyphs with the minus-glyph
@@ -316,6 +317,7 @@ async function convertStatBlock(input) {
     let stringSpecialAbilitiesData = "";
     let stringGearData = "";
     let stringEcologyData = "";
+    let stringDescriptionData = "";
     
     // Set some flags for (optional) data blocks found in the input
     // mandatory
@@ -326,6 +328,7 @@ async function convertStatBlock(input) {
     let foundTacticsData = false;
     let foundSpecialAbilitiesData = false;
     let foundEcologyData = false;
+    let foundDescriptionData = false;
     
     // Check if enough Data to start conversion is available
     if(dataInput.search(/(\n\bAC\b(?:[\s\S]*)\nhp)/gmi) !== -1) { foundDefenseData = true; }
@@ -333,12 +336,12 @@ async function convertStatBlock(input) {
     if(dataInput.search(/(\n\bSTR\b)/gmi) !== -1) { foundStatisticsData = true; }
     // Check for optional Datablocks marked by keywords for now
     if(dataInput.search(/\nTACTICS\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; }
-    if(dataInput.search(/\nSPECIAL ABILITIES\n/gmi) !== -1) { foundSpecialAbilitiesData = true; dataInputHasSpecialAbilities = true; }
+    if(dataInput.search(/\n\bSPECIAL ABILITIES\b\n/gmi) !== -1) { foundSpecialAbilitiesData = true; dataInputHasSpecialAbilities = true; }
     if(dataInput.search(/\nECOLOGY\n/gmi) !== -1) { foundEcologyData = true; dataInputHasEcology = true; }
     
     // 
     if( (foundDefenseData == false) || (foundOffenseData == false) || (foundStatisticsData == false) ) {
-        ui.notifications.info("Something went wrong! Please activate the Debug-Mode and check the console (F12)")
+        ui.notifications.info("Something went wrong! Please check the console (F12)")
         return;
     }
     
@@ -399,7 +402,7 @@ async function convertStatBlock(input) {
         let tempSplit = "";
         
         if(foundSpecialAbilitiesData == true) {
-            tempSplit = tempInputRest.split(/SPECIAL ABILITIES/gmi)
+            tempSplit = tempInputRest.split(/\bSPECIAL ABILITIES\b/gmi)
             splitInput = tempSplit[0];
             tempInputRest = tempSplit[1];
         } else if (foundEcologyData == true) {
@@ -414,18 +417,25 @@ async function convertStatBlock(input) {
         
     }
     
-    /*
-    if(dataInput.indexOf("SPECIAL ABILITIES") !== -1) {
-        splitInput = tempInputRest.split("SPECIAL ABILITIES");
+    if(foundSpecialAbilitiesData == true) {
+        console.log("special Abilities found");
+        splitInput = tempInputRest.split(/\bDESCRIPTION\b/i);
+        
         tempInputRest = splitInput[1];
-        stringStatisticsData = splitInput[0];
+        stringSpecialAbilitiesData = splitInput[0];
         splitInput = "";
     }
     
+    if(dataInput.search(/\bDescription\b/i) !== -1) {
+        foundDescriptionData = true;
+        stringDescriptionData = tempInputRest;
+    }
+    
+    /*
     if(dataInput.indexOf("GEAR") !== -1) {
         splitInput = tempInputRest.split("GEAR");
         tempInputRest = splitInput[1];
-        stringSpecialAbilitiesData = splitInput[0];
+        stringGearData = splitInput[0];
         splitInput = "";
     }
     
@@ -452,12 +462,22 @@ async function convertStatBlock(input) {
     await splitOffenseData(stringOffenseData);
     
     // Take Tactics Data and extract Stuff
-    if(foundTacticsData === true) {
+    if(foundTacticsData == true) {
         await splitTacticsData(stringTacticsData);
     }
     
     // Take Statistics Data and extract Attribute, BAB, CMB, CMD, Feats, Skills, Languages, SQs and Gear
     await splitStatisticsData(stringStatisticsData);
+    
+    // Take Special Abilities Data
+    if(foundSpecialAbilitiesData == true) {
+        await splitSpecialAbilitiesData(stringSpecialAbilitiesData);        
+    }
+    
+    // Take Description Data
+    if(foundDescriptionData == true) {
+        await splitDescriptionData(stringDescriptionData);
+    }
     
     
     // Map SchemaData to TemplateData
@@ -659,7 +679,7 @@ function splitGeneralData(stringGeneralData) {
     }
     
     // Initiative (positive and negative)
-    let splitInit = splitGeneralData.match(/(?:Init\s*)(\+\d+|-\d+)/)[1];
+    let splitInit = splitGeneralData.match(/(?:Init\s*)(\+\d+|-\d+|\d+)/)[1];
     
     // Senses
     let splitSenses = "";
@@ -931,16 +951,24 @@ function splitDefenseData(stringDefenseData) {
         }
     }
     
+    console.log("splitSaves : " + splitSaves);
+    
     //let splitSaves = splitDefenseData[2].split(/,/);    
     splitSaves.forEach( function (item, index) {
-        if (this[index].match(/(fort)/i)) {
-            let splitFort = item.match(/(\+[\d]*)|(-[\d]*)/g)[0];
+        console.log("item: " + item);
+        
+        item = item.replace(/,/g, "");
+        
+        if (this[index].search(/(fort)/i) !== -1) {
+            console.log("item: " + item);
+            let splitFort = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
+            console.log("splitFort: " + splitFort);
             formattedInput.fort_save.total = splitFort.replace(/\+/,"");
-        } else if (this[index].match(/(ref)/i)) {
-            let splitRef = item.match(/(\+[\d]*)|(-[\d]*)/g)[0];
+        } else if (this[index].search(/(ref)/i) !== -1) {
+            let splitRef = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.ref_save.total = splitRef.replace(/\+/,"");
-        } else if (this[index].match(/(will)/i)) {
-            let splitWill = item.match(/(\+[\d]*)|(-[\d]*)/g)[0];
+        } else if (this[index].search(/(will)/i) !== -1) {
+            let splitWill = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.will_save.total = splitWill.replace(/\+/,"");
         }
     }, splitSaves);
@@ -983,7 +1011,11 @@ function splitDefenseData(stringDefenseData) {
     if (searchableDefenseData.search(/\bSR\b/i) !== -1) {
         let splitSR = searchableDefenseData.match(/(?:\bSR\b )(.*?)(?:;)/i)[0].replace(/\bSR\b /i, "");
         splitSR = splitSR.replace(/;|,| |\n/g, "");
-        formattedInput.spell_resistance = splitSR;
+        console.log("splitSR: " + splitSR);
+        formattedInput.spell_resistance.total = splitSR.match(/(^\d+)/)[0];
+        if (splitSR.search(/\(([^)]+)\)/) !== -1) {
+            formattedInput.spell_resistance.context = splitSR.match(/\(([^)]+)\)/)[0];
+        }
     }
     
     // Defensive Abilities
@@ -1064,7 +1096,6 @@ function splitOffenseData(stringOffenseData) {
                 
         // splitMeleeAttacks = splitOffenseData.match(/(?:Melee )(.*)(?:(?:\n+)(?:(\b.+?\b)|(?:\+)|(?:\d))|$)/im)[1];
         splitMeleeAttacks = splitOffenseAttacks.match(/(?:Melee\s*)([\s\S]*?)(?:Ranged|Space|Special Attacks|$)/i)[1].replace(/\n/, " ");
-        console.log("splitMeleeAttacks: " + splitMeleeAttacks);
         // Replace ", or " with " or "
         splitMeleeAttacks = splitMeleeAttacks.replace(/, or /, " or ");
         
@@ -1072,7 +1103,6 @@ function splitOffenseData(stringOffenseData) {
     
     if (splitOffenseAttacks.search(/(?:Ranged )/im) !== -1) {
         splitRangedAttacks = splitOffenseAttacks.match(/(?:Ranged\s*)([\s\S]*?)(?:Melee|Space|Special Attacks|$)/i)[1].replace(/\n/, " ");
-        console.log("splitRangedAttacks: " + splitRangedAttacks);
         // Replace ", or " with " or "
         splitRangedAttacks = splitRangedAttacks.replace(/, or /, " or ");
     }
@@ -1154,11 +1184,22 @@ function splitStatisticsData(stringStatisticsData) {
     
     // Attack Modifier
     formattedInput.bab = stringStatisticsData.match(/(?:Base Atk[\s+-]*)([\d]*)/i)[1];
+    
+    // CMB & CMD
     if (stringStatisticsData.search(/\bcmb\b/im) !== -1) {
-        formattedInput.cmb = stringStatisticsData.match(/(?:Cmb[\s+-]*)([\d]*)/i)[1];
+        let tempCMB = stringStatisticsData.match(/(?:CMB[\s+-]*)(.*)/i)[1];
+        
+        formattedInput.cmb.total = tempCMB.match(/(^\d+)/)[0];
+        if (tempCMB.search(/\(([^)]+)\)/) !== -1) {
+            formattedInput.cmb.context = tempCMB.match(/\(([^)]+)\)/)[0];
+        }
     };
     if (stringStatisticsData.search(/\bcmd\b/im) !== -1) {
-        formattedInput.cmd = stringStatisticsData.match(/(?:CMD )(.*)/i)[1];
+        let tempCMD = stringStatisticsData.match(/(?:CMD )(.*)/i)[1];
+        formattedInput.cmd.total = tempCMD.match(/(^\d+)/)[0];
+        if (tempCMD.search(/\(([^)]+)\)/) !== -1) {
+            formattedInput.cmd.context = tempCMD.match(/\(([^)]+)\)/)[0];
+        }
     }
     
     // Feats (String from "Feats" to next linebreak)
@@ -1328,6 +1369,30 @@ function splitStatisticsData(stringStatisticsData) {
     if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing statistics data") };
 }
 
+// Split Special Abilities
+async function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
+    
+    console.log("stringSpecialAbilitiesData: " + stringSpecialAbilitiesData);
+    
+    // Prepare the string for splitting regardless of linebreaks
+    let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\n/g, " ");
+    tempSpecialAbilities = tempSpecialAbilities.replace(/(?:\.)(?:([\w\d\s’-]*\())(Ex|Su|Sp)/g, ".###$1$2");
+    console.log("tempSpecialAbilities: " + tempSpecialAbilities);
+    
+    let specialAbilities = tempSpecialAbilities.split(/###/g);
+    
+    formattedInput.special_abilities = specialAbilities;
+
+}
+
+// Split Description
+function splitDescriptionData(stringDescriptionData) {
+    
+    console.log("stringDescriptionData: " + stringDescriptionData);
+    formattedInput.description = stringDescriptionData;
+   
+}
+
 /* ------------------------------------ */
 /* MAP FROM NEUTRAL TO FOUNDRY TEMPLATE	*/
 /* ------------------------------------ */
@@ -1352,9 +1417,6 @@ async function mapInputToTemplateFoundryVTT() {
     // Create a Item for the Creature Type
     await setRacialHDItem(formattedInput);
     
-    // Create a custom Item for Conversion Stuff (e.g. Changes to AC, Saves)
-    await setConversionItem(formattedInput);
-    
     // Map defenseData
     await mapDefenseData(formattedInput);
     
@@ -1363,6 +1425,14 @@ async function mapInputToTemplateFoundryVTT() {
     
     // Map statisticData
     await mapStatisticData(formattedInput);
+    
+    // Map Special Abilities
+    if (dataInputHasSpecialAbilities == true) {
+        await mapSpecialAbilitiesData();
+    }
+    
+    // Create a custom Item for Conversion Stuff (e.g. Changes to AC, Saves)
+    await setConversionItem(formattedInput);
 
     // Map Notes
     await mapNotesData();
@@ -1430,9 +1500,44 @@ function mapGeneralData() {
     
     // Aura
     if (formattedInput.aura !== "") {
-        // CURRENTLY THERE IS NO SEPARATE FIELD IN THE SHEET FOR AURAS
+        // CURRENTLY THERE IS NO SEPARATE FIELD IN THE SHEET FOR AURAS, SO CREATE AN ITEM
+        setAuraItem();
     }
     
+}
+
+function setAuraItem () {
+    console.log("auraString: " + formattedInput.aura);
+    
+    let auraName = "";
+    let auraRange = 0;
+    let auraDC = "";
+    
+    // Name = Everything before the opening parenthesis
+    auraName = formattedInput.aura.match(/([\s\S]+)(?:\()/)[1].replace(/^ | $/g, "");
+    // Range = Numbers before ".ft"
+    auraRange = formattedInput.aura.match(/([^(,;]+)(?:ft.)/)[1].replace(/^ | $/g, "");
+    // DC = Number after "DC"
+    if (formattedInput.aura.search(/\bDC\b/) !== -1) {
+        auraDC = formattedInput.aura.match(/(?:DC\s*)([^)(,;]+)/)[1].replace(/^ | $/g, "");
+    }
+    
+    
+    
+    let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+        
+    newSpecialAbility.name = auraName;
+    newSpecialAbility.data.activation.type = "passive";
+    newSpecialAbility.data.duration.units = "perm";
+    newSpecialAbility.data.save.dc = auraDC;
+    newSpecialAbility.data.range.value = auraRange;
+    newSpecialAbility.data.range.units = "ft";
+    newSpecialAbility.data.measureTemplate.type = "circle";
+    newSpecialAbility.data.measureTemplate.size = auraRange;
+    
+    
+                    
+    dataOutput.items.push(newSpecialAbility);
 }
 
 // Map data.classes.class
@@ -1704,6 +1809,10 @@ function setConversionItem () {
         
         tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal - +attrModifier;
         
+        console.log("+formattedInput[tempSaveString].total: " + formattedInput[tempSaveString].total);
+        console.log("+formattedInput[tempSaveString].racial: " + formattedInput[tempSaveString].racial);
+        console.log("+classSaveTotal: " + classSaveTotal);
+        console.log("+attrModifier: " + attrModifier);
         
         saveChange.push(tempSaveChange.toString());
         saveChange.push("savingThrows");
@@ -1748,8 +1857,9 @@ function mapDefenseData () {
     dataOutput.data.attributes.savingThrows.will.total = +formattedInput.will_save.total;
     
     // SR
-    dataOutput.data.attributes.sr.total = +formattedInput.spell_resistance;
-    dataOutput.data.attributes.sr.formula = formattedInput.spell_resistance;
+    dataOutput.data.attributes.sr.total = +formattedInput.spell_resistance.total;
+    dataOutput.data.attributes.sr.formula = formattedInput.spell_resistance.total;
+    dataOutput.data.attributes.srNotes = formattedInput.spell_resistance.context
     // !!! SR Formula
     
     // DR
@@ -1874,9 +1984,20 @@ function mapOffenseData () {
        
 }
 
+// Map Special Ability Data
+function mapSpecialAbilitiesData () {
+    formattedInput.special_abilities.forEach (async function (specialAbility, index) {
+        
+        console.log("specialAbility: " + specialAbility);
+        
+        setSpecialAbilityItem(specialAbility);
+        
+    });
+}
+
 // Set Attack Items
-function setAttackItem (attackGroups, attackType) {
-    
+async function setAttackItem (attackGroups, attackType) {
+        
     let attackGroupKeys = Object.keys(attackGroups);
     
     for (var i = 0; i < attackGroupKeys.length; i++) {
@@ -2228,7 +2349,7 @@ function setAttackItem (attackGroups, attackType) {
                 tempAttackItem.data.ability.attack = "dex"
             }
             
-            dataOutput.items.push(tempAttackItem);
+            await dataOutput.items.push(tempAttackItem);
 
         } // End of Melee Attack
     } // End of Melee Attack Group
@@ -2236,7 +2357,7 @@ function setAttackItem (attackGroups, attackType) {
 }
 
 // Set Special Attack Item
-function setSpecialAttackItem (specialAttacks) {
+async function setSpecialAttackItem (specialAttacks) {
     
     console.log("specialAttacks: " + specialAttacks);
     // Separate into separate specialAttacks
@@ -2278,8 +2399,6 @@ function setSpecialAttackItem (specialAttacks) {
 
         specialAttacksWithParenthesisAndCommaKeys.forEach( function (item, index) {
 
-
-
             let ability = specialAttacksWithParenthesisAndComma[item];
             let abilityName = ability.match(/([\s\S]*)(?:\([^)]+\))/)[1].replace(/^ | $/g, "");
 
@@ -2303,8 +2422,6 @@ function setSpecialAttackItem (specialAttacks) {
 
             // As long as no edge case is detected, generate subAbilities
             if (abilityName.search(regExEdgeCases) === -1) {
-
-                
 
                 console.log("No edgeCase detected, generating subAbilities");
 
@@ -2504,14 +2621,7 @@ function setSpecialAttackItem (specialAttacks) {
                 // Push the item
                 dataOutput.items.push(newSpecialAbility);
 
-
-
             }
-
-
-            //newSpecialAbility.name = item.toString();
-
-            //dataOutput.items.push(newSpecialAbility);
 
         })
     };
@@ -2536,44 +2646,65 @@ function setSpecialAttackItem (specialAttacks) {
         })
     };
         
+ 
     
+}
+
+// Set Special Ability Item
+async function setSpecialAbilityItem (specialAbility) {
     
+    let existingItemFound = false;
     
+    let specialAbilityName = specialAbility.match(/([^\(]*)(?:\()/i)[1].replace(/^ | $/g, "");
     
+    let specialAbilityType = "";
     
+    if (specialAbility.search(/(?:[^\(]*\()(Su|Sp|Ex)(?:\))/i) !== -1) {
+        specialAbilityType = specialAbility.match(/(?:[^\(]*\()(Su|Sp|Ex)(?:\))/i)[1];
+    }
     
+    let specialAbilityDescription = specialAbility.match(/(?:\))([\s\S]*)/i)[1];
+        
+    console.log("specialAbilityName: " + specialAbilityName);
+    console.log("specialAbilityType: " + specialAbilityType);
+        
+        
+    // Check if there already is an item with the same name
+    let itemKeys = Object.keys(dataOutput.items);
     
+    itemKeys.forEach ( function (itemKey, index) {
+        
+        let searchString = new RegExp (specialAbilityName, "i");
+        
+        if (dataOutput.items[itemKey].name.search(searchString) !== -1) {
+            console.log("match found for " + dataOutput.items[itemKey].name);
+            
+            existingItemFound = true;
+            
+            dataOutput.items[itemKey].data.abilityType = specialAbilityType.toLowerCase();
+            dataOutput.items[itemKey].abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
+            dataOutput.items[itemKey].abilityTypeShort = specialAbilityType;
+            
+            dataOutput.items[itemKey].data.description.value = specialAbilityDescription;
+            
+        }
+        
+    });
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    if (existingItemFound == false) {
+        // Create a new Item for new special Abilities
+        let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+        
+        newSpecialAbility.name = specialAbilityName;
+        
+        newSpecialAbility.data.abilityType = specialAbilityType.toLowerCase();
+        newSpecialAbility.abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
+        newSpecialAbility.abilityTypeShort = specialAbilityType;
+            
+        newSpecialAbility.data.description.value = specialAbilityDescription;
+        
+        dataOutput.items.push(newSpecialAbility);
+    }
 }
 
 // Map Statistics to data.attributes
@@ -2618,9 +2749,15 @@ function mapStatisticData () {
     dataOutput.data.attributes.encumbrance.levels.drag = Math.floor(5 * carryCapacity);
     
     // BAB, CMB, CMD
+    console.log("formattedInput.cmd.total: " + formattedInput.cmd.total);
+    dataOutput.data.attributes.bab.value = "+" + +formattedInput.bab;
     dataOutput.data.attributes.bab.total = "+" + +formattedInput.bab;
-    dataOutput.data.attributes.cmb.total = "+" + +formattedInput.cmb;
-    dataOutput.data.attributes.cmd.total = formattedInput.cmd;
+    dataOutput.data.attributes.cmb.value = "+" + +formattedInput.cmb.total;
+    dataOutput.data.attributes.cmb.total = "+" + +formattedInput.cmb.total;
+    dataOutput.data.attributes.cmbNotes = formattedInput.cmb.context;
+    dataOutput.data.attributes.cmd.value = formattedInput.cmd.total;
+    dataOutput.data.attributes.cmd.total = formattedInput.cmd.total;
+    dataOutput.data.attributes.cmdNotes = formattedInput.cmd.context;
     
     // Feats
     formattedInput.feats.forEach ( function (item, index) {
@@ -2809,6 +2946,14 @@ function mapStatisticData () {
 function mapNotesData() {
     let tempNotes = "";
     
+    // H2 - DESCRIPTION
+    if (formattedInput.description !== "") {
+        let tempDescriptionSection = "<section id='tactics'><h2>DESCRIPTION</h2>";
+        tempDescriptionSection += "<p>" + formattedInput.description + "</p>";
+        tempDescriptionSection += "</section>";
+        tempNotes += tempDescriptionSection;
+    }
+    
     // H2 - TACTICS
     if (dataInputHasTactics === true) {
         let tempTacticsSection = "<section id='tactics'><h2>TACTICS</h2>";
@@ -2835,7 +2980,8 @@ function mapNotesData() {
     }
     
     // H2 - SPECIAL QUALITIES
-    if (formattedInput.special_qualities !== "") {
+    console.log("SQ: " + formattedInput.special_qualities);
+    if (formattedInput.special_qualities[0] !== null && formattedInput.special_qualities[0] !== undefined && formattedInput.special_qualities[0] !== "") {
         let tempSpecialQualities = "<section id='defensiveAbilities'><h2>SPECIAL QUALITIES</h2>";
         tempSpecialQualities += "<p>";
         formattedInput.special_qualities.forEach ( function (item) {

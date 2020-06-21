@@ -36,6 +36,14 @@ export default {
     "flat_footed" : 0,
     "ac_race_bonus": 0,
     "ac_bonus_types" : {},
+    "cmd": {
+        "total": 0,
+        "context": ""
+    },
+    "cmb": {
+        "total": 0,
+        "context": ""
+    },
     "fort_save": {
         "total": 0,
         "racial": 0,
@@ -55,7 +63,10 @@ export default {
     "immunities": "",
     "resistances": "",
     "weaknesses": "",
-    "spell_resistance": 0,
+    "spell_resistance": {
+        "total": 0,
+        "context": ""
+    },
     "damage_reduction": {
         "dr_value" : 0,
         "dr_type" : ""
