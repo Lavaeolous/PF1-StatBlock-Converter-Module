@@ -103,6 +103,7 @@ export default {
     "reach": 0,
     "offensive_abilities": "",
     "spell_like_abilities": "",
+    "spellcasting": {},
     "special_qualities": [],
     "str": {
         "total": 0,
