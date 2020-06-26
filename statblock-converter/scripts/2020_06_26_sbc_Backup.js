@@ -778,7 +778,7 @@ function splitGeneralData(stringGeneralData) {
             }
           
             formattedInput.gender = foundGender;
-            formattedInput.race = capitalize(foundRace);
+            formattedInput.race = foundRace;
         }        
         
     }
@@ -1169,6 +1169,7 @@ function splitOffenseData(stringOffenseData) {
             let speedType = item.match(/\b\w*\b/);
             let speedSpeed = item.match(/\d+/);
             
+            console.log("speedSpeed: " + speedSpeed);
                         
             if (speedSpeed !== "" && speedSpeed !== null) {
                 // If its a movementType with speed (e.g. land, fly, climb or burrow)
@@ -1204,7 +1205,11 @@ function splitOffenseData(stringOffenseData) {
     
     // FIRST, SPLIT SPELL STUFF FROM ATTACKS
     let splitOffenseAttacks = "";
-    let splitOffenseSpells = [];    
+    let splitOffenseSpells = [];
+    
+    
+    console.log("splitOffenseData: " + splitOffenseData);
+    
     
     if (splitOffenseData.search(/\bSpell/i) !== -1) {
         splitOffenseAttacks = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gim)[0];
@@ -1255,6 +1260,7 @@ function splitOffenseData(stringOffenseData) {
     
     if (splitOffenseSpells[0] !== undefined) {
         // 
+        console.log("do stuff");
         
         let spellBookCounter = 0;
         
@@ -1480,11 +1486,17 @@ function splitStatisticsData(stringStatisticsData) {
     // CMB & CMD
     if (stringStatisticsData.search(/\bcmb\b/im) !== -1) {
         
+        console.log("stringStatisticsData: " + stringStatisticsData);
+        
         let tempCMB = stringStatisticsData.match(/(?:CMB[\s]*)(.*)/i)[1];
-                
+        
+        console.log("tempCMB: " + tempCMB);
+        
         // Replace - with 0 for creatures without CMB
         tempCMB = tempCMB.replace(/(^-)([^\d])/, "0;");
-                        
+        
+        console.log("tempCMB: " + tempCMB);
+                
         formattedInput.cmb.total = tempCMB.match(/(?:^[+-])(\d+)/)[1];
         
         if (tempCMB.search(/\(([^)]+)\)/) !== -1) {
@@ -1535,7 +1547,9 @@ function splitStatisticsData(stringStatisticsData) {
             // For Example Knowledge (planes, engineering) +13, Knowledge (all) +3, or Knowledge (any two) +3
             if (splitSkills.search(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+)/g) !== -1) {
                 let tempSkillMultiples = splitSkills.match(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+)/g);
-                                
+                
+                console.log("tempSkillMultiples: "+ tempSkillMultiples);
+                
                 splitSkills = splitSkills.replace(/(\b\w*\b \([a-zA-Z0-9,; ]+\) [+-]\d+),/g, "");
                 tempSkillMultiples.forEach ( function (item, index) {
                     let tempSkillName = item.match(/(\b[a-zA-Z]+\b)(?: \(.*\))/)[1];
@@ -1547,15 +1561,26 @@ function splitStatisticsData(stringStatisticsData) {
                     })
                     
                 });
-            } 
+            //} else if (splitSkills.search(/(\b\w*\b [+-]\d+ \(([,+-]\d+[a-zA-Z0-9,;+\- ]+)+)+\)/) !== -1) {
+            } else {
+                if(DEBUG==true) { console.log("sbc-pf1 | ADD SUPPORT FOR context Modifier") };
+                
+                
+                console.log("context Modifier for: " + splitSkills);
+                // !!!! ADD SUPPORT FOR CONTEXT MODIFIER HERE
+            }
             
         }
                 
+        console.log("splitSkills: " + splitSkills);
         
         // Save Skills with parenthesis separately
-        let splitSkillsWithParenthesis = splitSkills.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);        
+        let splitSkillsWithParenthesis = splitSkills.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);
+        console.log("splitSkillsWithParenthesis: " + splitSkillsWithParenthesis);
+        
         
         let splitSkillsWithoutParenthesis = splitSkills.replace(/(,*[^,)]*\([^)]+\)[\s+-\d,]*)/g, "");
+        console.log("skillsWithoutParenthesis: " + splitSkillsWithoutParenthesis);
         
         let skillsArray = splitSkillsWithoutParenthesis.split(/,/g);
         
@@ -1563,11 +1588,20 @@ function splitStatisticsData(stringStatisticsData) {
             skillsArray.push(skill);
         })
         
+        console.log("skillsArray: " + skillsArray);
+        
+        
+    
+        
         skillsArray.forEach (function (item, index) {
-                        
+            
+            console.log("item: " + item);
+            
             let skillItem = item.replace(/^ | $/g, "");
             let skillContext = "";
-                                    
+            
+            console.log("skillItem: " + skillItem);
+                        
             let skillTotal = skillItem.match(/(-\d+|\d+)/)[0];
             let skillName = skillItem.replace(/(^\s*|\s*-[\d].*|\s*\+.*)/g, "");
 
@@ -1593,7 +1627,7 @@ function splitStatisticsData(stringStatisticsData) {
                         formattedInput.skills.knowledge.nobility.total = +skillTotal;
                         formattedInput.skills.knowledge.planes.total = +skillTotal;
                         formattedInput.skills.knowledge.religion.total = +skillTotal;
-                    } else if (skillSubtype.match(/\bany\b\s.*/i) !== null) {
+                    } else if (skillSubtype.match(/\bany\b\s.*/i) !== null){
                         
                         // Find the number of knowledge subskills
                         let stringOfKnowledgeSubskills = skillSubtype.match(/(?:\bany\b )(.*)/i)[1];
@@ -1631,15 +1665,6 @@ function splitStatisticsData(stringStatisticsData) {
                         }
                         
                         
-                    } else if (skillSubtype.search(/\band\b/i) !== -1) {
-                        // If there are multiple knowledge skills separated with "and"
-                        let splitSkillSubtypes = skillSubtype.split(/\band\b/ig);
-                        
-                        splitSkillSubtypes.forEach ( function (item) {
-                            let tempSkillSubtype = item.replace(/^ | $/g, "");
-                            formattedInput.skills[tempSkillName.toLowerCase()][tempSkillSubtype.toLowerCase()].total = +skillTotal;
-                        });
-                        
                     } else {
                         // No special notation, just a normal knowledge subkey
                         formattedInput.skills[tempSkillName.toLowerCase()][skillSubtype.toLowerCase()].total = +skillTotal;
@@ -1650,6 +1675,7 @@ function splitStatisticsData(stringStatisticsData) {
                 }
                 
             } else if (skillName.search(/\bcraft\b|\bperform\b|\bprofession\b|\bknowledge\b/i) === -1 && skillItem.search(/\(([^)]+)\)/) !== -1) {
+                console.log("skill with context modifier: " + skillItem);
                 
                 skillContext = skillItem.match(/\(([^)]+)\)/)[0];
                 
@@ -1657,7 +1683,9 @@ function splitStatisticsData(stringStatisticsData) {
                 formattedInput.skills[skillName.toLowerCase()].context = skillContext;
                        
             } else {
-                // Skill without subskills                
+                // Skill without subskills
+                console.log("skill without modifier: " + skillItem);
+                
                 if (skillItem.search(/\(([^)]+)\)/) !== -1) {
                     skillContext = skillItem.match(/\(([^)]+)\)/)[0];
                 }
@@ -1954,50 +1982,45 @@ function setClassItem (classInput) {
 }
 
 // Create Race Item
-async function setRaceItem (raceInput) {
+function setRaceItem (raceInput) {
     
     let itemEntry;
-    let raceChanges;
     
     // If it's a playable race
     if (dataInputHasNonPlayableRace == true) {
         // DEEP COPY
         itemEntry = JSON.parse(JSON.stringify(templateRaceItem["default"]));
         itemEntry.name = raceInput;
-        raceChanges = itemEntry.data.changes;
     } else if (dataInputHasPlayableRace == true) {
         // DEEP COPY
-        //itemEntry = JSON.parse(JSON.stringify(templateRaceItem[raceInput.toLowerCase()]));
-        itemEntry = await getItemFromCompendium("pf1.races", raceInput);
-        raceChanges = itemEntry.data.data.changes;
-        
+        itemEntry = JSON.parse(JSON.stringify(templateRaceItem[raceInput.toLowerCase()]));
     } else {
         if(DEBUG==true) { console.log("sbc-pf1 | Something went wrong parsing the race") };
     }
     
-        
-    
+    let raceChanges = itemEntry.data.changes;
     
     raceChanges.forEach ( function (item, index) {
+        
         // Set Changes for Abilities
-        if (item.target == "ability") {
-            formattedInput[item.subTarget].race = item.formula;
-        } else if (item.target == "skill") {
+        if (item[1] == "ability") {
+            formattedInput[item[2]].race = item[0];
+        } else if (item[1] == "skill") {
             // Else check if its a change to skills
-            let skillShort = item.subTarget.replace(/skill./,"");
+            let skillShort = item[2].replace(/skill./,"");
             
             for (var key in enumSkills) {
                 if (enumSkills[key] === skillShort) {
                     if (key === "knowledge") {
-                        formattedInput.skills.knowledge[key].race = item.formula;
+                        formattedInput.skills.knowledge[key].race = item[0];
                     } else {
-                        formattedInput.skills[key].race = item.formula;
+                        formattedInput.skills[key].race = item[0];
                     }
                 }
             }  
-        } else if (item.target == "ac") {
+        } else if (item[1] == "ac") {
             // Else if change to ac (e.g. Adaro)
-            formattedInput.ac_race_bonus = item.formula;
+            formattedInput.ac_race_bonus = item[0];
         }
         
         
@@ -2075,14 +2098,12 @@ function setConversionItem () {
 
         let tempHPDifference = +formattedInput.hp.total - +calculatedHPTotal;
         
-        let hpChange = {
-            "formula": tempHPDifference.toString(),
-            "operator": "+",
-            "target": "misc",
-            "subTarget": "mhp",
-            "modifier": "untyped",
-            "priority": 1
-        };
+        let hpChange = [
+            tempHPDifference.toString(),
+            "misc",
+            "mhp",
+            "untyped"
+        ];
                 
         itemEntry.data.changes.push(hpChange);
     }
@@ -2092,14 +2113,11 @@ function setConversionItem () {
     if (calculatedInitTotal !== formattedInput.initiative) {
         let tempInitDifference = +formattedInput.initiative - +calculatedInitTotal;
         
-        let initChange = {
-            "formula": tempInitDifference.toString(),
-            "operator": "+",
-            "target": "misc",
-            "subTarget": "init",
-            "modifier": "untyped",
-            "priority": 1
-        };
+        let initChange = [];
+        initChange.push(tempInitDifference.toString());
+        initChange.push("misc");
+        initChange.push("init");
+        initChange.push("untyped");
         
         itemEntry.data.changes.push(initChange);
         
@@ -2110,30 +2128,23 @@ function setConversionItem () {
         // Exclude dex, size and natural, as these are included elsewhere in the sheet
         if ( (key.toLowerCase() !== "dex") && (key.toLowerCase() !== "size") && (key.toLowerCase() !== "natural") ) {
             
-            let acChange = {
-                "formula": "",
-                "operator": "+",
-                "target": "",
-                "subTarget": "",
-                "modifier": "",
-                "priority": 1
-            };
+            let acChange = [];
             
             // Special Treatment for Armor and Shield Boni
             if ( ( key.toLowerCase() == "armor" ) || ( key.toLowerCase() == "shield" ) ) {
-                acChange.formula = formattedInput.ac_bonus_types[key].toString();
-                acChange.target = "ac";
+                acChange.push(formattedInput.ac_bonus_types[key].toString());
+                acChange.push("ac");
                 if ( key == "armor") {
-                    acChange.subTarget = "aac";
+                    acChange.push("aac");
                 } else {
-                    acChange.subTarget = "sac";
+                    acChange.push("sac");
                 }
-                acChange.modifier = "untyped";
+                acChange.push("untyped");
             } else {
-                acChange.formula = formattedInput.ac_bonus_types[key].toString();
-                acChange.target = "ac";
-                acChange.subTarget = "ac";
-                acChange.modifier = key;
+                acChange.push(formattedInput.ac_bonus_types[key].toString());
+                acChange.push("ac");
+                acChange.push("ac");
+                acChange.push(key);
             }
 
             itemEntry.data.changes.push(acChange);  
@@ -2145,15 +2156,7 @@ function setConversionItem () {
     // "low"-progression: floor(@level / 3)
     // "high"-progression: 2 + floor(@level / 2)
     enumSaves.forEach( function (item, index) {
-        let saveChange = {
-            "formula": "",
-            "operator": "+",
-            "target": "",
-            "subTarget": "",
-            "modifier": "",
-            "priority": 1
-        };
-        
+        let saveChange = [];
         let tempSaveString = item + "_save";
         
         // Calculate the total to saves from classes
@@ -2176,10 +2179,10 @@ function setConversionItem () {
         
         tempSaveChange = +formattedInput[tempSaveString].total - +formattedInput[tempSaveString].racial - +classSaveTotal - +attrModifier;
         
-        saveChange.formula = tempSaveChange.toString();
-        saveChange.target = "savingThrows";
-        saveChange.subTarget = item;
-        saveChange.modifier = "untyped";
+        saveChange.push(tempSaveChange.toString());
+        saveChange.push("savingThrows");
+        saveChange.push(item);
+        saveChange.push("untyped");
 
         itemEntry.data.changes.push(saveChange);  
     });
@@ -2347,10 +2350,14 @@ async function mapOffenseData () {
 async function mapSpecialQualitiesData () {
 
     let tempSQ = formattedInput.special_qualities;
+    // IMPLEMENT SQ HERE!!!
+    console.log("tempSQ: " + tempSQ);
     
     tempSQ.forEach ( async function (item) {
         let sq = item.replace(/^ | $/g, "");
-                
+        
+        console.log("sq: " + sq);
+        
         let featType = "misc";
             
         // CHECK, IF ITS A CLASS FEATURE
@@ -2783,7 +2790,9 @@ async function setSpecialAttackItem (specialAttacks) {
             if (item.search(classFeatureRegEx) !== -1) {
                 featType = "class";
             }
-                        
+            
+            console.log("specialAttack: " + item);
+            
             await setSpecialAbilityItem(item, featType);
             
             // DO MORE STUFF WITH THEM LATER
@@ -2816,7 +2825,11 @@ async function setSpecialAttackItem (specialAttacks) {
 
                 subAbilities.forEach ( function (item, index) {
                     let subAbility = item.replace(/^ | $/g, "");
-                                                        
+                    
+                    //let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+                    
+                    console.log("subAbility: " + subAbility);
+                    
                     // Fill the item with Data
                     let tempAbility = abilityName + " (" + subAbility + ")";
                     
@@ -2830,6 +2843,10 @@ async function setSpecialAttackItem (specialAttacks) {
                     }
 
                     // Push the item
+                    //dataOutput.items.push(newSpecialAbility);
+                    
+                    console.log("tempAbility: " + tempAbility);
+                    
                     setSpecialAbilityItem(tempAbility, featType);
 
                 });
@@ -3137,7 +3154,9 @@ async function mapSpellbooks () {
 
 // Set Special Ability Item
 function setSpecialAbilityItem (specialAbility, featType) {
-        
+    
+    console.log("setting specialAbility: " + specialAbility);
+    
     let existingItemFound = false;
     
     let specialAbilityName = "";
@@ -3192,10 +3211,7 @@ function setSpecialAbilityItem (specialAbility, featType) {
     
     itemKeys.forEach ( function (itemKey, index) {
         
-        
-        // !!! THIS DOES NOT FIND EXISTING ITEMS CURRENTLY !!!
-        
-        let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
+        let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix, "i");
         
         if (dataOutput.items[itemKey].name.search(searchString) !== -1) {
             
@@ -3297,6 +3313,7 @@ function mapStatisticData () {
         
         let skillKey = skillKeys[i];
         
+        
         /*
             Climb (speedModifier): +8 when creature has a climb speed
             Fly (sizeModifier): Fine +8, Diminutive +6, Tiny +4, Small +2, Large –2, Huge –4, Gargantuan –6, Colossal –8.
@@ -3311,7 +3328,9 @@ function mapStatisticData () {
             Stealth (sizeModifier): Fine +16, Diminutive +12, Tiny +8, Small +4, Medium +0, Large -4, Huge -8, Gargantuan -12, Colossal -16
             Swim (speedModifier): +8 when creature has a swim speed
         */
-                        
+                
+        console.log("skillKey: " + skillKey);
+        
         let speedModifier = 0;
         let sizeModifier = 0;
         let racialModifier = 0;
@@ -3328,6 +3347,8 @@ function mapStatisticData () {
                 
             case "fly":
                 if (formattedInput.speed.fly.total !== 0) {
+                    console.log("seetting speedModifier fly");
+                    console.log("formattedInput.speed.fly.maneuverability.toLowerCase(): " + formattedInput.speed.fly.maneuverability.toLowerCase());
                     switch(formattedInput.speed.fly.maneuverability.toLowerCase()) {
                         case "clumsy":
                             speedModifier = -8;
@@ -3346,6 +3367,7 @@ function mapStatisticData () {
                             break;
                     }
                 };
+                console.log("speedModifier Fly: " + speedModifier);
                 switch (formattedInput.size.toLowerCase()) {
                     case "fine":
                         sizeModifier = 8;
@@ -3626,6 +3648,11 @@ function mapStatisticData () {
             // Calculate the Rank (e.g. Total - Attribute-Modifier, maybe - ClassSkillBonus?)
             if (formattedInput.skills[skillKey].total !== 0) {
                 
+                
+                console.log("sizeModifier: " + sizeModifier);
+                console.log("speedModifier: " + speedModifier);
+                
+                
                 dataOutput.data.skills[tempAttrShort].rank =
                       +formattedInput.skills[skillKey].total
                     - +formattedInput.skills[skillKey].race
@@ -3634,7 +3661,11 @@ function mapStatisticData () {
                     - +speedModifier
                     - +sizeModifier
                     - +racialModifier;
-
+                
+                
+                
+                
+                
                 dataOutput.data.skills[tempAttrShort].mod = formattedInput.skills[skillKey].total - +formattedInput.skills[skillKey].race;
                 dataOutput.data.skills[tempAttrShort].notes = formattedInput.skills[skillKey].context;
             }
@@ -3746,6 +3777,7 @@ async function createNewActor () {
     //await mapSpellbooks(newActor.id);
     
     if (formattedInput.spellcasting.test == "Absolution") {
+        console.log("teset");
         //await setSpellItem(formattedInput.spellcasting.test, newActor.id);
     }
     
@@ -3788,15 +3820,6 @@ function makeValueRollable(inputText) {
     
     return output;
 }
-
-const capitalize = (s) => {
-  if (typeof s !== 'string') return ''
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
-/* ------------------------------------ */
-/* FOUNDRY COMPENDIUM FUNCTIONS    					*/
-/* ------------------------------------ */
 
 async function createSpellFromCompendium(spellName, actor_id) {
     console.log("searching for " + spellName + " in compendium");
@@ -3843,25 +3866,4 @@ async function createSpellFromCompendium(spellName, actor_id) {
     });
 }
 
-async function getItemFromCompendium(packInput, item) {
-    const pack = game.packs.get(packInput);
-
-    // We can load the index of the pack which contains all entity IDs, names, and image icons
-    let packIndex = await pack.getIndex().then(index => {
-        //console.log(index);
-        index = index.name;
-    });
-
-    // We can find a specific entry in the compendium by its name
-    let entry = await pack.index.find(e => e.name === item);
-            
-    // Given the entity ID we can load the full Entity from the compendium
-    let output = await pack.getEntity(entry._id).then(entity => {
-        console.log(entity);
-        return entity;
-    });
-    
-    return output;
-    
-}
 

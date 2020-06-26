@@ -133,136 +133,168 @@ export default {
     "skills": {
         "acrobatics" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "appraise" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "bluff" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "climb" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "craft" : {},
         "diplomacy" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "disable device" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "disguise" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "escape artist" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "fly" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "handle animal" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "heal" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "intimidate" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "knowledge" : {
             "arcana" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "dungeoneering" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "engineering" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "geography" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "history" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "local" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "nature" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "nobility" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "planes" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             },
             "religion" : {
                 "total": 0,
-                "race": 0
+                "race": 0,
+                "context": ""
             }
         },
         "linguistics" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "perception" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "perform" : {},
         "profession" : {},
         "ride" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "sense motive" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "sleight of hand" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "spellcraft" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "stealth" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "survival" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "swim" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         },
         "use magic device" : {
             "total": 0,
-            "race": 0
+            "race": 0,
+            "context": ""
         }
     },
     "tactics": {
