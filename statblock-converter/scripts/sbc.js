@@ -742,7 +742,8 @@ function splitGeneralData(stringGeneralData) {
         });
         
         // Get Gender and Race if available
-        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")", "ig");
+        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:\\s+\\d+)", "ig");
+        console.log("regExGenderAndRace: " + regExGenderAndRace);
 
         // Search if there is info before the class to evaluate
         if (splitGeneralData.split(regExGenderAndRace)[1]) {
@@ -1553,15 +1554,19 @@ function splitStatisticsData(stringStatisticsData) {
                 
         
         // Save Skills with parenthesis separately
-        let splitSkillsWithParenthesis = splitSkills.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);        
+              
         
         let splitSkillsWithoutParenthesis = splitSkills.replace(/(,*[^,)]*\([^)]+\)[\s+-\d,]*)/g, "");
         
         let skillsArray = splitSkillsWithoutParenthesis.split(/,/g);
         
-        splitSkillsWithParenthesis.forEach ( function (skill) {
-            skillsArray.push(skill);
-        })
+        if (splitSkills.search (/([^,)]*\([^)]+\)[\s+-\d]*)/g) !== -1) {
+            let splitSkillsWithParenthesis = splitSkills.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);  
+
+            splitSkillsWithParenthesis.forEach ( function (skill) {
+                skillsArray.push(skill);
+            })
+        }
         
         skillsArray.forEach (function (item, index) {
                         
