@@ -165,6 +165,7 @@ var enumClassFeatures = [
     "sneak attack",
     "trapfinding",
     "evasion",
+    "rogue talents",
     "rogue talent",
     "trap sense",
     "favored enemy",
@@ -467,7 +468,7 @@ async function convertStatBlock(input) {
     
     // Check if enough Data to start conversion is available
     if(dataInput.search(/(\n\bAC\b(?:[\s\S]*)\nhp)/gmi) !== -1) { foundDefenseData = true; }
-    if(dataInput.search(/(\n\bSpeed\b)/mi) !== -1) { foundOffenseData = true; }
+    if(dataInput.search(/(^\bSpeed\b)|(^\bSpd\b)/mi) !== -1) { foundOffenseData = true; }
     if(dataInput.search(/(\n\bSTR\b)/gmi) !== -1) { foundStatisticsData = true; }
     // Check for optional Datablocks marked by keywords for now
     if(dataInput.search(/\nTACTICS\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; }
@@ -477,6 +478,10 @@ async function convertStatBlock(input) {
     // 
     if( (foundDefenseData == false) || (foundOffenseData == false) || (foundStatisticsData == false) ) {
         ui.notifications.info("Something went wrong! Please check the console (F12)")
+        console.log("Defense Data found: " + foundDefenseData);
+        console.log("Offense Data found: " + foundOffenseData);
+        console.log("Statistics Data found: " + foundStatisticsData);
+        console.log("Check the Input for any datablock that returns false, e.g. if offense data returns false, the error will probably be somewhere between the land speed and any special attacks the input has.");
         return;
     }
     
@@ -489,8 +494,8 @@ async function convertStatBlock(input) {
     splitInput = "";
             
     // Split stringDefenseData, everything between AC and Speed
-    splitInput = tempInputRest.split(/(?=(^Speed))/mi);
-    tempInputRest = splitInput[2];
+    splitInput = tempInputRest.split(/(?=(^Spd|^Speed))/mi);
+    tempInputRest = splitInput[2].replace(/(\bSpd\b)/i,"Speed");
     stringDefenseData = splitInput[0].replace(/(OFFENSE)/,"");
     splitInput = "";
                 
@@ -583,7 +588,7 @@ async function convertStatBlock(input) {
     // Take Offense Data and extract 
     console.log("STARTED SPLITTING OFFENSEDATA");
     await splitOffenseData(stringOffenseData);
-    console.log("FINISHED SPLITTING OFFENSDATA");
+    console.log("FINISHED SPLITTING OFFENSEDATA");
     
     // Take Tactics Data and extract Stuff
     if(foundTacticsData == true) {
@@ -653,9 +658,13 @@ function splitGeneralData(stringGeneralData) {
     
     // XP
     let splitXP =0;
-    if (splitGeneralData.search(/(\bXP\b)/) !== -1) {
-        splitXP = splitGeneralData.match(/(?:XP )([\d,.]+)/)[0].replace(/([\D]|[,?]|[\.?])/g,"");
+    console.log("splitGeneralData: " + splitGeneralData);
+    if (splitGeneralData.search(/(\s*XP\s*)/im) !== -1) {
+        console.log("XP found");
+        splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
     }
+    
+    console.log("splitXP: " + splitXP);
     
     //Alignment
     let splitAlignment = "";
@@ -820,7 +829,7 @@ function splitGeneralData(stringGeneralData) {
     let splitAura = "";
     if (splitGeneralData.search(/Aura\b/igm) !== -1) {
         splitAura = splitGeneralData.match(/(?:Aura\s*)(.*?)(?:;|\n|$)/igm)[0].replace(/Aura\s*/,"");
-
+        console.log("splitAura: " + splitAura);
     }
         
     // Save the found entries into formattedInput
@@ -908,7 +917,8 @@ function splitDefenseData(stringDefenseData) {
     // Extract Number and Size of Hit Dies as well as HP
     // Hit dice
         
-    let splitHPTotal = splitDefenseData[1].split(/(?:hp )([\d]*)/)[1];
+    let splitHPTotal = splitDefenseData[1].split(/(?:hp\s*)([\d]*)/)[1];
+    console.log("splitHPTotal: " + splitHPTotal);
     formattedInput.hp.total = splitHPTotal;
     
     
@@ -975,6 +985,13 @@ function splitDefenseData(stringDefenseData) {
             for (let j = 0; j < classKeys.length; j++) {
                 
                 let classLevel = formattedInput.classes[classKeys[j]].level;
+                
+                
+                
+                // THIS IS NOT WORKING WHEN BOTH DICE POOLS HAVE THE SAME NUMBER OF DICE, e.g. 1d6 + 1d8
+                
+                
+                
                 
                 if (tempNumberOfHD == classLevel) {        
                     // Set HP, HD.Racial and HD.Total
@@ -1344,10 +1361,16 @@ function splitOffenseData(stringOffenseData) {
                 }
                 
                 // Set the spellGroupDC
-                spellGroupCL = spellcastingGroup.match(/(?:CL\s+)(\d+)/i)[1];
+                if (spellcastingGroup.search(/(?:CL\s+)(\d+)/i) !== -1) {
+                    spellGroupCL = spellcastingGroup.match(/(?:CL\s+)(\d+)/i)[1];
+                }
+                
 
                 // Set the spellGroupConcentration
-                spellGroupConcentration = spellcastingGroup.match(/(?:concentration\s+)(\+\d+|\-\d+)/i)[1];
+                if (spellcastingGroup.search(/(?:concentration\s+)(\+\d+|\-\d+)/i) !== -1) {
+                    spellGroupConcentration = spellcastingGroup.match(/(?:concentration\s+)(\+\d+|\-\d+)/i)[1];
+                }
+                
                 
                 // Save Spellbook to formattedInput
                 formattedInput.spellcasting[spellBook]= {
@@ -1482,11 +1505,16 @@ function splitStatisticsData(stringStatisticsData) {
     if (stringStatisticsData.search(/\bcmb\b/im) !== -1) {
         
         let tempCMB = stringStatisticsData.match(/(?:CMB[\s]*)(.*)/i)[1];
-                
+        
+        console.log("tempCMB: "  + tempCMB);
+        
         // Replace - with 0 for creatures without CMB
-        tempCMB = tempCMB.replace(/(^-)([^\d])/, "0;");
+        if (tempCMB.search(/(^-[^\d])/) !== -1) {
+            formattedInput.cmb.context = "No CMB";
+        }
+        tempCMB = tempCMB.replace(/(^-[^\d])/, "0;");
                         
-        formattedInput.cmb.total = tempCMB.match(/(?:^[+-])(\d+)/)[1];
+        formattedInput.cmb.total = tempCMB.match(/(?:^[+-]*)(\d+)/)[1];
         
         if (tempCMB.search(/\(([^)]+)\)/) !== -1) {
             formattedInput.cmb.context = tempCMB.match(/\(([^)]+)\)/)[0];
@@ -1496,9 +1524,12 @@ function splitStatisticsData(stringStatisticsData) {
         let tempCMD = stringStatisticsData.match(/(?:CMD )(.*)/i)[1];
         
         // Replace - with 0 for creatures without CMD
-        tempCMD = tempCMD.replace(/(^-)([^\d]|$)/, "0");
+        if (tempCMD.search(/(^\s*-[^\d]|$)/) !== -1) {
+            formattedInput.cmd.context = "No CMD";
+        }
+        tempCMD = tempCMD.replace(/(^\s*-[^\d]|$)/, "0");
 
-        formattedInput.cmd.total = tempCMD.match(/(^\d+)/)[0];
+        formattedInput.cmd.total = tempCMD.match(/(^\d*)/)[0];
         if (tempCMD.search(/\(([^)]+)\)/) !== -1) {
             formattedInput.cmd.context = tempCMD.match(/\(([^)]+)\)/)[0];
         }
@@ -1552,13 +1583,15 @@ function splitStatisticsData(stringStatisticsData) {
             
         }
                 
-        
         // Save Skills with parenthesis separately
-              
-        
         let splitSkillsWithoutParenthesis = splitSkills.replace(/(,*[^,)]*\([^)]+\)[\s+-\d,]*)/g, "");
         
-        let skillsArray = splitSkillsWithoutParenthesis.split(/,/g);
+        let skillsArray = [];
+        
+        if (splitSkillsWithoutParenthesis) {
+            skillsArray = splitSkillsWithoutParenthesis.split(/,/g);
+        }
+        
         
         if (splitSkills.search (/([^,)]*\([^)]+\)[\s+-\d]*)/g) !== -1) {
             let splitSkillsWithParenthesis = splitSkills.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);  
@@ -1567,12 +1600,12 @@ function splitStatisticsData(stringStatisticsData) {
                 skillsArray.push(skill);
             })
         }
-        
+                
         skillsArray.forEach (function (item, index) {
                         
             let skillItem = item.replace(/^ | $/g, "");
             let skillContext = "";
-                                    
+                                                
             let skillTotal = skillItem.match(/(-\d+|\d+)/)[0];
             let skillName = skillItem.replace(/(^\s*|\s*-[\d].*|\s*\+.*)/g, "");
 
@@ -1584,6 +1617,8 @@ function splitStatisticsData(stringStatisticsData) {
                 
                 // Parse Knowledge, because these may have special notations
                 if (skillName.search(/\bKnowledge\b/i) !== -1) {
+                    
+                    skillSubtype = skillSubtype.replace(/\bEnter Choice\b/ig, "any one");
                     
                     // Check if its for ALL knowledge skills
                     if (skillSubtype.match(/\ball\b/i) !== null) {
@@ -1621,11 +1656,16 @@ function splitStatisticsData(stringStatisticsData) {
                         let alreadyPickedSubskills = "";
                         
                         for (let i=0; i < numberOfKnowledgeSubskills; i++) {
-                            let randomSubskill = Math.floor(Math.random() * 10);                            
+                            let randomSubskill = Math.floor(Math.random() * 10);
+                            console.log("randomSubskill: " + randomSubskill);
                             
-                            if (alreadyPickedSubskills.search(randomSubskill) === -1) {
+                            let searchString = new RegExp(enumKnowledgeSubskills[randomSubskill], "i");
+                            console.log("searchString: " + searchString);
+                            
+                            if (alreadyPickedSubskills.search(randomSubskill) === -1 && splitSkills.search(searchString) === -1) {
                                 
-                                formattedInput.skills.knowledge[enumKnowledgeSubskills[i]].total = +skillTotal;
+                                formattedInput.skills.knowledge[enumKnowledgeSubskills[randomSubskill]].total = +skillTotal;
+                                formattedInput.skills.knowledge[enumKnowledgeSubskills[randomSubskill]].context = "sbc | Randomly picked";
                                 alreadyPickedSubskills += randomSubskill;
                             
                             } else {
@@ -1634,8 +1674,6 @@ function splitStatisticsData(stringStatisticsData) {
                             
                             
                         }
-                        
-                        
                     } else if (skillSubtype.search(/\band\b/i) !== -1) {
                         // If there are multiple knowledge skills separated with "and"
                         let splitSkillSubtypes = skillSubtype.split(/\band\b/ig);
@@ -1693,7 +1731,55 @@ function splitStatisticsData(stringStatisticsData) {
         
         let tempSQs = [];
         if (splitSQ.search(/,|;/g) !== -1) {
-            tempSQs = splitSQ.split(/,|;/g);
+            
+            // !!! SPLIT ONLY WHEN NOT IN PARENTHESIS
+            
+            
+            
+            
+            if (splitSQ.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi) !== null) {
+                // Get specialAttacks with parenthesis and commas inside the parenthesis
+                let specialQualitiesWithParenthesisAndComma = splitSQ.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi);
+
+                // Create Special Abilities for special attacks with parenthesis and a list separated by comma in there
+                // deeds (derring-do, dodging panache, kip-up, menacing swordplay, opportune parry and riposte, precise strike +4, swashbuckler initiative)
+
+                let specialQualitiesWithParenthesisAndCommaKeys = Object.keys(specialQualitiesWithParenthesisAndComma);
+
+                specialQualitiesWithParenthesisAndCommaKeys.forEach( function (item, index) {
+
+                    let sq = specialQualitiesWithParenthesisAndComma[item];
+                    let sqName = sq.match(/([\s\S]*)(?:\([^)]+\))/)[1].replace(/^ | $/g, "");
+                    
+                    let subSQs = specialQualitiesWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1].split(/,/);
+
+                    subSQs.forEach ( function (item, index) {
+                        let subSQ = item.replace(/^ | $/g, "");
+
+                        // Fill the item with Data
+                        let tempSQ = sqName + " (" + subSQ + ")";
+
+                        let featType = "misc";
+
+                        // CHECK, IF ITS A CLASS FEATURE
+                        let classFeatureRegEx = new RegExp ( enumClassFeatures.join("\\b|\\b"), "gi");
+                        
+
+                        if (sqName.search(classFeatureRegEx) !== -1) {
+                            featType = "class";
+                        }
+                        
+                        // Push the item
+                        tempSQs.push(tempSQ);
+                    });
+                });
+            }
+            
+            
+            
+            
+            
+            
         } else {
             tempSQs[0] = splitSQ;
         }
@@ -1717,7 +1803,7 @@ function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     tempSpecialAbilities = tempSpecialAbilities.replace(/(?:\.)(?:([\w\d\s’-]*\())(Ex|Su|Sp)/g, ".###$1$2");
     
     let specialAbilities = tempSpecialAbilities.split(/###/g);
-    
+        
     formattedInput.special_abilities = specialAbilities;
 
 }
@@ -1796,7 +1882,7 @@ function mapGeneralData() {
     
     // Details
     dataOutput.data.details.level.value = +formattedInput.level;
-    dataOutput.data.details.cr = +formattedInput.cr;
+    dataOutput.data.details.cr.base = dataOutput.data.details.cr.total = +formattedInput.cr;
     dataOutput.data.details.xp.value = formattedInput.xp;
     dataOutput.data.details.alignment = formattedInput.alignment;
     
@@ -1809,7 +1895,7 @@ function mapGeneralData() {
     }
     
     // Attributes
-    dataOutput.data.attributes.init.value = formattedInput.initiative - getModifier(formattedInput.dex.total);
+    //dataOutput.data.attributes.init.value = formattedInput.initiative - getModifier(formattedInput.dex.total);
     dataOutput.data.attributes.init.total = formattedInput.initiative;
     
     // Size and Size-Related Stuff
@@ -1851,40 +1937,51 @@ function mapGeneralData() {
 }
 
 function setAuraItem () {
-    console.log("auraString: " + formattedInput.aura);
-    
-    // FIX FOR MULTIPLE AURAS!!
-    
-    
-    let auraName = "";
-    let auraRange = 0;
-    let auraDC = "";
-    
-    // Name = Everything before the opening parenthesis
-    auraName = formattedInput.aura.match(/([\s\S]+)(?:\()/)[1].replace(/^ | $/g, "");
-    // Range = Numbers before ".ft"
-    auraRange = formattedInput.aura.match(/([^(,;]+)(?:ft.)/)[1].replace(/^ | $/g, "");
-    // DC = Number after "DC"
-    if (formattedInput.aura.search(/\bDC\b/) !== -1) {
-        auraDC = formattedInput.aura.match(/(?:DC\s*)([^)(,;]+)/)[1].replace(/^ | $/g, "");
-    }
-    
-    
-    
-    let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
         
-    newSpecialAbility.name = auraName;
-    newSpecialAbility.data.activation.type = "passive";
-    newSpecialAbility.data.duration.units = "perm";
-    newSpecialAbility.data.save.dc = auraDC;
-    newSpecialAbility.data.range.value = auraRange;
-    newSpecialAbility.data.range.units = "ft";
-    newSpecialAbility.data.measureTemplate.type = "circle";
-    newSpecialAbility.data.measureTemplate.size = auraRange;
+    let auraInput = formattedInput.aura.split(/([^,]+\([^)]*\))/g);
+        
+    auraInput.forEach ( function (aura) {
+        
+        if (aura !== "") {
+        
+            let auraName = "";
+            let auraRange = 0;
+            let auraDC = "";
+
+            // Name = Everything before the opening parenthesis
+            auraName = aura.match(/([^,]+\([^()]*\)|[^,]+)/)[1].replace(/^ | $/g, "");
+            // Range = Numbers before ".ft"
+            if (aura.search(/([^(,;]+)(?:ft.)/i) !== -1) {
+                auraRange = aura.match(/([^(,;]+)(?:ft.)/)[1].replace(/^ | $/g, "");
+            }
+            // DC = Number after "DC"
+            if (aura.search(/\bDC\b/) !== -1) {
+                auraDC = aura.match(/(?:DC\s*)([^)(,;]+)/)[1].replace(/^ | $/g, "");
+            }
+
+            let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+
+            newSpecialAbility.name = auraName;
+            newSpecialAbility.data.activation.type = "passive";
+            newSpecialAbility.data.duration.units = "perm";
+            newSpecialAbility.data.save.dc = auraDC;
+            newSpecialAbility.data.range.value = auraRange;
+            newSpecialAbility.data.range.units = "ft";
+            newSpecialAbility.data.measureTemplate.type = "circle";
+            newSpecialAbility.data.measureTemplate.size = auraRange;
+
+            dataOutput.items.push(newSpecialAbility);
+        }
+        
+        
+        
+    })
+    
+    
     
     
                     
-    dataOutput.items.push(newSpecialAbility);
+    
 }
 
 // Map data.classes.class
@@ -2353,9 +2450,10 @@ async function mapSpecialQualitiesData () {
 
     let tempSQ = formattedInput.special_qualities;
     
+    
     tempSQ.forEach ( async function (item) {
         let sq = item.replace(/^ | $/g, "");
-                
+        
         let featType = "misc";
             
         // CHECK, IF ITS A CLASS FEATURE
@@ -2372,9 +2470,7 @@ async function mapSpecialQualitiesData () {
 // Map Special Ability Data
 function mapSpecialAbilitiesData () {
     formattedInput.special_abilities.forEach (async function (specialAbility, index) {
-        
-        console.log("specialAbility: " + specialAbility);
-        
+                
         // SET THE FEATTYPE
         let featType = "misc";
         
@@ -3149,7 +3245,7 @@ function setSpecialAbilityItem (specialAbility, featType) {
     let specialAbilityNameSuffix = "";
     let specialAbilityDescription = "";
     let specialAbilityType = "";
-    
+        
     if (specialAbility.search(/(?:[^\(]*\()(.*)(?:\))/) !== -1) {
         specialAbilityName = specialAbility.match(/([^\(]*)(?:\()/i)[1].replace(/^ | $/g, "");
         specialAbilityNameSuffix = " (" + specialAbility.match(/(?:[^\(]*\()(.*)(?:\))/)[1] + ")";
@@ -3583,9 +3679,9 @@ function mapStatisticData () {
                         "custom": {
                             "name": "custom",
                             "ability": "int",
-                            "rank": 4,
+                            "rank": 0,
                             "notes": "",
-                            "mod": 4,
+                            "mod": 0,
                             "rt": false,
                             "cs": false,
                             "acp": false,
@@ -3600,9 +3696,9 @@ function mapStatisticData () {
                     dataOutput.data.skills[customSkillName] = JSON.parse(JSON.stringify(templateCustomSkill));
                     dataOutput.data.skills[customSkillName].name = customSkillName;
                     dataOutput.data.skills[customSkillName].ability = "int";
-                    dataOutput.data.skills[customSkillName].rank = +formattedInput.skills[skillKey][skillSubKey];
-                    dataOutput.data.skills[customSkillName].notes = "CHECK IF CORRECT";
-                    dataOutput.data.skills[customSkillName].mod = +formattedInput.skills[skillKey][skillSubKey];
+                    dataOutput.data.skills[customSkillName].rank = +formattedInput.skills[skillKey][skillSubKey].total;
+                    dataOutput.data.skills[customSkillName].notes = "sbc | Converted Custom Skill";
+                    dataOutput.data.skills[customSkillName].mod = +formattedInput.skills[skillKey][skillSubKey].total;
                     dataOutput.data.skills[customSkillName].rt = false;
                     dataOutput.data.skills[customSkillName].cs = false;
                     dataOutput.data.skills[customSkillName].acp = false;
@@ -3629,7 +3725,7 @@ function mapStatisticData () {
             let tempAttrModifier = getModifier(formattedInput[tempAttr].total);
             
             // Calculate the Rank (e.g. Total - Attribute-Modifier, maybe - ClassSkillBonus?)
-            if (formattedInput.skills[skillKey].total !== 0) {
+            if (formattedInput.skills[skillKey].total !== 0 || formattedInput.skills[skillKey].context !== "") {
                 
                 dataOutput.data.skills[tempAttrShort].rank =
                       +formattedInput.skills[skillKey].total
@@ -3642,6 +3738,7 @@ function mapStatisticData () {
 
                 dataOutput.data.skills[tempAttrShort].mod = formattedInput.skills[skillKey].total - +formattedInput.skills[skillKey].race;
                 dataOutput.data.skills[tempAttrShort].notes = formattedInput.skills[skillKey].context;
+                
             }
 
         }
@@ -3838,9 +3935,7 @@ async function createSpellFromCompendium(spellName, actor_id) {
 
     // We can find a specific entry in the compendium by its name
     let entry = await pack.index.find(e => e.name === spellName);
-    
-    console.log("entry: " + entry);
-        
+            
     // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
     await pack.getEntity(entry._id).then(spell => {
         console.log(spell);

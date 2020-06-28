@@ -1,5 +1,5 @@
 export default {
-  "name": "Conversion Changes",
+  "name": "sbc | Conversion Changes",
   "type": "buff",
   "data": {
     "description": {

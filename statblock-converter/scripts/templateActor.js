@@ -546,7 +546,10 @@ export default {
       "bonusSkillRankFormula": "",
       "type": "",
       "environment": "",
-      "cr": 1,
+      "cr": {
+          "base": 0,
+          "total": 0
+      },
       "xp": {
         "value": 400
       }

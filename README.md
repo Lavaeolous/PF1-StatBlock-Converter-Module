@@ -51,6 +51,11 @@ Primer#2220 | FoundryVTT Discord
 
 # Change Log
 
+2020_06_28:
+*  Added Resilience for malformed input
+*  bugfixing
+*  introducing new bugs ;)
+
 2020_06_26:
 *  Hotfix for compatibility to the PF1 system update 0.621
 *  Groundwork for spellbook and spell parsing
