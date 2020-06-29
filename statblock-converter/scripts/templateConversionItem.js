@@ -3,7 +3,7 @@ export default {
   "type": "buff",
   "data": {
     "description": {
-      "value": "",
+      "value": "<h2>Actor created with Lavaeolous' StatBlock Converter</h2>\n<p>This Buff contains data that could not be represented in other ways. It is advised to re-check the stats in this when adding new features, such as Feats (e.g. Improved Initiative).</p>",
       "chat": "",
       "unidentified": ""
     },

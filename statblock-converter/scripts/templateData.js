@@ -59,6 +59,7 @@ export default {
         "racial": 0,
         "class": []
     },
+    "save_notes": "",
     "defensive_abilities": "",
     "immunities": "",
     "resistances": "",

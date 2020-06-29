@@ -156,7 +156,8 @@ var enumSpecialAttacks = [
     "trample",
     "pounce",
     "swallow whole",
-    "constrict"
+    "constrict",
+    "powerful charge"
 ];
 
 var enumClassFeatures = [
@@ -1096,6 +1097,7 @@ function splitDefenseData(stringDefenseData) {
         }
     }
     
+    console.log("splitSaves: " + splitSaves);
     
     //let splitSaves = splitDefenseData[2].split(/,/);    
     splitSaves.forEach( function (item, index) {
@@ -1111,6 +1113,8 @@ function splitDefenseData(stringDefenseData) {
         } else if (this[index].search(/(will)/i) !== -1) {
             let splitWill = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.will_save.total = splitWill.replace(/\+/,"");
+        } else {
+            formattedInput.save_notes = item;
         }
     }, splitSaves);
     
@@ -1522,9 +1526,9 @@ function splitStatisticsData(stringStatisticsData) {
     };
     if (stringStatisticsData.search(/\bcmd\b/im) !== -1) {
         let tempCMD = stringStatisticsData.match(/(?:CMD )(.*)/i)[1];
-        
+        console.log("tempCMD: " + tempCMD);
         // Replace - with 0 for creatures without CMD
-        if (tempCMD.search(/(^\s*-[^\d]|$)/) !== -1) {
+        if (tempCMD.search(/^\s*-*[^\d]/) !== -1) {
             formattedInput.cmd.context = "No CMD";
         }
         tempCMD = tempCMD.replace(/(^\s*-[^\d]|$)/, "0");
@@ -1729,14 +1733,13 @@ function splitStatisticsData(stringStatisticsData) {
         let splitSQ = stringStatisticsData.match(/(?:\bSQ\b )(.*)(?:\n+?)/gim)[0].replace(/\n/gm,"");
         splitSQ = splitSQ.replace(/\bSQ\b /, "");
         
+        console.log("splitSQ: " + splitSQ);
+        
         let tempSQs = [];
         if (splitSQ.search(/,|;/g) !== -1) {
             
             // !!! SPLIT ONLY WHEN NOT IN PARENTHESIS
-            
-            
-            
-            
+
             if (splitSQ.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi) !== null) {
                 // Get specialAttacks with parenthesis and commas inside the parenthesis
                 let specialQualitiesWithParenthesisAndComma = splitSQ.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi);
@@ -1773,18 +1776,27 @@ function splitStatisticsData(stringStatisticsData) {
                         tempSQs.push(tempSQ);
                     });
                 });
+            } else {
+                let specialQualitiesWithoutParenthesis = splitSQ.split(/,/g);
+                
+                specialQualitiesWithoutParenthesis.forEach ( function (sq) {
+                    let tempSQ = capitalize(sq.replace(/^ | $/g, ""));
+                    tempSQs.push(tempSQ);
+                });
+                
+                
+                
+                
             }
-            
-            
-            
-            
-            
-            
+                
         } else {
+            
             tempSQs[0] = splitSQ;
         }
         
         formattedInput.special_qualities = tempSQs;
+        
+        console.log("tempSQs: " + tempSQs);
         
         dataInputHasSpecialQualities = true;
     }
@@ -2102,7 +2114,6 @@ async function setRaceItem (raceInput) {
             formattedInput.ac_race_bonus = item.formula;
         }
         
-        
     });
     
     dataOutput.items.push(itemEntry);
@@ -2162,10 +2173,8 @@ function setConversionItem () {
     }
         
     if (formattedInput.con.total === "-" && formattedInput.creature_type === "undead") {
-        
         // calculating hp total for undead with no con (so with cha instead)
         calculatedHPTotal = +formattedInput.hp.racial + +totalClassHP + (+formattedInput.hit_dice.hd.total * +getModifier(formattedInput.cha.total));
-        
     } else if (formattedInput.con.total === "-") {
         // calculating hp total for con = -
         calculatedHPTotal = +formattedInput.hp.racial + +totalClassHP + (+formattedInput.hit_dice.hd.total * +getModifier(10));
@@ -2270,7 +2279,7 @@ function setConversionItem () {
             attrModifier = +getModifier(formattedInput.cha.total);
         }
         else if (item === "fort" && formattedInput.con.total === "-") {
-            attrModifier = 0;
+            attrModifier = -5;
         } else {
             attrModifier = +getModifier(formattedInput[enumSaveModifier[index]].total);
             
@@ -2319,6 +2328,7 @@ function mapDefenseData () {
     dataOutput.data.attributes.savingThrows.fort.total = +formattedInput.fort_save.total;
     dataOutput.data.attributes.savingThrows.ref.total = +formattedInput.ref_save.total;
     dataOutput.data.attributes.savingThrows.will.total = +formattedInput.will_save.total;
+    dataOutput.data.attributes.saveNotes = formattedInput.save_notes;
     
     // SR
     dataOutput.data.attributes.sr.total = +formattedInput.spell_resistance.total;
@@ -2862,7 +2872,6 @@ async function setSpecialAttackItem (specialAttacks) {
     let specialAttacksWithParenthesisAndComma = "";
     let specialAttacksWithParenthesis = "";
     
-    
     if (specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi) !== null) {
         // Get specialAttacks with parenthesis, e.g.
         specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi);
@@ -2870,12 +2879,6 @@ async function setSpecialAttackItem (specialAttacks) {
         // phrenic amplification (defensive prognosticationOA)"," phrenic pool (4 points)
         specialAttacksWithParenthesis.forEach( async function (item, index) {
 
-            /*let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
-
-            newSpecialAbility.name = item.toString();
-
-            dataOutput.items.push(newSpecialAbility);
-            */
             let featType = "misc";
             
             // CHECK, IF ITS A CLASS FEATURE
@@ -2912,14 +2915,20 @@ async function setSpecialAttackItem (specialAttacks) {
             // As long as no edge case is detected, generate subAbilities
             if (abilityName.search(regExEdgeCases) === -1) {
 
-
                 let subAbilities = specialAttacksWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1].split(/,/);
 
+                
+                
+                // CHECK, IF THE ITEMS IN PARENTHESIS ARE A LIST BY SEARCHING FOR
+                // XdY, DC, ft. or any other indicators that its not a list
+                
+                
+                
                 subAbilities.forEach ( function (item, index) {
                     let subAbility = item.replace(/^ | $/g, "");
                                                         
                     // Fill the item with Data
-                    let tempAbility = abilityName + " (" + subAbility + ")";
+                    let tempAbility = capitalize(abilityName) + " (" + capitalize(subAbility) + ")";
                     
                     let featType = "misc";
             
@@ -2934,6 +2943,9 @@ async function setSpecialAttackItem (specialAttacks) {
                     setSpecialAbilityItem(tempAbility, featType);
 
                 });
+                
+                
+                
 
             } else {
                 
@@ -2946,6 +2958,7 @@ async function setSpecialAttackItem (specialAttacks) {
                     rend 4d8+24
                     pounce
                     constrict (tail slap, 2d6+10 plus crushing coils)
+                    powerful charge (gore, 2d8)
                 */
 
                 // Search for an attackItem with the name used in the specialAttack
@@ -3085,7 +3098,7 @@ async function setSpecialAttackItem (specialAttacks) {
                 }
 
                 // Set Data for specific edge cases
-                newSpecialAbility.name = abilityName.replace(/^ | $/g, "").toUpperCase();
+                newSpecialAbility.name = capitalize(abilityName.replace(/^ | $/g, ""));
 
                 // General
                 newSpecialAbility.hasDamage = true;
@@ -3117,17 +3130,18 @@ async function setSpecialAttackItem (specialAttacks) {
     };
     
     if (specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi) !== null) {
-        // Get specialAttacks without parenthesis
-        specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").split(",");
+        // Get specialAttacks without parenthesis    
+        specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").replace(/,$/, "").split(/,/);
+        
         
         // Create Special Abilities for special attacks without anything in parenthesis
         // Example: sneak attack +1d6
 
         specialAttacksWithoutParenthesis.forEach( function (item, index) {
-
+            
             let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
 
-            newSpecialAbility.name = item.toString();
+            newSpecialAbility.name = capitalize(item.toString());
 
             dataOutput.items.push(newSpecialAbility);
 
@@ -3291,16 +3305,17 @@ function setSpecialAbilityItem (specialAbility, featType) {
     // Check if there already is an item with the same name
     let itemKeys = Object.keys(dataOutput.items);
     
+    
     itemKeys.forEach ( function (itemKey, index) {
-        
-        
-        // !!! THIS DOES NOT FIND EXISTING ITEMS CURRENTLY !!!
-        
-        let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
-        
+
+        //let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
+        let searchString = new RegExp (specialAbilityName, "i");
+                
         if (dataOutput.items[itemKey].name.search(searchString) !== -1) {
             
             existingItemFound = true;
+            
+            dataOutput.items[itemKey].name = specialAbilityName + specialAbilityNameSuffix;
             
             dataOutput.items[itemKey].data.abilityType = specialAbilityType.toLowerCase();
             dataOutput.items[itemKey].abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
