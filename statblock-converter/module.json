@@ -1,8 +1,8 @@
 {
     "name": "statblockimporter",
-    "title": "Stackblock Importer",
+    "title": "SBC | StatBlock-Converter for Pathfinder 1E",
     "description": "A module to convert raw Statblocks to Actors",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "author": "Lavaeolous",
     "systems": ["pf1"],
     "esmodules": ["./scripts/sbc.js"],
