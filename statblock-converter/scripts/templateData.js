@@ -102,6 +102,7 @@ export default {
     "specialAttacks": "",
     "space": 0,
     "reach": 0,
+    "reach_context": "",
     "offensive_abilities": "",
     "spell_like_abilities": "",
     "spellcasting": {},

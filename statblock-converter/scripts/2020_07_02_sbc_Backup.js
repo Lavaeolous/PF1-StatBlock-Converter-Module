@@ -292,38 +292,6 @@ var enumSpellGroups = [
     "Spells Known"
 ];
 
-var enumSpellcastingClasses = [
-    "adept",
-    "alchemist",
-    "antipaladin",
-    "arcanist",
-    "bard",
-    "bloodrager",
-    "cleric",
-    "druid",
-    "hunter",
-    "inquisitor",
-    "investigator",
-    "magus",
-    "medium",
-    "mesmerist",
-    "occultist",
-    "oracle",
-    "paladin",
-    "psychic",
-    "ranger",
-    "red mantis assassin",
-    "sahir-afiyun",
-    "shaman",
-    "skald",
-    "sorcerer",
-    "spiritualist",
-    "summoner",
-    "warpriest",
-    "witch",
-    "wizard"
-]
-
 // Get HTML Elements
 var inputTextArea = document.getElementById("input");
 // Make function visible outside the esmodule
@@ -516,7 +484,7 @@ async function convertStatBlock(input) {
     
     // 
     if( (foundDefenseData == false) || (foundOffenseData == false) || (foundStatisticsData == false) ) {
-        ui.notifications.info("Something went wrong! Please check the console (F12)");
+        ui.notifications.info("Something went wrong! Please check the console (F12)")
         console.log("Defense Data found: " + foundDefenseData);
         console.log("Offense Data found: " + foundOffenseData);
         console.log("Statistics Data found: " + foundStatisticsData);
@@ -1173,7 +1141,7 @@ function splitDefenseData(stringDefenseData) {
     if (searchableDefenseData.search(/\bWeakness\b|\bWeaknesses\b/i) !== -1) {
         let splitWeaknesses = searchableDefenseData.match(/(?:\bWeakness\b |\bWeaknesses\b )(.*?)(?:;)/i)[0].replace(/\bWeakness\b |\bWeaknesses\b /i, "");
         // Remove the phrase "Vulnerable to" if thats there
-        splitWeaknesses = splitWeaknesses.replace(/vulnerability to |vulnerable to | and /gi, "")
+        splitWeaknesses = splitWeaknesses.replace(/vulnerable to | and /gi, "")
         formattedInput.weaknesses = splitWeaknesses;
     }
     
@@ -1223,28 +1191,13 @@ function splitOffenseData(stringOffenseData) {
         formattedInput.speed.land.total = landSpeedBase;
     }
     
-    // Check for Speed Special Abilities
-    if (splitSpeed.search(/;/) !== -1) {
-        let speedSpecialAbilities = splitSpeed.match(/(?:;)(.*)/)[1];
-        console.log("speedSpecialAbilities: " + speedSpecialAbilities);
-        
-        let splitSpeedAbilities = speedSpecialAbilities.split(/,/);
-                
-        splitSpeedAbilities.forEach ( async function (item) {
-            let tempItem = capitalize(item.replace(/^ | $/, ""));
-            setSpecialAbilityItem(tempItem, "Misc", "Speed Ability");
-        })
-        
-    }
+    
+    console.log("formattedInput.reach: " + formattedInput.reach);
+    
     
     // Check for other Speeds
     if (splitSpeed.search(/,/g) !== -1) {
-        let splitSpeeds = splitSpeed.replace(/, /g, ",")
-        splitSpeeds = splitSpeeds.replace(/(;.*)/, "");
-        splitSpeeds = splitSpeeds.replace(/^\d+\s*ft\..*,/, "");
-        splitSpeeds = splitSpeeds.split(/,/g);
-        
-        console.log("splitSpeeds: " + splitSpeeds);
+        let splitSpeeds = splitSpeed.replace(/, /g, ",").replace(/^\d+\s*ft\..*,/, "").split(/,/g);
                 
         splitSpeeds.forEach ( function (item, index) {
             
@@ -1255,7 +1208,7 @@ function splitOffenseData(stringOffenseData) {
             
             let speedContext = "";
             
-            if (item.search(/fly/) === -1 && item.search(/\(([^)]+)\)/g) !== -1) {
+            if (item.search(/\(([^)]+)\)/g) !== -1) {
                 speedContext = item.match(/\(([^)]+)\)/g)[0];
                 speedTotal = speedContext.match(/\d+/)[0];
             }
@@ -1373,7 +1326,6 @@ function splitOffenseData(stringOffenseData) {
                     "type": "",                      // Cleric, Race, Domain, etc.
                     "CL": 0,
                     "concentration": 0,
-                    "spontaneous": false,
                     "spells": {
                         "spell": {                      // 1...n
                             "name": "",
@@ -1390,13 +1342,15 @@ function splitOffenseData(stringOffenseData) {
             }
             */
             
+            
+            
             let spellBook = "";
             
             let spellGroupType = "";
             let spellGroupSubType = "";
             let spellGroupCL = 0;
             let spellGroupConcentration = 0;
-            let spontaneousCasting = true;
+            let spellGroupSpells = {};
             
             // Set the spellGroupType and Subtype
             enumSpellGroups.forEach ( function (item) {
@@ -1408,32 +1362,21 @@ function splitOffenseData(stringOffenseData) {
                     spellGroupType = item;
                     
                     // Check if its a "normal" Spellbook or if its SLA
-                    if (spellcastingGroup.search(/Spell-Like/i) !== -1) {
-                        
-                    } else {
-                        let tempSubType = spellcastingGroup.match(spellGroupSubTypeRegEx)[1];
-                        if (tempSubType !== "") {
-                            spellGroupSubType = tempSubType.replace(/^ | $/g, "");
-                        } else {
-                            let classKeys = Object.keys(formattedInput.classes);
-                            classKeys.forEach ( function (tempClass) {
-                                let regExpSpellcastingClasses = new RegExp ( enumSpellcastingClasses.join("\\b|\\b"), "i");
-                                if (tempClass.search(regExpSpellcastingClasses) !== -1) {
-                                    spellGroupSubType = formattedInput.classes[tempClass].name;
-                                }
-                            });
-                            
-                        }
-                        
-                        if (spellcastingGroup.search(/(prepared)/i) !== -1) {
-                            spontaneousCasting = false;
-                        }
-                        
+                    if (spellcastingGroup.search(/Spell-Like/i) === -1) {
                         spellBookCounter++;
                     }
                     
+                    let tempSubType = spellcastingGroup.match(spellGroupSubTypeRegEx)[1];
+                    if (tempSubType !== "") {
+                        spellGroupSubType = tempSubType.replace(/^ | $/g, "");
+                    }
+                    
+                    
                 }
             })
+            
+            
+            
             
             if (spellGroupType !== "") {
                 // IF THE GROUP IS A NORMAL SPELLCASTING GROUP
@@ -1458,36 +1401,20 @@ function splitOffenseData(stringOffenseData) {
                 if (spellcastingGroup.search(/(?:CL\s+)(\d+)/i) !== -1) {
                     spellGroupCL = spellcastingGroup.match(/(?:CL\s+)(\d+)/i)[1];
                 }
+                
 
                 // Set the spellGroupConcentration
                 if (spellcastingGroup.search(/(?:concentration\s+)(\+\d+|\-\d+)/i) !== -1) {
                     spellGroupConcentration = spellcastingGroup.match(/(?:concentration\s+)(\+\d+|\-\d+)/i)[1];
                 }
                 
-                // Set the spells as an array of lines for each row of input, e.g. 1/day, 1st
-                let tempSpells = spellcastingGroup.split(/\n/);
-                let splitSpellRows = [];
-                
-                tempSpells.forEach ( function (spellRow, index) {
-                    // ignore the first line, because thats the GroupInfo
-                    if (index !== 0 && spellRow !== "") {
-                        console.log("spellRow: " + spellRow);
-                        splitSpellRows.push(spellRow);
-                    }
-                });
-                
-                console.log("spellGroupSubType: " + spellGroupSubType);
-                console.log("spellGroupCL: " + spellGroupCL);
-                console.log("spellGroupConcentration: " + spellGroupConcentration);
-                console.log("splitSpellRows: " + splitSpellRows);
                 
                 // Save Spellbook to formattedInput
-                formattedInput.spellcasting[spellBook] = {
+                formattedInput.spellcasting[spellBook]= {
                     "type": spellGroupSubType,
                     "CL": spellGroupCL,
                     "concentration": spellGroupConcentration,
-                    "spontaneous": spontaneousCasting,
-                    "spells": splitSpellRows
+                    "spells": {}
                 };
                 
                 
@@ -1505,12 +1432,13 @@ function splitOffenseData(stringOffenseData) {
                         let domain = "Domain (" + item.replace(/^ | $/g, "") + ")";
                         console.log("Domain: " + domain);
 
-                        await setSpecialAbilityItem(domain, "class", "Spellcasting");
+                        await setSpecialAbilityItem(domain, "class");
                     })
                 }
                 
+                
                 // ADD OPPOSITION SCHOOLS
-                // Opposition Schools illusion, transmutation
+                //  Opposition Schools illusion, transmutation
                 console.log("spellcastingGroup: " + spellcastingGroup);
                 if (spellcastingGroup.search(/Opposition/i) !== -1) {
                     let tempOppositionSchools = spellcastingGroup.match(/(?:Opposition Schools )(.*)/)[1];
@@ -1522,9 +1450,11 @@ function splitOffenseData(stringOffenseData) {
                         let oppositionSchool = "oppositionSchool (" + item.replace(/^ | $/g, "") + ")";
                         console.log("oppositionSchool: " + oppositionSchool);
 
-                        await setSpecialAbilityItem(oppositionSchool, "class", "Opposed School");
+                        await setSpecialAbilityItem(oppositionSchool, "class");
                     })
                 }
+                
+                
                 
             }
             
@@ -1532,7 +1462,9 @@ function splitOffenseData(stringOffenseData) {
             console.log("spellGroupType: " + spellGroupType);
             console.log("spellGroupSubType: " + spellGroupSubType);
             console.log("spellGroupCL: " + spellGroupCL);
-            console.log("spellGroupConcentration: " + spellGroupConcentration);            
+            console.log("spellGroupConcentration: " + spellGroupConcentration);
+            console.log("spellGroupSpells: " + JSON.stringify(spellGroupSpells));
+            
             
             // FOR TESTING
             //formattedInput.spellcasting.test = "Absolution";
@@ -1952,7 +1884,10 @@ async function mapInputToTemplateFoundryVTT() {
     
     // Map OffenseData
     await mapOffenseData(formattedInput);
-        
+    
+    // Map Spellbooks
+    await mapSpellbooks();
+    
     // Map statisticData
     await mapStatisticData(formattedInput);
     
@@ -2472,7 +2407,7 @@ function mapDefenseData () {
             // SET THE FEATTYPE
             let featType = "misc";
 
-            setSpecialAbilityItem(ability, featType, "Defensive Ability");
+            setSpecialAbilityItem(ability, featType);
 
         });
     }
@@ -2589,6 +2524,7 @@ async function mapSpecialQualitiesData () {
 
     let tempSQ = formattedInput.special_qualities;
     
+    
     tempSQ.forEach ( async function (item) {
         let sq = item.replace(/^ | $/g, "");
         
@@ -2599,8 +2535,7 @@ async function mapSpecialQualitiesData () {
         if (sq.search(classFeatureRegEx) !== -1) {
             featType = "class";
         }
-        
-        setSpecialAbilityItem(sq, featType, "SQ");
+        setSpecialAbilityItem(sq, featType);
         
     });
     
@@ -2613,7 +2548,7 @@ function mapSpecialAbilitiesData () {
         // SET THE FEATTYPE
         let featType = "misc";
         
-        setSpecialAbilityItem(specialAbility, featType, "Special Ability");
+        setSpecialAbilityItem(specialAbility, featType);
         
     });
 }
@@ -2662,7 +2597,7 @@ async function setAttackItem (attackGroups, attackType) {
             let damageDie = 0;
             let damageBonus = 0;
             let damageModifier = 0;
-            let damageType = "";
+            let damageType = "undefined";
             let weaponSpecial = "-";
             let critRange = 20;
             let critMult = 2;
@@ -2993,283 +2928,348 @@ async function setAttackItem (attackGroups, attackType) {
 // Set Special Attack Item
 async function setSpecialAttackItem (specialAttacks) {
     
-    console.log("setSpecialAttack specialAttacks: " + specialAttacks);
+    // Separate into separate specialAttacks
     
-    // Separate into separate specialAttacks without destroying parenthesis
+    let specialAttacksWithoutParenthesis = "";
+    let specialAttacksWithParenthesisAndComma = "";
+    let specialAttacksWithParenthesis = "";
     
-    let splitSpecialAttacks = [];
-    
-    if (specialAttacks.match(/([^,]+\([^(]*?\))+?/gi) !== null) {
+    if (specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi) !== null) {
         // Get specialAttacks with parenthesis, e.g.
-        let specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(]*?\))+?/gi);
+        specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(,]*?\))+?/gi);
         
-        specialAttacksWithParenthesis.forEach( function (item) {
+        // phrenic amplification (defensive prognosticationOA)"," phrenic pool (4 points)
+        specialAttacksWithParenthesis.forEach( async function (item, index) {
 
-            let splitSpecialAttack = item.replace(/^[;, ]*|[;, ]*$/g, "");
-            splitSpecialAttacks.push(splitSpecialAttack);
+            let featType = "misc";
+            
+            // CHECK, IF ITS A CLASS FEATURE
+            let classFeatureRegEx = new RegExp ( enumClassFeatures.join("\\b|\\b"), "gi");
+            
+            if (item.search(classFeatureRegEx) !== -1) {
+                featType = "class";
+            }
+                        
+            await setSpecialAbilityItem(item, featType);
+            
+            // DO MORE STUFF WITH THEM LATER
 
         })
-    } else {
-        // Get specialAttacks without parenthesis    
-        let specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").replace(/,$/, "").split(/,/);
+    };
+        
+    if (specialAttacks.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi) !== null) {
+        // Get specialAttacks with parenthesis and commas inside the parenthesis
+        specialAttacksWithParenthesisAndComma = specialAttacks.match(/([^,]+\([^(.]+?,[^(.]+?\))+?/gi);
+        
+        // Create Special Abilities for special attacks with parenthesis and a list separated by comma in there
+        // deeds (derring-do, dodging panache, kip-up, menacing swordplay, opportune parry and riposte, precise strike +4, swashbuckler initiative)
 
-        specialAttacksWithoutParenthesis.forEach( function (item) {
+        let specialAttacksWithParenthesisAndCommaKeys = Object.keys(specialAttacksWithParenthesisAndComma);
+
+        specialAttacksWithParenthesisAndCommaKeys.forEach( function (item, index) {
+
+            let ability = specialAttacksWithParenthesisAndComma[item];
+            let abilityName = ability.match(/([\s\S]*)(?:\([^)]+\))/)[1].replace(/^ | $/g, "");
+
+            // EDGE CASES: REND, POUNCE, ETC
+            let regExEdgeCases = new RegExp(enumSpecialAttacks.join("\\b|\\b"), "ig");
+
+            // As long as no edge case is detected, generate subAbilities
+            if (abilityName.search(regExEdgeCases) === -1) {
+
+                let subAbilities = specialAttacksWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1].split(/,/);
+
+                
+                
+                // CHECK, IF THE ITEMS IN PARENTHESIS ARE A LIST BY SEARCHING FOR
+                // XdY, DC, ft. or any other indicators that its not a list
+                
+                
+                
+                subAbilities.forEach ( function (item, index) {
+                    let subAbility = item.replace(/^ | $/g, "");
+                                                        
+                    // Fill the item with Data
+                    let tempAbility = capitalize(abilityName) + " (" + capitalize(subAbility) + ")";
+                    
+                    let featType = "misc";
             
-            let splitSpecialAttack = item.replace(/^[;, ]*|[;, ]*$/g, "");
-            splitSpecialAttacks.push(splitSpecialAttack);
+                    // CHECK, IF ITS A CLASS FEATURE
+                    let classFeatureRegEx = new RegExp ( enumClassFeatures.join("\\b|\\b"), "gi");
+
+                    if (abilityName.search(classFeatureRegEx) !== -1) {
+                        featType = "class";
+                    }
+
+                    // Push the item
+                    setSpecialAbilityItem(tempAbility, featType);
+
+                });
+                
+                
+                
+
+            } else {
+                
+                let newSpecialAbility = JSON.parse(JSON.stringify(templateMeleeAttackItem));
+
+                /*
+                    rend (2 claws, 2d8+16 plus 4d6 fire and 1d4 Cha damage)
+                    rake (4d6+12)
+                    trample (4d6+18, DC 31)
+                    rend 4d8+24
+                    pounce
+                    constrict (tail slap, 2d6+10 plus crushing coils)
+                    powerful charge (gore, 2d8)
+                */
+
+                // Search for an attackItem with the name used in the specialAttack
+                let subAbility = specialAttacksWithParenthesisAndComma[item].match(/\(([^)]+)\)/)[1];
+
+                // Data to extract from specialAttack
+                let numberOfAttacks = 1;
+                let tempDamage = "";
+                let tempDamageType = "";
+                let numberOfDamageDice = 0;
+                let damageDie = 0;
+                let damageBonus = 0;
+                let weaponSpecial = "";
+                let tempSaveDC = 0;
+                let tempSaveType = "";
+                let tempSaveDescription = "";
+                let tempAttackNotes = "";
+                let tempEffectNotes = "";
+
+                // Data Extraction and conversion
+
+                // Get the number of specialAttacks
+                if (ability.match(/\(\d+ /) !== null) {
+                    numberOfAttacks = ability.match(/(?:\()(\d+)/)[1];
+                }
+
+                // Calculate Damage
+                // If Strength is "-" do special undead stuff, otherwise calculate damage as normal
+                if (formattedInput.str.total !== "-") {
+
+                    /* ------------------------------------ */
+                    /* Normal Damage Calculation			*/
+                    /* ------------------------------------ */
+
+                    // NumberOfDamageDice and DamageDie
+                    if (ability.match(/\d+d\d+/) !== null) {
+                        numberOfDamageDice = ability.match(/(\d+)d(\d+)/)[1];
+                        damageDie = ability.match(/(\d+)d(\d+)/)[2];
+                    }
+                    // damageBonus
+                    if (ability.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                        damageBonus = ability.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];
+                        let notesDamageBonus = ability.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
+                    }
+                    // critRange
+                    if (ability.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                        critRange = ability.match(/(?:\/)(\d+)(?:-\d+)/)[1];
+                    }
+                    // critMult
+                    if (ability.match(/(?:\/x)(\d+)/) !== null) {
+                        critMult = ability.match(/(?:\/x)(\d+)/)[1];
+                    }
+                    // attackEffects
+                    if (ability.match(/(?:plus )(.+)(?:\))/) !== null) {
+                        tempEffectNotes = ability.match(/(?:plus )(.+)(?:\))/)[1];
+                        tempEffectNotes = tempEffectNotes.replace(/(\s+\band\b\s+)/i, ", ");
+                    }
+                } else {
+
+                    /* ------------------------------------ */
+                    /* Damage Calculation for Str = "-"		*/
+                    /* ------------------------------------ */
+
+                    if (ability.match(/\d+d\d+/) !== null) {
+
+                        // If the attack has damage dice
+                        tempAttackNotes += " (";
+
+                        let damagePool = ability.match(/(\d+d\d+[^0-9)]*)/g);
+
+                        damagePool.forEach ( function ( damageComponent, index ) {
+
+                            let tempItem = damageComponent.split(/ plus /);
+
+                            tempItem.forEach ( function ( damageSubComponent, subIndex) {
+
+                                // If there are damageDice
+                                if (damageSubComponent.match(/(\d+d\d+)/) !== null) {
+                                    let specialDamage = damageSubComponent.match(/(\d+d\d+)/)[0];
+                                    tempEffectNotes += specialDamage + " ";
+
+                                    if (damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/) !== null) {
+                                        // If there are damageDice and a damageType
+                                        let specialDamageType = damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/)[1];
+                                        tempEffectNotes += specialDamageType;
+                                    }
+                                } else {
+                                    // If there is just a specialEffect
+                                    let specialEffect = damageSubComponent;
+                                    tempEffectNotes += specialEffect;
+                                }
+
+                                if (subIndex < tempItem.length-1) {
+                                    tempEffectNotes += "\n";
+                                }
+
+                            });
+
+                        });
+
+                    } else {
+                        // If there is just a specialEffect
+                        let specialEffect = ability;
+                        tempEffectNotes += specialEffect;
+                    }
+
+                    // Add special damage to effectNotes
+
+                }
+
+
+                // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
+                let tempAttackDamageTypeKeys = Object.keys(enumAttackDamageTypes);
+                if (ability !== "") {
+                    let damageTypeRegex = new RegExp("(^\\b" + ability.replace(/\bmwk\b /i,"") + "\\b$)", "ig");
+
+                    for (let i=0; i < tempAttackDamageTypeKeys.length; i++) {
+                        if (tempAttackDamageTypeKeys[i].search(damageTypeRegex) !== -1) {
+                            tempDamageType = enumAttackDamageTypes[tempAttackDamageTypeKeys[i]].type;
+                            weaponSpecial = enumAttackDamageTypes[tempAttackDamageTypeKeys[i]].special;
+
+                        }
+                    }
+                }
+
+                // If it's a normal attack, push Damage as normal
+                if (formattedInput.str.total !== "-") {
+                    for (let i = 0; i < numberOfAttacks; i++) {
+                        newSpecialAbility.data.damage.parts.push(
+                            [
+                                "sizeRoll(" + numberOfDamageDice + ", " + damageDie + ", 0, @critMult) " + damageBonus,
+                                tempDamageType
+                            ]
+                        )  
+                    }
+
+                }
+
+                // Set Data for specific edge cases
+                newSpecialAbility.name = capitalize(abilityName.replace(/^ | $/g, ""));
+
+                // General
+                newSpecialAbility.hasDamage = true;
+                newSpecialAbility.hasEffect = true;
+                newSpecialAbility.hasAction = true;
+
+                // Data
+                newSpecialAbility.data.actionType = "other";
+                newSpecialAbility.data.ability.attack = "";
+                newSpecialAbility.data.ability.damage = "";
+
+                newSpecialAbility.data.save.dc = tempSaveDC;
+                newSpecialAbility.data.save.type = tempSaveType;
+                newSpecialAbility.data.save.description = tempSaveDescription;
+
+                newSpecialAbility.data.attackNotes = ability.replace(/^ | $/, "");
+                newSpecialAbility.data.effectNotes = makeValueRollable(tempEffectNotes);
+
+                newSpecialAbility.labels.damage = tempDamage;
+                newSpecialAbility.labels.damageTypes = tempDamageType;
+
+
+                // Push the item
+                dataOutput.items.push(newSpecialAbility);
+
+            }
 
         })
     };
     
-    console.log("splitSpecialAttacks: " + splitSpecialAttacks);
-    
-    // Loop through the cleaned array of special attacks and create special attacks or special abilities
-    
-    splitSpecialAttacks.forEach( async function (specialAttack) {
-        console.log("specialAttack: " + specialAttack);
+    if (specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi) !== null) {
+        // Get specialAttacks without parenthesis    
+        specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").replace(/,$/, "").split(/,/);
         
-        // Possible Values:
-        // <name> (X/day, XdY+Z, DC XX, Range ft.)
-        // rake (2 claws +6, 1d3+3)
-        // rend (2 claws, 1d3+3)
-        // sneak attack +3d6
-        // breath weapon (10-ft. cone, once every 2d4 rounds, 2d6 fire damage, Reflex DC 14 for half)
         
-        let newSpecialAttack = JSON.parse(JSON.stringify(templateMeleeAttackItem));
-        
-        let name = "";
-        let limitedUses = 0;
-        let limitedUsesDenominator = "";
-        let numberOfAttacks = 1;
-        let subAttackName = "";
-        let attackModifier = 0;
-        let damage = 0;
-        let damageType = "";
+        // Create Special Abilities for special attacks without anything in parenthesis
+        // Example: sneak attack +1d6
 
-        let dc = 0;
-        let save = "Reflex";
-        let saveContext = "";
-        let range = 0;
-        let measureTemplateType = "";
-        let actionType = "";
-                
-        name = specialAttack.match(/^([^(]*)|$/g)[0].replace(/^ | $/g, "");
-        
-        // Set Action Type
-        let specialAttacksRegEx = new RegExp(enumSpecialAttacks.join("\\b|\\b"), "i");
-        if (name.search(/\bChannel\b/i) !== -1) {
-            actionType = "heal";
-        } else if (name.search(specialAttacksRegEx) !== -1) {
-            actionType = "mwak";
-        } else {
-            actionType = "other";
-        }
-        
-        newSpecialAttack.data.actionType = actionType;
-        
-        // Search for Limited Uses
-        if (specialAttack.search(/(\d+\/\b\w+\b)/) !== -1) {
-            limitedUses = specialAttack.match(/(\d+)(?:\/)/)[1];
-            limitedUsesDenominator = specialAttack.match(/(?:\d+\/)(\b\w+\b)/)[1];
+        specialAttacksWithoutParenthesis.forEach( function (item, index) {
             
-            newSpecialAttack.data.uses.value = limitedUses;
-            newSpecialAttack.data.uses.max = limitedUses;
-            newSpecialAttack.data.uses.per = limitedUsesDenominator;
-            newSpecialAttack.data.uses.autoDeductCharges = true;
-        }
-        
-        // Search for Number of Damages, e.g. 2 Claws
-        if (specialAttack.search(/(?:\()(\d+)([a-zA-Z ]*)(\+*\d*)(?:\s*,*\s*\d+d\d+\+*\d*\s*)/) !== -1) {
-            
-            let attackIterationsAndModifier = specialAttack.match(/(?:\()(\d+)([a-zA-Z ]*)(\+*\d*)(?:\s*,*\s*\d+d\d+\+*\d*\s*)/);
-            
-            numberOfAttacks = attackIterationsAndModifier[1].replace(/^ | $/g, "");
-            subAttackName = attackIterationsAndModifier[2].replace(/^ | $/g, "");
-            
-            let subAttack = " (" + numberOfAttacks + " " + subAttackName + ")";
-            
-            name += subAttack;
-            
-            if (attackIterationsAndModifier[3] !== null) {
-                attackModifier = attackIterationsAndModifier[3].replace(/^ | $/g, "");
-            }
-            
-        }
-        
-        // Search for Damage
-        if (specialAttack.search(/(\d+d\d+\+*\d*)/) !== -1) {
-            damage = specialAttack.match(/(\d+d\d+\+*\d*)(?!\s*rounds)/i)[1];
-            if (specialAttack.search(/(\d+d\d+\+*\d*)(?!\s*rounds)([^,]*)/)[2] !== -1) {
-                damageType = specialAttack.match(/(\d+d\d+\+*\d*)(?!\s*rounds)([^,;)]*)/)[2];
-            }
-        }
-        
-        // Create Damage Parts
-        newSpecialAttack.labels.damage = damage;
-        newSpecialAttack.labels.damageTypes = damageType;
-        newSpecialAttack.data.damage.parts.push(
-            [
-                damage,
-                damageType
-            ]
-        );
+            let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
 
-        // Create Attack Parts
-        let secondaryAttackModifier = 0;
-        let calculatedAttackModifier = +formattedInput.bab + +enumSizeModifiers[formattedInput.size] + +getModifier(formattedInput.str.total);
+            newSpecialAbility.name = capitalize(item.toString());
 
-        if (calculatedAttackModifier !== attackModifier) {
-            secondaryAttackModifier = +attackModifier - +calculatedAttackModifier;
-        }
+            dataOutput.items.push(newSpecialAbility);
+
+        })
+    };
         
-        newSpecialAttack.data.attackBonus = secondaryAttackModifier.toString();
-        for (let i=1; i < numberOfAttacks; i++) {
-            console.log("pushing attack number: " + i);
-            newSpecialAttack.data.attackParts.push(
-                [
-                    "0",
-                    "Attack"
-                ]
-            );
-        }
-        
-        // Search for DC
-        if (specialAttack.search(/\bDC\b/) !== -1) {
-            dc = specialAttack.match(/(?:\bDC\b\s*)(\d+)/)[1];
-            if (specialAttack.search(/(\b\w+\b)(?:\s*\bDC\b)/) !== -1) {
-                save = specialAttack.match(/(\b\w+\b)(?:\s*\bDC\b)/)[1];
-            }
-            if (specialAttack.search(/(?:\bDC\b\s*\d+\s*)([^,)]*)/) !== -1) {
-                saveContext = specialAttack.match(/(?:\bDC\b\s*\d+\s*)([^,)]*)/)[1];
-            }
-            
-            switch(save) {
-                case "Reflex":
-                case "reflex":
-                case "ref":
-                    newSpecialAttack.data.save.type = "ref";
-                    break;
-                case "Fortitude":
-                case "fortitude":
-                case "fort":
-                    newSpecialAttack.data.save.type = "fort";
-                    break;
-                case "Will":
-                case "will":
-                    newSpecialAttack.data.save.type = "will";
-                    break;
-                default:
-                    break;
-            }
-            
-            newSpecialAttack.data.save.dc = dc.toString();
-            newSpecialAttack.data.save.description = saveContext;
-            
-        }
-        
-        // Set Range and Measurement Template
-        if (specialAttack.search(/\bft\./) !== -1) {
-            range = specialAttack.match(/(\d+)(?:\s*-*\bft\.)/)[1];
-            if (specialAttack.search(/(?:\d+\s*-*\bft\.\s*)(\b\w+\b)/) !== -1) {
-                measureTemplateType = specialAttack.match(/(?:\d+\s*-*\bft\.\s*)(\b\w+\b)/)[1];
-                
-                switch (measureTemplateType) {
-                    case "Cone":
-                    case "cone":
-                        newSpecialAttack.data.measureTemplate.type = "cone";
-                        break;
-                    default:
-                        break;
-                }
-            }
-            newSpecialAttack.data.range.value = range.toString();
-            newSpecialAttack.data.range.units = "ft";
-            newSpecialAttack.data.measureTemplate.size = +range;
-        }
-        
-        // Set Name
-        newSpecialAttack.name = "Special Attack: " + capitalize(name);
-        
-        console.log("name: " + name);
-        console.log("limitedUses: " + limitedUses);
-        console.log("limitedUsesDenominator: " + limitedUsesDenominator);
-        
-        dataOutput.items.push(newSpecialAttack);
-        
-    });
-    
-    
-    
-        
-    //await setSpecialAbilityItem(item, featType);
-    //let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
-    //newSpecialAbility.name = capitalize(item.toString());
-    //dataOutput.items.push(newSpecialAbility);
+ 
     
 }
 
-
-
 // Set Spell Item
 // THIS IS A FOUNDRY ONLY FUNCTION AND WILL NOT WORK IN A STAND ALONE VERSION AS THE REST CURRENTLY WOULD
-async function setSpellItem (spellInput, actorID, spellBook, spellPack, spellPackIndex) {
-    console.log("spellInput.name: " + spellInput.name);        
+async function setSpellItem (actor_id, spellName) {
+    console.log("spellName: " + spellName);
     
-    const actor = await game.actors.get(actorID);
+    
+    
+    /*
+    await createSpellFromCompendium(spellName, actor_id);
+    
+    console.log("spellItem: " + spellItem);
+    
+    const actor = await game.actors.get(actor_id);
+    
+    console.log("actor: " + JSON.stringify(actor));
+    
+    const created = await actor.createEmbeddedEntity("OwnedItem", spellItem); // Returns one EmbeddedEntity, saved to the Actor
+    
+    console.log("created: " + created);
+    */
+    
+    // Suppose we are working with a particular pack named "dnd5e.spells"
+    const pack = game.packs.get("pf1.spells");
+    const actor = await game.actors.get(actor_id);
 
-    
+    // We can load the index of the pack which contains all entity IDs, names, and image icons
+    let packIndex = await pack.getIndex().then(index => {
+        //console.log(index);
+        index = index.name;
+    });
 
     // We can find a specific entry in the compendium by its name
-    try {
+    let entry = await pack.index.find(e => e.name === spellName);
+    
+    console.log("entry: " + entry);
         
-        let entry = await spellPack.index.find(e => e.name === capitalize(spellInput.name));
-
-
-        console.log("entry: " + entry);
-
-        // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
-        await spellPack.getEntity(entry._id).then(spell => {
-            console.log(spell);
-
-            spell.data.data.spellbook = spellBook;
-            spell.data.data.level = spellInput.level;
-            spell.data.data.uses.value = +spellInput.uses.value;
-            spell.data.data.uses.max = +spellInput.uses.max;
-            spell.data.data.uses.per = spellInput.uses.per;
-            spell.data.data.save.dc = spellInput.saveDC.toString();
-            spell.data.data.effectNotes = spellInput.effectNotes;
-            spell.data.data.atWill = spellInput.atWill;
-
-            actor.createEmbeddedEntity("OwnedItem", spell);
-        });
-    } catch (error) {
-        console.log("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!");
-        ui.notifications.info("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!")
-        
-    }
+    // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
+    await pack.getEntity(entry._id).then(spell => {
+        console.log(spell);
+        actor.createEmbeddedEntity("OwnedItem", spell);
+    });
     
 }
 
 
 
 // Map Spellbooks
-async function mapSpellbooks (actorID) {
+async function mapSpellbooks () {
     console.log("mapSpellbook");
     
-    // Suppose we are working with a particular pack named "dnd5e.spells"
-    const spellPack = game.packs.get("pf1.spells");
-    // We can load the index of the pack which contains all entity IDs, names, and image icons
-    const spellPackIndex = await spellPack.getIndex().then(index => {
-        //console.log(index);
-        index = index.name;
-    });
-    
+
     /*
         formattedInput.spellcasting[spellBook]= {
             "type": spellGroupSubType,
             "CL": spellGroupCL,
             "concentration": spellGroupConcentration,
-            "spontaneous": spontaneousCasting,
             "spells": {}
         };
     */
@@ -3278,106 +3278,21 @@ async function mapSpellbooks (actorID) {
     
     spellbookKeys.forEach ( async function (spellBook, index) {
         console.log("spellbook: " + spellBook);
-        console.log("spellbook.spells: " + formattedInput.spellcasting[spellBook].spells);
-        console.log("formattedInput.spellcasting[spellBook].type.toLowerCase(): " + formattedInput.spellcasting[spellBook].type);
-                        
-        dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type;
+                
+        console.log(formattedInput.spellcasting[spellBook]);
         
+        console.log(dataOutput.data.attributes.spells.spellbooks[spellBook]);
+        
+        dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type.toLowerCase();
+        
+        /*
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.base = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.value = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.total = +formattedInput.spellcasting[spellBook].CL;
         
         dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration;
-        dataOutput.data.attributes.spells.spellbooks[spellBook].spontaneous = formattedInput.spellcasting[spellBook].spontaneous;
+        */
         
-        // Separate the Spells
-        let spellRows = Object.keys(formattedInput.spellcasting[spellBook].spells);
-        
-        spellRows.forEach( async function (spellRow) {
-            console.log("spellRow: " + formattedInput.spellcasting[spellBook].spells[spellRow]);
-            
-            let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRow];
-            
-            let spells = {
-                "spellUses": 0,
-                "spellUsesDenominator": "day",
-                "spellLevel": 0,
-                "atWill": false,
-                "spellList": tempSpellRow.replace(/(.*\-)/, "").split(/,/),
-            };
-            
-            // If Spontaneous
-            if (formattedInput.spellcasting[spellBook].spontaneous === true) {
-                console.log("sla & spontaneous Casting spells");
-                if (tempSpellRow.search(/at will/) !== -1) {
-                    spells.atWill = true;
-                } else {
-                    spells.spellUses = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[1];
-                    spells.spellUsesDenominator = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[2];
-                }
-            } else {
-                // Prepared Spells
-                console.log("prepared casting spells");
-                
-            }
-            
-            if (tempSpellRow.search(/(\d+(?=st|nd|rd|th))|^(0)|at will/) !== -1) {
-                spells.spellLevel = tempSpellRow.match(/(\d+(?=st|nd|rd|th))|^(0)|at will/)[0];
-                if (spells.spellLevel == 0 || spells.spellLevel.search(/at will/) !== -1) {
-                    spells.atWill = true;
-                }
-            }
-            
-            console.log("spells: ");
-            console.log(spells);
-            
-            // Loop through the spells
-            let spellKeys = Object.keys(spells.spellList);
-            
-            spellKeys.forEach( async function (key) {
-                let spell = spells.spellList[key].replace(/^ | $/g, "");
-                let spellDC = 0;
-                let spellName = "";
-                let domainSpell = "";
-                
-                // Search for DC
-                if (spell.search(/(?:\bDC\b\s*)(\d+)/) !== -1) {
-                    spellDC = spell.match(/(?:\bDC\b\s*)(\d+)/)[1];
-                }
-                
-                // Check, if its a Domain Spell
-                if (spell.search(/(D$)/) !== -1) {
-                    domainSpell = "Domain Spell";
-                }
-                
-                // Search for Name
-                spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
-                
-                let spellInput = {
-                    "name": spellName,
-                    "uses": {
-                        "value": spells.spellUses,
-                        "max": spells.spellUses,
-                        "per": spells.spellUsesDenominator
-                    },
-                    "atWill": spells.atWill,
-                    "saveDC": spellDC,
-                    "effectNotes": domainSpell,
-                    "level": spells.spellLevel
-                }
-                
-                console.log("spell: " + spellInput);
-                
-                await setSpellItem(spellInput, actorID, spellBook, spellPack, spellPackIndex);
-            });
-            
-            
-            
-            
-            
-        })
-        
-        // TEST
         
         
     });
@@ -3389,8 +3304,16 @@ async function mapSpellbooks (actorID) {
 
 
 
+
+
+
+
+
+
+
+
 // Set Special Ability Item
-function setSpecialAbilityItem (specialAbility, featType, abilityType) {
+function setSpecialAbilityItem (specialAbility, featType) {
     
     console.log("specialAbility: " + specialAbility);
         
@@ -3408,10 +3331,12 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
     } else {
         specialAbilityName = specialAbility.replace(/^ | $/g, "");
     }
+    
 
     if (specialAbility.search(/(?:[^\(]*\()(Su|Sp|Ex)(?:\))/i) !== -1) {
         specialAbilityType = specialAbility.match(/(?:[^\(]*\()(Su|Sp|Ex)(?:\))/i)[1];
     }
+    
     
     // Set featType
     let tempFeatType = "";
@@ -3459,7 +3384,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
             
             existingItemFound = true;
             
-            dataOutput.items[itemKey].name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
+            dataOutput.items[itemKey].name = specialAbilityName + specialAbilityNameSuffix;
             
             dataOutput.items[itemKey].data.abilityType = specialAbilityType.toLowerCase();
             dataOutput.items[itemKey].abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
@@ -3478,7 +3403,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         // Create a new Item for new special Abilities
         let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
         
-        newSpecialAbility.name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
+        newSpecialAbility.name = specialAbilityName + specialAbilityNameSuffix;
         
         newSpecialAbility.data.abilityType = specialAbilityType.toLowerCase();
         newSpecialAbility.abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
@@ -4004,11 +3929,11 @@ async function createNewActor () {
     
     if(DEBUG==true) { console.log("sbc-pf1 | Spellcasting - Creating embeddedEntities") };
     
-    await mapSpellbooks(newActor.id);
+    //await mapSpellbooks(newActor.id);
     
-    //if (formattedInput.spellcasting.test == "Absolution") {
+    if (formattedInput.spellcasting.test == "Absolution") {
         //await setSpellItem(formattedInput.spellcasting.test, newActor.id);
-    //}
+    }
     
     
     
@@ -4049,17 +3974,10 @@ function makeValueRollable(inputText) {
     
     return output;
 }
-/*
+
 const capitalize = (s) => {
   if (typeof s !== 'string') return ''
   return s.charAt(0).toUpperCase() + s.slice(1)
-}
-*/
-
-function capitalize (str) {
-    return str.toLowerCase().replace(/^\w|\s\w/g, function (letter) {
-        return letter.toUpperCase();
-    })
 }
 
 /* ------------------------------------ */

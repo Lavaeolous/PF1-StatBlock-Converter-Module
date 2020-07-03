@@ -58,7 +58,8 @@ export default {
         },
         "save": {
           "dc": "",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
