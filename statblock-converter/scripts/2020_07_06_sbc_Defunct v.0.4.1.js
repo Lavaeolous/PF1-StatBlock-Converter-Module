@@ -729,11 +729,8 @@ function splitGeneralData(stringGeneralData) {
         // Set Flag
         dataInputHasClasses = true;
         // Get Class(es)
-        
-        for (let i=0; i<splitClasses.length; i++) {
-            
-            let item = splitClasses[i];
-            
+        splitClasses.forEach( function(item, index) {
+                        
             if ( item !== undefined ) {
                                 
                 // Check for className (first for classes with two words e.g. vampire hunter)
@@ -778,8 +775,8 @@ function splitGeneralData(stringGeneralData) {
                 
                 
             }
-            
-        }
+
+        });
         
         // Get Gender and Race if available
         let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:\\s+\\d+)", "ig");
@@ -837,13 +834,12 @@ function splitGeneralData(stringGeneralData) {
 
         // Check each match for valid Subtypes
         // !!! ??? Potential Error Point: Takes only the last match found
-        
-        for (let i=0; i<splitGeneralDataInBrackets.length; i++) {
-            let foundSubtypes = splitGeneralDataInBrackets[i].match(regExSubtypes);
+        splitGeneralDataInBrackets.forEach( function (item,index) {
+            let foundSubtypes = item.match(regExSubtypes);
             if(foundSubtypes !== null) {
                 splitSubtypes = foundSubtypes;
             }
-        }
+        }, splitGeneralDataInBrackets);
         
     }
     
@@ -888,7 +884,9 @@ function splitGeneralData(stringGeneralData) {
     formattedInput.size = splitSize;
     formattedInput.space = splitSpace;
     formattedInput.reach = splitReach;
-        
+    
+    console.log("reach: " + formattedInput.reach);
+    
     formattedInput.creature_type = splitType;
     formattedInput.creature_subtype = splitSubtypes;
     formattedInput.initiative = splitInit;
@@ -916,18 +914,15 @@ function splitDefenseData(stringDefenseData) {
         splitACBonusTypes = JSON.stringify(splitDefenseData[0].match(/\([\s\S]*?\)/)).split(/,/);
     
         // Loop through the found AC Boni and set changes accordingly
-        for (let i=0; i<splitACBonusTypes.length; i++) {
-            
-            let item = splitACBonusTypes[i];
-            
+        splitACBonusTypes.forEach( function ( item, index) {
+
             // get the bonus type
             let foundBonusType = item.match(/([a-zA-Z]+)/i)[0];
             let foundBonusValue = item.match(/(\+[\d]*)|(-[\d]*)/i)[0].replace(/\+/,"");
 
             formattedInput.ac_bonus_types[foundBonusType] = +foundBonusValue;
-            
-        }
-        
+
+        });
         formattedInput.acNotes = JSON.parse(splitACBonusTypes)[0];
     }
 
@@ -1231,6 +1226,7 @@ function splitOffenseData(stringOffenseData) {
     // Check for Speed Special Abilities
     if (splitSpeed.search(/;/) !== -1) {
         let speedSpecialAbilities = splitSpeed.match(/(?:;)(.*)/)[1];
+        console.log("speedSpecialAbilities: " + speedSpecialAbilities);
         
         let splitSpeedAbilities = speedSpecialAbilities.split(/,/);
                 
@@ -1303,7 +1299,9 @@ function splitOffenseData(stringOffenseData) {
             }
         }
     }
-        
+    
+    console.log("formattedInput.reach: " + formattedInput.reach);
+    
     /* ------------------------------------ */
     /* ATTACKS                          	*/
     /* ------------------------------------ */
@@ -1334,6 +1332,8 @@ function splitOffenseData(stringOffenseData) {
     } else {
         splitOffenseAttacks = splitOffenseData;
     }
+
+    console.log("splitOffenseSpells: " + JSON.stringify(splitOffenseSpells));
     
     // ATTACKS AND SPECIAL ATTACKS
     if (splitOffenseAttacks.search(/(?:Melee )/im) !== -1) {
@@ -1369,6 +1369,7 @@ function splitOffenseData(stringOffenseData) {
         let spellBookCounter = 0;
         
         splitOffenseSpells.forEach ( async function (spellcastingGroup, index) {
+            console.log("spellcastingGroup: " + spellcastingGroup);
             
             let spellBook = "";
             
@@ -1476,6 +1477,7 @@ function splitOffenseData(stringOffenseData) {
 
                     domains.forEach ( async function (item) {
                         let domain = "Domain (" + item.replace(/^ | $/g, "") + ")";
+                        console.log("Domain: " + domain);
 
                         await setSpecialAbilityItem(domain, "class", "Spellcasting");
                     })
@@ -1546,7 +1548,7 @@ function splitStatisticsData(stringStatisticsData) {
     let splitAttributes = stringStatisticsData.match(/(\bStr\b)[\s\S]*(\bCha\b [0-9-—]{1,2})/gmi)[0].replace(/\n/,"").split(/,/);
         
     splitAttributes.forEach ( function (item, index) {
-        let tempItem = item.replace(/^(\s*)/,"").replace(/(\s+)/g, " ").split(/\s/);
+        let tempItem = item.replace(/^\s/,"").split(/\s/);
         let tempAttr = tempItem[0];
         let tempValue = tempItem[1];
         
@@ -1580,15 +1582,14 @@ function splitStatisticsData(stringStatisticsData) {
             formattedInput.cmb.context = tempCMB.match(/\(([^)]+)\)/)[0];
         }
     };
-    
     if (stringStatisticsData.search(/\bcmd\b/im) !== -1) {
         let tempCMD = stringStatisticsData.match(/(?:CMD )(.*)/i)[1];
-        
+
         // Replace - with 0 for creatures without CMD
         if (tempCMD.search(/^\s*-*[^\d]/) !== -1) {
             formattedInput.cmd.context = "No CMD";
         }
-        tempCMD = tempCMD.replace(/(^\s*-[^\d]$)/, "0");
+        tempCMD = tempCMD.replace(/(^\s*-[^\d]|$)/, "0");
 
         formattedInput.cmd.total = tempCMD.match(/(^\d*)/)[0];
         if (tempCMD.search(/\(([^)]+)\)/) !== -1) {
@@ -1954,12 +1955,12 @@ function mapGeneralData() {
     if (formattedInput.creature_type === "undead") {
         dataOutput.data.attributes.hpAbility = "cha";
         dataOutput.data.attributes.savingThrows.fort.ability = "cha";
-        dataOutput.data.attributes.hp.value = dataOutput.data.attributes.hp.max = +formattedInput.hp.total;
+        dataOutput.data.attributes.hp.value = dataOutput.data.attributes.hp.max = formattedInput.hp.total;
     }
     
     // Attributes
     //dataOutput.data.attributes.init.value = formattedInput.initiative - getModifier(formattedInput.dex.total);
-    dataOutput.data.attributes.init.total = +formattedInput.initiative;
+    dataOutput.data.attributes.init.total = formattedInput.initiative;
     
     // Size and Size-Related Stuff
     switch(formattedInput.size) {
@@ -2142,13 +2143,11 @@ async function setRaceItem (raceInput) {
     
         
     
-    for (let i=0; i<raceChanges.length; i++) {
-        
-        let item = raceChanges[i];
-        
+    
+    raceChanges.forEach ( function (item, index) {
         // Set Changes for Abilities
         if (item.target == "ability") {
-            formattedInput[item.subTarget].race = +item.formula;
+            formattedInput[item.subTarget].race = item.formula;
         } else if (item.target == "skill") {
             // Else check if its a change to skills
             let skillShort = item.subTarget.replace(/skill./,"");
@@ -2166,8 +2165,8 @@ async function setRaceItem (raceInput) {
             // Else if change to ac (e.g. Adaro)
             formattedInput.ac_race_bonus = item.formula;
         }
-    }
-    
+        
+    });
     
     dataOutput.items.push(itemEntry);
 }
@@ -2334,10 +2333,7 @@ function setConversionItem () {
     // and the values derived from the saving throw progression of racialHD and class
     // "low"-progression: floor(@level / 3)
     // "high"-progression: 2 + floor(@level / 2)
-    for (let i=0; i<enumSaves.length; i++) {
-        
-        let item = enumSaves[i];
-        
+    enumSaves.forEach( function (item, index) {
         let saveChange = {
             "formula": "",
             "operator": "+",
@@ -2363,7 +2359,7 @@ function setConversionItem () {
         else if (item === "fort" && formattedInput.con.total === "-") {
             attrModifier = -5;
         } else {
-            attrModifier = +getModifier(formattedInput[enumSaveModifier[i]].total);
+            attrModifier = +getModifier(formattedInput[enumSaveModifier[index]].total);
             
         }
         
@@ -2374,9 +2370,9 @@ function setConversionItem () {
         saveChange.subTarget = item;
         saveChange.modifier = "untyped";
 
-        itemEntry.data.changes.push(saveChange);
-    }
-       
+        itemEntry.data.changes.push(saveChange);  
+    });
+    
     //itemEntry.data.active = false;
     
     dataOutput.items.push(itemEntry);
@@ -2430,62 +2426,34 @@ function mapDefenseData () {
     // Defensive Abilities
     // The list is found in the Notes-Section, long-forms should be in the special abilities section
     if (formattedInput.defensive_abilities !== "") {
-        
-        for (let i=0; i<formattedInput.defensive_abilities.length; i++) {
-        
+        formattedInput.defensive_abilities.forEach (async function (ability, index) {
+
             // SET THE FEATTYPE
             let featType = "misc";
 
-            setSpecialAbilityItem(formattedInput.defensive_abilities[i], featType, "Defensive Ability");
+            setSpecialAbilityItem(ability, featType, "Defensive Ability");
 
-        };
+        });
     }
     
     // Immunities    
     // Set Condition Immunities
     let tempImmunities = formattedInput.immunities;
     tempImmunities = tempImmunities.replace(/Electricity/gi, "electric");
-    
-    let tempResistances = formattedInput.resistances;
-    tempResistances = tempResistances.replace(/Electricity/gi, "electric");
-    
-    let tempWeaknesses = formattedInput.weaknesses;
-    tempWeaknesses = tempWeaknesses.replace(/Electricity/gi, "electric");
-    
-    for (let i=0; i<enumConditions.length; i++) {
-        let item = enumConditions[i];
+    enumConditions.forEach( function (item, index) {
         if (tempImmunities.search(item) !== -1) {
             dataOutput.data.traits.ci.value.push(item);
             tempImmunities = tempImmunities.replace(item, "");
         }
-    };
+    });
     
-    // Loop through the damageTypes
-    for (let i=0; i<enumDamageTypes.length; i++) {
-        // Set Damage Immunities
-        let item = enumDamageTypes[i];
+    // Set Damage Immunities
+    enumDamageTypes.forEach( function (item, index) {
         if (tempImmunities.search(item) !== -1) {
             dataOutput.data.traits.di.value.push(item);
             tempImmunities = tempImmunities.replace(item, "");
-        };
-        
-        // Resistances  
-        let tempResistanceRegEx = new RegExp("(\\b" + item + "\\b \\d+)", "ig");
-        
-        if (tempResistances.search(tempResistanceRegEx) !== -1) {
-            let tempResistance = tempResistances.match(tempResistanceRegEx);
-            dataOutput.data.traits.eres += tempResistance + ", ";
-        };
-        dataOutput.data.traits.eres = dataOutput.data.traits.eres.replace(/, $/,"");
-        
-        // Set DamageType Vulnerabilities
-        
-        
-        if (tempWeaknesses.search(item) !== -1) {
-            dataOutput.data.traits.dv.value.push(item);
-            tempWeaknesses = tempWeaknesses.replace(item, "");
-        };
-    };
+        }
+    });
     
     // If there is anything left in tempImmunities, treat it as a custom immunity
     if (tempImmunities.search(/(\w+)/gi) !== -1) {
@@ -2501,6 +2469,32 @@ function mapDefenseData () {
         dataOutput.data.traits.ci.custom = tempImmunities;
     }
     
+    // Resistances    
+    let tempResistances = formattedInput.resistances;
+    tempResistances = tempResistances.replace(/Electricity/gi, "electric");
+    
+    enumDamageTypes.forEach( function (item, index) {
+        let tempResistanceRegEx = new RegExp("(\\b" + item + "\\b \\d+)", "ig");
+        if (tempResistances.search(tempResistanceRegEx) !== -1) {
+            let tempResistance = tempResistances.match(tempResistanceRegEx);
+            dataOutput.data.traits.eres += tempResistance + ", ";
+        }
+    });
+    
+    dataOutput.data.traits.eres = dataOutput.data.traits.eres.replace(/, $/,"");
+        
+    // Weaknesses / Vulnerabilities    
+    // Set DamageType Vulnerabilities
+    let tempWeaknesses = formattedInput.weaknesses;
+    tempWeaknesses = tempWeaknesses.replace(/Electricity/gi, "electric");
+    
+    enumDamageTypes.forEach( function (item, index) {
+        if (tempWeaknesses.search(item) !== -1) {
+            dataOutput.data.traits.dv.value.push(item);
+            tempWeaknesses = tempWeaknesses.replace(item, "");
+        }
+    });
+    
     // If there is anything left in tempWeaknesses, treat it as a custom weakness
     if (tempWeaknesses.search(/(\w+)/gi) !== -1) {
         
@@ -2510,10 +2504,10 @@ function mapDefenseData () {
         tempCustomWeakness = tempCustomWeakness.replace(/, $/g, "");
         
         dataOutput.data.traits.dv.custom = tempCustomWeakness;
-    }    
+    }
     
     // Reset Max Dex Bonus for now
-    dataOutput.data.attributes.maxDexBonus = 0;
+    // dataOutput.data.attributes.maxDexBonus = 0;
 }
 
 // Map Offense Data
@@ -2554,9 +2548,7 @@ async function mapSpecialQualitiesData () {
 
     let tempSQ = formattedInput.special_qualities;
     
-    for(let i=0; i<tempSQ.length; i++) {
-        let item = tempSQ[i];
-        
+    tempSQ.forEach ( async function (item) {
         let sq = item.replace(/^ | $/g, "");
         
         let featType = "misc";
@@ -2568,21 +2560,21 @@ async function mapSpecialQualitiesData () {
         }
         
         setSpecialAbilityItem(sq, featType, "SQ");
-    }
-    
+        
+    });
     
 }
 
 // Map Special Ability Data
 function mapSpecialAbilitiesData () {
-    
-    for (let i=0; i<formattedInput.special_abilities.length; i++) {
+    formattedInput.special_abilities.forEach (async function (specialAbility, index) {
+                
         // SET THE FEATTYPE
         let featType = "misc";
-        let specialAbility = formattedInput.special_abilities[i];
         
         setSpecialAbilityItem(specialAbility, featType, "Special Ability");
-    }
+        
+    });
 }
 
 // Set Attack Items
@@ -2770,15 +2762,12 @@ async function setAttackItem (attackGroups, attackType) {
                     attackNotes += " (";
                     
                     let damagePool = attack.match(/(\d+d\d+[^0-9)]*)/g);
-                    
-                    for (let i=0; i<damagePool.length; i++) {
+                                        
+                    damagePool.forEach ( function ( damageComponent, index ) {
                         
-                        let damageComponent = damagePool[i];
                         let tempItem = damageComponent.split(/ plus /);
                         
-                        for (let j=0; j<tempItem.length; j++) {
-                            
-                            let damageSubComponent = tempItem[j];
+                        tempItem.forEach ( function ( damageSubComponent, subIndex) {
                             
                             // If there are damageDice
                             if (damageSubComponent.match(/(\d+d\d+)/) !== null) {
@@ -2791,22 +2780,22 @@ async function setAttackItem (attackGroups, attackType) {
                                     let specialDamageType = damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/)[1];
                                     attackNotes += specialDamageType;
                                     attackEffects += specialDamageType;
-                                };
+                                }
                             } else {
                                 // If there is just a specialEffect
                                 let specialEffect = damageSubComponent;
                                 attackNotes += specialEffect;
                                 attackEffects += specialEffect;
-                            };
-                            
+                            }
+
                             if (subIndex < tempItem.length-1) {
                                 attackNotes += " plus ";
                                 attackEffects += "\n";
-                            };
+                            }
                             
-                        }
-                        
-                    }
+                        });
+
+                    });
                     
                 } else {
                     // If there is just a specialEffect
@@ -2962,7 +2951,9 @@ async function setAttackItem (attackGroups, attackType) {
 
 // Set Special Attack Item
 async function setSpecialAttackItem (specialAttacks) {
-        
+    
+    console.log("setSpecialAttack specialAttacks: " + specialAttacks);
+    
     // Separate into separate specialAttacks without destroying parenthesis
     
     let splitSpecialAttacks = [];
@@ -2971,27 +2962,31 @@ async function setSpecialAttackItem (specialAttacks) {
         // Get specialAttacks with parenthesis, e.g.
         let specialAttacksWithParenthesis = specialAttacks.match(/([^,]+\([^(]*?\))+?/gi);
         
-        for (let i=0; i<specialAttacksWithParenthesis.length; i++) {
-            let splitSpecialAttack = specialAttacksWithParenthesis[i].replace(/^[;, ]*|[;, ]*$/g, "");
+        specialAttacksWithParenthesis.forEach( function (item) {
+
+            let splitSpecialAttack = item.replace(/^[;, ]*|[;, ]*$/g, "");
             splitSpecialAttacks.push(splitSpecialAttack);
-        }
-        
+
+        })
     } else {
         // Get specialAttacks without parenthesis    
         let specialAttacksWithoutParenthesis = specialAttacks.match(/(?:^|\)\s*,\s*)([^()]*)(?:,|$)/gi).toString().replace(/\(|\)/g, "").replace(/(,\s*,*\s*)+/g, ",").replace(/,$/, "").split(/,/);
 
-        for (let i=0; i<specialAttacksWithoutParenthesis.length; i++) {
-            let splitSpecialAttack = specialAttacksWithoutParenthesis[i].replace(/^[;, ]*|[;, ]*$/g, "");
+        specialAttacksWithoutParenthesis.forEach( function (item) {
+            
+            let splitSpecialAttack = item.replace(/^[;, ]*|[;, ]*$/g, "");
             splitSpecialAttacks.push(splitSpecialAttack);
-        }
-        
+
+        })
     };
-        
+    
+    console.log("splitSpecialAttacks: " + splitSpecialAttacks);
+    
     // Loop through the cleaned array of special attacks and create special attacks or special abilities
     
-    for (let i=0; i<splitSpecialAttacks.length; i++) {
-        let specialAttack = splitSpecialAttacks[i];
-                
+    splitSpecialAttacks.forEach( async function (specialAttack) {
+        console.log("specialAttack: " + specialAttack);
+        
         // Possible Values:
         // <name> (X/day, XdY+Z, DC XX, Range ft.)
         // rake (2 claws +6, 1d3+3)
@@ -3088,6 +3083,7 @@ async function setSpecialAttackItem (specialAttacks) {
         
         newSpecialAttack.data.attackBonus = secondaryAttackModifier.toString();
         for (let i=1; i < numberOfAttacks; i++) {
+            console.log("pushing attack number: " + i);
             newSpecialAttack.data.attackParts.push(
                 [
                     "0",
@@ -3153,9 +3149,21 @@ async function setSpecialAttackItem (specialAttacks) {
         // Set Name
         newSpecialAttack.name = "Special Attack: " + capitalize(name);
         
+        console.log("name: " + name);
+        console.log("limitedUses: " + limitedUses);
+        console.log("limitedUsesDenominator: " + limitedUsesDenominator);
+        
         dataOutput.items.push(newSpecialAttack);
         
-    };
+    });
+    
+    
+    
+        
+    //await setSpecialAbilityItem(item, featType);
+    //let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+    //newSpecialAbility.name = capitalize(item.toString());
+    //dataOutput.items.push(newSpecialAbility);
     
 }
 
@@ -3163,11 +3171,16 @@ async function setSpecialAttackItem (specialAttacks) {
 async function mapSpellbooks (actorID) {
     console.log("sbc | START MAPPING SPELLBOOKS");
     
+    const actor = await game.actors.get(actorID);
+    
     // Suppose we are working with a particular pack named "dnd5e.spells"
     const spellPack = game.packs.get("pf1.spells");
     // We can load the index of the pack which contains all entity IDs, names, and image icons
     const spellPackIndex = await spellPack.getIndex().then(index => {
+        //console.log(index);
         index = index.name;
+        
+        return index;
     });
     
     /*
@@ -3180,18 +3193,16 @@ async function mapSpellbooks (actorID) {
         };
     */
     
-    /* ------------------------------------ */
-    /* Loop through Spellbooks           	*/
-    /* ------------------------------------ */
-    
     let spellbookKeys = Object.keys(formattedInput.spellcasting);
-    for (let i=0; i<spellbookKeys.length; i++) {
-        console.log("sbc | START MAPPING - " + i + " - SPELLBOOK");
-        
-        let spellBook = spellbookKeys[i];
-                
+    
+    let spellEntities = [];
+    
+    await spellbookKeys.forEach ( function (spellBook, index) {
+        console.log("sbc | START MAPPING - " + index + " - SPELLBOOK");
+                        
         dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type;
-                
+        dataOutput.data.attributes.spells.spellbooks[spellBook].autoSpellLevels = false;
+        
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.base = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.value = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.total = +formattedInput.spellcasting[spellBook].CL;
@@ -3199,29 +3210,19 @@ async function mapSpellbooks (actorID) {
         dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration;
         dataOutput.data.attributes.spells.spellbooks[spellBook].spontaneous = formattedInput.spellcasting[spellBook].spontaneous;
         
-        /* ------------------------------------ */
-        /* Loop through Rows in the Spellbook  	*/
-        /* ------------------------------------ */
-        
+        // Separate the Spells
         let spellRows = Object.keys(formattedInput.spellcasting[spellBook].spells);
-        for (let j=0; j<spellRows.length; j++) {
-            console.log("sbc | START MAPPING - " + j + " - SPELLROW");
-            
+        
+        spellRows.forEach( async function (spellRow, index) {
+            console.log("sbc | START MAPPING - " + index + " - SPELLROW");
             // Get the complete Row
-            let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRows[j]];
-            
-            /* ------------------------------------ */
-            /* Variables at Spellbook Level     	*/
-            /* ------------------------------------ */
-            
-            
+            let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRow];
             
             // Get Spell Level if available
             let spellLevel = 0;
             if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/) !== -1) {
                 spellLevel = tempSpellRow.match(/(0|\d+(?=st|nd|rd|th))/)[0];
             }
-            let spellLevelString = "spell" + spellLevel;
             
             // Get Uses
             let uses = {
@@ -3236,10 +3237,16 @@ async function mapSpellbooks (actorID) {
                 uses.per =tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[2];
             }
             
+            /* ------------------------------------ */
+            /* Variables at Spellbook Level     	*/
+            /* ------------------------------------ */
+            
+            let spellLevelString = "spell" + spellLevel;
+            
             dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].value = +uses.value;
             dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].max = +uses.max;
             dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].base = uses.max;
-            
+                        
             /* ------------------------------------ */
             /* Variables at Spell Level         	*/
             /* ------------------------------------ */
@@ -3247,15 +3254,10 @@ async function mapSpellbooks (actorID) {
             // Set spellTemplate
             let spells = {
                 "spellLevel": spellLevel,
-                "uses": {
-                    "value": uses.value,
-                    "max": uses.max,
-                    "per": uses.per
-                },
                 "preparation": {
-                    "preparedAmount": 1,
-                    "maxAmount": 1,
-                    "spontaneousPrepared": true,
+                  "preparedAmount": 0,
+                  "maxAmount": 0,
+                  "spontaneousPrepared": true,
                 },
                 "atWill": false,
                 "spellList": tempSpellRow.replace(/(.*\-)/, "").split(/,/),
@@ -3300,17 +3302,12 @@ async function mapSpellbooks (actorID) {
                     break;
             }
             
-            /* ------------------------------------ */
-            /* Loop through the Spells in the Row 	*/
-            /* ------------------------------------ */
-            
-            let spellArray = [];
-            
+            // Loop through the spells
             let spellKeys = Object.keys(spells.spellList);
-            for (let k=0; k<spellKeys.length; k++) {
-                console.log("sbc | START MAPPING - " + k + " - SPELL");
-                let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
-                let spellDC = 0;
+            spellKeys.forEach( async function (key, index) {
+                console.log("sbc | START MAPPING - " + index + " - SPELL");
+                let spell = spells.spellList[key].replace(/^ | $/g, "");
+                let spellDC = "";
                 let spellName = "";
                 let domainSpell = "";
                 
@@ -3326,102 +3323,123 @@ async function mapSpellbooks (actorID) {
                 
                 // Search for Name
                 spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
-                spellName = spellName.replace(/(ACG)$/,"");
-                spellName = spellName.replace(/(APG)$/,"");
-                spellName = spellName.replace(/(’)/,"'");
                 
                 let spellInput = {
                     "name": spellName,
-                    "uses": {
-                        "value": spells.spellUses,
-                        "max": spells.spellUses,
-                        "per": spells.spellUsesDenominator
-                    },
                     "preparation": {
-                      "preparedAmount": spells.preparation.preparedAmount,
-                      "maxAmount": spells.preparation.maxAmount,
-                      "spontaneousPrepared": true,
-                    },
-                    "atWill": spells.atWill,
-                    "saveDC": spellDC,
-                    "effectNotes": domainSpell,
-                    "level": spells.spellLevel
-                }
-
-                console.log("sbc | FINISH MAPPING - " + k + " - SPELL");
-                spellArray.push(spellInput);                
+                         "preparedAmount": spells.preparation.preparedAmount,
+                         "maxAmount": spells.preparation.maxAmount,
+                         "spontaneousPrepared": spells.preparation.spontaneousPrepared
+                     },
+                     "atWill": spells.atWill,
+                     "saveDC": spellDC.toString(),
+                     "effectNotes": domainSpell,
+                     "level": spells.spellLevel
+                };
+                                
+                let newSpell = await setSpellItem(spellInput, spellBook, spellPack, spellPackIndex);
                 
-            };
+                console.log("newSpell:");
+                console.log(newSpell);
+                
+                spellEntities.push(newSpell);
+                
+                console.log("spellEntities:");
+                console.log(spellEntities);
+                
+                console.log("sbc | FINISH MAPPING - " + index + " - SPELL");
+
+            }); 
             
-            await setSpellsItem(spellArray, actorID, spellBook, spellPack, spellPackIndex);
+            console.log("sbc | FINISH MAPPING - " + index + " - SPELLROW");
             
-            console.log("sbc | FINISH MAPPING - " + j + " - SPELLROW");
-            
-        };
+        })
         
-        console.log("sbc | FINISH MAPPING - " + i + " - SPELLBOOK");
+        console.log("sbc | FINISH MAPPING - " + index + " - SPELLBOOK");
         
-    };
+    });
     
-    //await setSpellsItem(spellEntities, actorID, spellBook, spellPack, spellPackIndex);
+    // create all spells in one go
+    console.log("returning spellEntities:");
+    console.log(spellEntities);
+       
+    await actor.createEmbeddedEntity("OwnedItem", spellEntities);
     
     console.log("sbc | FINISH MAPPING SPELLBOOKS");
-
+    return spellEntities;
 }
-
 
 // Set Spell Item
 // THIS IS A FOUNDRY ONLY FUNCTION AND WILL NOT WORK IN A STAND ALONE VERSION AS THE REST CURRENTLY WOULD
-
-async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPackIndex) {
-    console.log("sbc | START SETTING SPELL");    
-    
-    const actor = await game.actors.get(actorID);
-
-    // We can find a specific entry in the compendium by its name
-    
-    let spellOutputArray = [];
+function setSpellItem (spellInput, spellBook, spellPack, spellPackIndex) {
+    console.log("sbc | START SETTING SPELL");
+    console.log("spellInput.name: " + spellInput.name);
         
-    for (let i=0; i<spellArray.length; i++) {
-        let spellInput = spellArray[i];
-        try{
+    // We can find a specific entry in the compendium by its name
+    try {
                 
-            let entry =  spellPack.index.find(e => e.name.toLowerCase() === spellInput.name.toLowerCase());
-            // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
-            let spell = await spellPack.getEntity(entry._id)
+        let entry = spellPack.index.find(e => e.name === capitalize(spellInput.name));
 
-            console.log(spell);
+        let spell = spellPack.getEntity(entry._id);
+        
+        console.log("SPELLLLLLLL");
+        console.log(spell);
+        
+        console.log("sbc | FINISH SETTING SPELL");
+        
+        return spell;
+        
+        
+        
+        // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
+        /*
+        let spellOutput = await spellPack.getEntity(entry._id).then(spell => {
+            
             spell.data.data.spellbook = spellBook;
             spell.data.data.level = spellInput.level;
+            
+            // NOT USED IN THE ITEM?
             spell.data.data.uses.value = +spellInput.uses.value;
             spell.data.data.uses.max = +spellInput.uses.max;
             spell.data.data.uses.per = spellInput.uses.per;
+            
+            
             spell.data.data.preparation.preparedAmount = +spellInput.preparation.preparedAmount;
             spell.data.data.preparation.maxAmount = +spellInput.preparation.maxAmount;
+            spell.data.data.preparation.spontaneousPrepared = spellInput.preparation.spontaneousPrepared;
+            
             spell.data.data.save.dc = spellInput.saveDC.toString();
             spell.data.data.effectNotes = spellInput.effectNotes;
             spell.data.data.atWill = spellInput.atWill;
-
-            spellOutputArray.push(spell);
-            dataOutput.items.push(spell.data);
-            //actor.createEmbeddedEntity("OwnedItem", spell);
-
-            console.log("sbc | FINISH SETTING SPELL");
-        } catch (error) {
-    
-            console.log("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!");
-            ui.notifications.info("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!")
-        }
-                
-    };
+            
+            console.log("spell");
+            console.log(spell);
+            
+            return spell;
+        });
         
-    await actor.createEmbeddedEntity("OwnedItem", spellOutputArray);
+        console.log("sbc | FINISH SETTING SPELL");
+        console.log("spellOutput");
+        console.log(spellOutput);
+        return spellOutput;
+        */
+        
+        
+    } catch (error) {
+        console.log("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!");
+        ui.notifications.info("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!")
+        
+    }
     
 }
 
+
+
 // Set Special Ability Item
 function setSpecialAbilityItem (specialAbility, featType, abilityType) {
-            
+    
+    console.log("specialAbility: " + specialAbility);
+        
     let existingItemFound = false;
     
     let specialAbilityName = "";
@@ -3472,11 +3490,13 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
     // Check if there already is an item with the same name
     let itemKeys = Object.keys(dataOutput.items);
     
+    console.log("specialAbilityName: " + specialAbilityName);
     let tempAbilityName = specialAbilityName.replace(/[/]/g, "\/");
-            
-    for (let i=0; i<itemKeys.length; i++) {
-        let itemKey = itemKeys[i];
         
+    console.log("tempAbilityName: " + tempAbilityName);
+    
+    itemKeys.forEach ( function (itemKey, index) {
+
         //let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
         
         let searchString = new RegExp (tempAbilityName, "i");
@@ -3497,7 +3517,8 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
             dataOutput.items[itemKey].data.featType = tempFeatTypeShort;
             dataOutput.items[itemKey].labels.featType = tempFeatType;
         }
-    }
+        
+    });
     
     if (existingItemFound == false) {
         // Create a new Item for new special Abilities
@@ -3521,18 +3542,16 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
 
 // Map Statistics to data.attributes
 function mapStatisticData () {
-    console.log("MAP STATISTICS DATA");
+    
     // Abilities
     let carryCapacity = 0;
     dataOutput.data.abilities.str.carryMultiplier = carrySizeModificators[formattedInput.size];
     dataOutput.data.abilities.str.carryBonus = 0;
     
-    for (let i=0; i<enumAttributes.length; i++) {
-        
-        let item = enumAttributes[i];
-        
+    enumAttributes.forEach ( function (item, index) {
+                
         if (formattedInput[item].total !== "-") {
-            dataOutput.data.abilities[item].total = +formattedInput[item].total;
+            dataOutput.data.abilities[item].total = +formattedInput[item].total - +formattedInput[item].race;
             dataOutput.data.abilities[item].value = +formattedInput[item].total - +formattedInput[item].race;
             dataOutput.data.abilities[item].mod = getModifier(formattedInput[item].total);
             
@@ -3553,8 +3572,7 @@ function mapStatisticData () {
                 carryCapacity = 0;
             }
         }
-        
-    }
+    });
     
     // Finish Carry Capacity
     dataOutput.data.attributes.encumbrance.levels.light = Math.floor(1/3 * carryCapacity);
@@ -3564,19 +3582,19 @@ function mapStatisticData () {
     dataOutput.data.attributes.encumbrance.levels.drag = Math.floor(5 * carryCapacity);
     
     // BAB, CMB, CMD
-    dataOutput.data.attributes.bab.value = +formattedInput.bab;
-    dataOutput.data.attributes.bab.total = +formattedInput.bab;
-    dataOutput.data.attributes.cmb.value = +formattedInput.cmb.total;
-    dataOutput.data.attributes.cmb.total = +formattedInput.cmb.total;
-    dataOutput.data.attributes.cmbNotes = formattedInput.cmb.context;    
+    dataOutput.data.attributes.bab.value = "+" + +formattedInput.bab;
+    dataOutput.data.attributes.bab.total = "+" + +formattedInput.bab;
+    dataOutput.data.attributes.cmb.value = "+" + +formattedInput.cmb.total;
+    dataOutput.data.attributes.cmb.total = "+" + +formattedInput.cmb.total;
+    dataOutput.data.attributes.cmbNotes = formattedInput.cmb.context;
     dataOutput.data.attributes.cmd.value = formattedInput.cmd.total;
     dataOutput.data.attributes.cmd.total = formattedInput.cmd.total;
     dataOutput.data.attributes.cmdNotes = formattedInput.cmd.context;
     
     // Feats
-    for (let i=0; i<formattedInput.feats.length; i++) {
-        setFeatItem(formattedInput.feats[i]);
-    }
+    formattedInput.feats.forEach ( function (item, index) {
+        setFeatItem(item);
+    });
     
     // Skills
     let skillKeys = Object.keys(formattedInput.skills);
@@ -3692,10 +3710,7 @@ function mapStatisticData () {
                 
                 let classKeys = Object.keys(formattedInput.classes);
                 
-                for (let j=0; j<classKeys.length; j++) {
-                    
-                    let item = classKeys[j];
-                    
+                classKeys.forEach( function (item) {
                     if (item.search(/wizard|necromancer|diviner|evoker|illusionist|transmuter|abjurer|conjurer|enchanter/i) !== -1) {
                         let specialistWizard = item.match(/(wizard|necromancer|diviner|evoker|illusionist|transmuter|abjurer|conjurer|enchanter)/i)[0];
                         let wizardSchool = "";
@@ -3732,10 +3747,8 @@ function mapStatisticData () {
                         
                         contextNotes = "+2 for " + wizardSchool + " Spells, -5 for Spells of Opposing Schools";                        
                     }
-                    
-                };
+                });
                 break;
-                
             case "stealth":
                 switch (formattedInput.size.toLowerCase()) {
                     case "fine":
@@ -3841,12 +3854,10 @@ function mapStatisticData () {
                             "cs": false,
                             "value": null
                         }
-                        
-                        for (let k=0; k<tempSkillKeys.length; k++) {
                             
-                            let item = tempSkillKeys[k];
-                            
+                        tempSkillKeys.forEach ( function (item, index) {
                             if (item === skillSubKey) {
+
                                 
                                 let tempSubAttrShort = tempAttrShort + (+index+1);
                                 
@@ -3862,9 +3873,9 @@ function mapStatisticData () {
                                 dataOutput.data.skills[tempAttrShort].subSkills[tempSubAttrShort].cs = dataOutput.data.skills[tempAttrShort].cs;
                                 dataOutput.data.skills[tempAttrShort].subSkills[tempSubAttrShort].value = dataOutput.data.skills[tempAttrShort].value;
                                 
-                            };
+                            }
                             
-                        };
+                        });
   
                     }
                 } else {
@@ -3944,10 +3955,7 @@ function mapStatisticData () {
     let tempUnknownLanguages = "";
         
     if (formattedInput.languages) {
-        
-        for (let i=0; i<formattedInput.languages.length; i++) {
-            
-            let item = formattedInput.languages[i];
+        formattedInput.languages.forEach ( function (item, index) {
             
             let tempItem = item.replace(/\+/i, "\\+");
 
@@ -3956,9 +3964,8 @@ function mapStatisticData () {
             } else {
                 tempUnknownLanguages += item + ", ";
             }
-            
-        }
-    
+
+        });
     }
     
     dataOutput.data.traits.languages.value = tempKnownLanguages;
@@ -4007,11 +4014,9 @@ function mapNotesData() {
     if (formattedInput.special_qualities[0] !== null && formattedInput.special_qualities[0] !== undefined && formattedInput.special_qualities[0] !== "") {
         let tempSpecialQualities = "<section id='defensiveAbilities'><h2>SPECIAL QUALITIES</h2>";
         tempSpecialQualities += "<p>";
-        
-        for (let i=0; i<formattedInput.special_qualities.length; i++) {
-            tempSpecialQualities += formattedInput.special_qualities[i] + ", ";
-        }
-        
+        formattedInput.special_qualities.forEach ( function (item) {
+            tempSpecialQualities += item + ", ";
+        })
         tempSpecialQualities = tempSpecialQualities.replace(/, $/,"");
         tempSpecialQualities += "</p>";
         tempSpecialQualities += "</section>";
@@ -4041,21 +4046,72 @@ async function createNewActor () {
     
     if(DEBUG==true) { console.log("sbc-pf1 | Updating the Actor to include conversion changes") };
     
-    //await game.actors.get(newActor.id).update(dataOutput);
+    await game.actors.get(newActor.id).update(dataOutput);
     
     if(DEBUG==true) { console.log("sbc-pf1 | Spellcasting - Creating embeddedEntities") };
     
-    await mapSpellbooks(newActor.id);
+    let spellEntities = await mapSpellbooks(newActor.id);
     
-    const tempActor = await game.actors.get(newActor.id);
+    console.log("spellEntities before creating");
+    console.log(spellEntities);
     
-    await game.actors.get(newActor.id).update(dataOutput);
-    await game.actors.get(newActor.id).update(dataOutput);
+    
+    
+    
+    await createEmbeddedEntities(newActor.id, spellEntities);
+    
+    console.log("newACtor:");
+    console.log(newActor);
         
     await newActor.render(true);
-    
     return newActor;
     
+}
+
+async function createEmbeddedEntities(actorID, entities) {
+    console.log("creating embedded entities:");
+    console.log(entities);
+    
+    const actor = await game.actors.get(actorID);
+    
+    /*
+    entities.forEach( async function (entity) {
+        console.log("entity");
+        console.log(entity.value);
+        
+        let workEntity = await entity;
+        
+        console.log("workEntity");
+        console.log(workEntity);
+        console.log("createdEntity");
+        let createdEntity = await actor.createEmbeddedEntity("OwnedItem", entity);
+        
+        console.log(createdEntity);
+
+        
+    });
+    */
+    
+    let resolvedEntities = [];
+    
+    entities.forEach( async function ( entity, index ) {
+        resolvedEntities[index] = await entity;
+        //await actor.createEmbeddedEntity("OwnedItem", entity);
+    })
+    
+    console.log("resolvedEntities");
+    console.log(resolvedEntities);
+    
+    //let createdEntities = await actor.createEmbeddedEntity("OwnedItem", resolvedEntities);
+    
+    //actor.createEmbeddedEntity("OwnedItem", resolvedEntities);
+    
+    
+    
+    //let created = await actor.createEmbeddedEntity("OwnedItem", entities); // Returns an Array of EmbeddedEntities, saved to the Actor
+
+    console.log("CREATED ENTITIES:");
+    //console.log(createdEntities);
 }
 
 /* ------------------------------------ */
@@ -4109,12 +4165,15 @@ function capitalize (str) {
 /* ------------------------------------ */
 
 async function createSpellFromCompendium(spellName, actor_id) {
+    console.log("searching for " + spellName + " in compendium");
+    
     
     // Suppose we are working with a particular pack named "dnd5e.spells"
     const pack = game.packs.get("pf1.spells");
 
     // We can load the index of the pack which contains all entity IDs, names, and image icons
     let packIndex = await pack.getIndex().then(index => {
+        //console.log(index);
         index = index.name;
     });
 
@@ -4123,6 +4182,7 @@ async function createSpellFromCompendium(spellName, actor_id) {
             
     // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
     await pack.getEntity(entry._id).then(spell => {
+        console.log(spell);
         return spell;
     });
 }
@@ -4132,6 +4192,7 @@ async function getItemFromCompendium(packInput, item) {
 
     // We can load the index of the pack which contains all entity IDs, names, and image icons
     let packIndex = await pack.getIndex().then(index => {
+        //console.log(index);
         index = index.name;
     });
 
@@ -4140,6 +4201,7 @@ async function getItemFromCompendium(packInput, item) {
             
     // Given the entity ID we can load the full Entity from the compendium
     let output = await pack.getEntity(entry._id).then(entity => {
+        console.log(entity);
         return entity;
     });
     
