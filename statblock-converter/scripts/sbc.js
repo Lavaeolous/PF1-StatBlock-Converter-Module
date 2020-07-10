@@ -1262,8 +1262,28 @@ function splitOffenseData(stringOffenseData) {
             if (item.search(/fly/) === -1 && item.search(/\(([^)]+)\)/g) !== -1) {
                 speedContext = item.match(/\(([^)]+)\)/g)[0];
                 speedTotal = speedContext.match(/\d+/)[0];
+            } else if (item.search(/fly/) !== -1 && item.search(/\(([^)]+)\)/g) !== -1) {
+                let flyManeuverability = item.match(/\(([^)]+)\)/)[1];
+                console.log("item: " + item);
+                console.log("match2: " + item.match(/\(([^)]+)\)/)[2]);
+                
+                if (item.match(/\(([^)]+)\)/g)[2] !== undefined) {
+                    speedContext = item.match(/\(([^)]+)\)/g)[2];
+                    speedTotal = speedContext.match(/\d+/)[0];
+                    console.log("contextTotal: " + speedTotal);
+                } else {
+                    speedContext = item.match(/\(([^)]+)\)/g)[1];
+                    
+                }
+                console.log("speedContext: " + speedContext);
+                
+                formattedInput.speed.fly.maneuverability = flyManeuverability;
+            } else {
+                
             }
       
+            
+            
             if (speedType !== "" && speedBase !== null) {
                 // If its a movementType with speed (e.g. land, fly, climb or burrow)
                 formattedInput.speed[speedType].base = +speedBase;
@@ -1273,10 +1293,7 @@ function splitOffenseData(stringOffenseData) {
                 formattedInput.special_abilities[item] = { "name": item };
             }
             
-            if (item.search(/fly/) !== -1) {
-                let flyManeuverability = item.match(/(?:\((.+)\))/)[1];
-                formattedInput.speed.fly.maneuverability = flyManeuverability;
-            }
+            
         });
     }
         
@@ -1680,6 +1697,10 @@ function splitStatisticsData(stringStatisticsData) {
                 if (skillName.search(/\bKnowledge\b/i) !== -1) {
                     
                     skillSubtype = skillSubtype.replace(/\bEnter Choice\b/ig, "any one");
+                    skillSubtype = skillSubtype.replace(/Arcane/i, "Arcana");
+                    skillSubtype = skillSubtype.replace(/\bPer./i, "Perception");
+                    skillSubtype = skillSubtype.replace(/S. Motive/i, "Sense Motive");
+                    skillSubtype = skillSubtype.replace(/\bLing./i, "Linguistics");
                     
                     // Check if its for ALL knowledge skills
                     if (skillSubtype.match(/\ball\b/i) !== null) {
@@ -3398,7 +3419,7 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             spell.data.data.uses.per = spellInput.uses.per;
             spell.data.data.preparation.preparedAmount = +spellInput.preparation.preparedAmount;
             spell.data.data.preparation.maxAmount = +spellInput.preparation.maxAmount;
-            spell.data.data.save.dc = spellInput.saveDC.toString();
+            //spell.data.data.save.dc = spellInput.saveDC.toString();
             spell.data.data.effectNotes = spellInput.effectNotes;
             spell.data.data.atWill = spellInput.atWill;
 
@@ -3848,7 +3869,7 @@ function mapStatisticData () {
                             
                             if (item === skillSubKey) {
                                 
-                                let tempSubAttrShort = tempAttrShort + (+index+1);
+                                let tempSubAttrShort = tempAttrShort + (k+1);
                                 
                                 dataOutput.data.skills[tempAttrShort].subSkills[tempSubAttrShort] = JSON.parse(JSON.stringify(templateSubSkill));
                                 
