@@ -55,6 +55,7 @@ var dataOutput;
 var dataTemplate;
 var formattedInput;
 
+
 var enumAttributes = [
     "str",
     "dex",
@@ -328,6 +329,7 @@ var enumSpellcastingClasses = [
 var inputTextArea = document.getElementById("input");
 // Make function visible outside the esmodule
 window.convertStatBlock = convertStatBlock;
+window.auto_csv_flag = false;
 
 /* ------------------------------------ */
 /* Debug    							*/
@@ -650,6 +652,9 @@ async function convertStatBlock(input) {
 
     // CREATE NEW ACTOR
     let newActor = await createNewActor();
+    if(window.auto_csv_flag){
+        return dataOutput;
+    }
     
     if(DEBUG==true) { 
         console.log("sbc-pf1 | CHECK HERE FOR DIFFERENCES BETWEEN RAW INPUT, PARSED AND SAVED DATA");
