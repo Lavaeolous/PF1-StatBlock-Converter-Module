@@ -8,7 +8,7 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json
 ```
 # Compatibility
-GameSystem: [PF1 0.621](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+GameSystem: [PF1 0.627](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 FoundryVTT: 0.6.4
 
 # How to Use
@@ -27,7 +27,7 @@ Currently, the tool parses the following data and generates equivalent Foundry D
 *  **Defensive Data:** AC, Touch and Flat-Footed)<sup>2</sup>, HP<sup>2</sup>, Hit Dice<sup>2</sup>, Saves<sup>2</sup>, Defensive Abilities<sup>1</sup>, Immunities, Resistances, Weaknesses, Damage and Spell Resistance
 *  **Tactics:** Before &amp; During Combat, Morale (Buggy)
 *  **Statistics Data:** Attributes (Str, Dex, Con, Int, Wis, Cha), BAB, CMD and CMB, Feats<sup>4</sup>, Skills<sup>2</sup>, Languages, Special Qualities
-*  **Offense Data:** Speed(s), Melee Attacks (Weapon, Natural, Swarm), Ranged Attacks, Damage Types, Special Attacks, [SPELLS ARE NOT YET IMPLEMENTED]
+*  **Offense Data:** Speed(s), Melee Attacks (Weapon, Natural, Swarm), Ranged Attacks, Damage Types, Special Attacks, Spells, Spell-Like Abilities
 *  **Special Abilities**
 *  **Descriptions**
 
@@ -43,13 +43,18 @@ Currently, the tool parses the following data and generates equivalent Foundry D
 
 # To Do
 *  **Bug Fixing**
-*  Parse Spells, Ecology, Gear & Treasure
+*  Parse Ecology, Gear & Treasure
 *  Give usable Feedback or implement a debug mode (for now some comments are visible in the console)
 
 # Contact
 Primer#2220 | FoundryVTT Discord
 
 # Change Log
+
+2020_07_10
+*  Finished and fixed Spell- & SLA-Parsing
+*  Merging PR for the auto-conversion of bestiaries, see [PF1 Bestiary](https://github.com/JamesDeVore/pf1_Bestiary)
+*  Bug-Fixing
 
 2020_06_28:
 *  Added Resilience for malformed input
