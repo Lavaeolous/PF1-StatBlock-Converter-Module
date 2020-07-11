@@ -552,7 +552,7 @@ async function convertStatBlock(input) {
     else if (foundOffenseData == true) {
         splitInput = tempInputRest.split(/\nStr/i);
         tempInputRest = "Str".concat(splitInput[1]);
-        stringOffenseData = splitInput[0].replace(/(OFFENSE)/gmi,"").replace(/(STATISTICS)/gmi,"");
+        stringOffenseData = splitInput[0].replace(/(OFFENSE)/gmi,"").replace(/(^STATISTICS)/gmi,"");
         splitInput = "";
     }
     
@@ -560,7 +560,7 @@ async function convertStatBlock(input) {
     if(foundTacticsData == true) {
         splitInput = tempInputRest.split(/\nStr/i);
         tempInputRest = "Str" + splitInput[1];
-        stringTacticsData = splitInput[0].replace(/(STATISTICS)/gmi,"");
+        stringTacticsData = splitInput[0].replace(/(^STATISTICS)/mi,"");
         splitInput = "";
     }
     
@@ -606,13 +606,16 @@ async function convertStatBlock(input) {
         stringGearData = splitInput[0];
         splitInput = "";
     }
-    
-    if(dataInput.indexOf("ECOLOGY") !== -1) {
-        splitInput = tempInputRest.split("ECOLOGY");
-        stringGearData = splitInput[0];
-        stringEcologyData = splitInput[1];
+    */
+    if(dataInput.search(/\nECOLOGY\n/i) !== -1) {
+        dataInputHasEcology = true;
+        console.log("FOUND ECOLOGY");
+        splitInput = dataInput.match(/\nEcology\n([\s\S]*?)(?=Special Abilities|Description|$)/i);
+        stringEcologyData = splitInput[0];
+        console.log("stringEcologyData");
+        console.log(stringEcologyData);
         splitInput = "";
-    }*/    
+    }    
     
     /*
      * Extract Values from the Blocks
@@ -636,6 +639,11 @@ async function convertStatBlock(input) {
     
     // Take Statistics Data and extract Attribute, BAB, CMB, CMD, Feats, Skills, Languages, SQs and Gear
     await splitStatisticsData(stringStatisticsData);
+    
+    // Take Ecology Data
+    if(dataInputHasEcology == true) {
+        await splitEcologyData(stringEcologyData);        
+    }
     
     // Take Special Abilities Data
     if(foundSpecialAbilitiesData == true) {
@@ -684,20 +692,55 @@ function splitGeneralData(stringGeneralData) {
     if(DEBUG==true) { console.log("sbc-pf1 | Parsing general data") };
     // Separate Name and Challenge Rating
     
-    let splitGeneralData = stringGeneralData.replace(/\n/gm,"");
-    splitGeneralData = splitGeneralData.replace(/defense$|defenses$/i,"");
+    //let splitGeneralData = stringGeneralData.replace(/\n/gm,"");
+    //splitGeneralData = splitGeneralData.replace(/defense$|defenses$/i,"");
+    
+    let splitGeneralData = stringGeneralData.replace(/defense$|defenses$/i,"");
+    
+    let splitName = splitGeneralData.match(/^.*/)[0].replace(/ CR\s*\d+/, "");
+    let splitCR = 0;
+    let splitXP = 0;
+    
+    
+    
+    if (splitGeneralData.search(/\bCR/) !== -1) {
+        splitCR = splitGeneralData.match(/\bCR (\d+)/)[1];
         
+        // Save the Challenge Rating as a number
+        if (splitCR.search("/") !== -1) {
+            let nominator = 1;
+            let denominator = splitCR.match(/\/(\d)/)[1];
+            if (denominator == 3) {
+                formattedInput.cr = 0.3375;
+            } else if (denominator == 6) {
+                formattedInput.cr = 0.1625;
+            } else {
+                formattedInput.cr = +nominator / +denominator;
+            }
+        } else {
+            formattedInput.cr = splitCR;
+        }
+        
+    }
+    
+    if (splitGeneralData.search(/\bXP\s*/) !== -1){
+        splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
+        formattedInput.xp = splitXP;
+    }
+    
+    /*
     // Name (every char until "CR" is found)
-    let splitName = splitGeneralData.match(/.+?(?=CR)/)[0];
+    splitName = splitGeneralData.match(/.+?(?=CR)/)[0];
     
     // CR
-    let splitCR = splitGeneralData.match(/(1\/\d|\d+)/)[0];
+    splitCR = splitGeneralData.match(/(1\/\d|\d+)/)[0];
     
     // XP
-    let splitXP =0;
+    splitXP =0;
     if (splitGeneralData.search(/(\s*XP\s*)/im) !== -1) {
         splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
     }
+    */
         
     //Alignment
     let splitAlignment = "";
@@ -728,6 +771,8 @@ function splitGeneralData(stringGeneralData) {
     let regExClassesAndLevel = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")(?:\\s*\\d+)"), "gi");
     let regExClasses = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")"), "gi");
     let splitClasses = splitGeneralData.match(regExClassesAndLevel);
+    
+    formattedInput.notes.classes = splitClasses;
     
     // If there are classes, get them, their level and the race / gender as well
     if ( (splitClasses !== null) && (splitClasses !== "") ) {
@@ -870,25 +915,12 @@ function splitGeneralData(stringGeneralData) {
     // Save the found entries into formattedInput
     formattedInput.name = splitName;
     
-    // Save the Challenge Rating as a number
-    if (splitCR.search("/") !== -1) {
-        let nominator = 1;
-        let denominator = splitCR.match(/\/(\d)/)[1];
-        if (denominator == 3) {
-            formattedInput.cr = 0.3375;
-        } else if (denominator == 6) {
-            formattedInput.cr = 0.1625;
-        } else {
-            formattedInput.cr = +nominator / +denominator;
-        }
-    } else {
-        formattedInput.cr = splitCR;
-    }
+    
         
     // For now, use cr as level
     formattedInput.level = splitCR;
             
-    formattedInput.xp = splitXP;
+    
     formattedInput.alignment = splitAlignment;
     formattedInput.size = splitSize;
     formattedInput.space = splitSpace;
@@ -919,6 +951,8 @@ function splitDefenseData(stringDefenseData) {
     let splitACBonusTypes = {};
     if (splitDefenseData[0].search(/\([\s\S]*?\)/) !== -1) {
         splitACBonusTypes = JSON.stringify(splitDefenseData[0].match(/\([\s\S]*?\)/)).split(/,/);
+        
+        formattedInput.notes.acBonus = splitDefenseData[0].match(/\([\s\S]*?\)/);
     
         // Loop through the found AC Boni and set changes accordingly
         for (let i=0; i<splitACBonusTypes.length; i++) {
@@ -961,6 +995,8 @@ function splitDefenseData(stringDefenseData) {
     
     
     let stringHitDice = JSON.parse(JSON.stringify(splitDefenseData[1].match(/\([\s\S]*?\)/)));
+    
+    formattedInput.notes.hpDice = splitDefenseData[1].match(/\([\s\S]*?\)/)[0].replace(/[()]*/g, "");
 
     // If available, extract Regeneration
     if (splitDefenseData[1].search(/Regeneration/i) !== -1) {
@@ -1170,13 +1206,13 @@ function splitDefenseData(stringDefenseData) {
     // Immunities
     if (searchableDefenseData.search(/\bImmune\b|\bImmunities\b/i) !== -1) {
         let splitImmunities = searchableDefenseData.match(/(?:\bImmune\b |\bImmunities\b )(.*?)(?:;)/i)[0].replace(/\bimmune\b |\bimmunities\b /i, "");
-        formattedInput.immunities = splitImmunities;
+        formattedInput.immunities = splitImmunities.replace(/;$/,"");
     }
     
     // Resistances
     if (searchableDefenseData.search(/\bResist\b|\bResistances\b/i) !== -1) {
         let splitResistances = searchableDefenseData.match(/(?:\bResist\b |\bResistance\b )(.*?)(?:;)/i)[0].replace(/\bResist\b |\bResistances\b /i, "");
-        formattedInput.resistances = splitResistances;
+        formattedInput.resistances = splitResistances.replace(/;$/,"");
     }
     
     // Weaknesses
@@ -1220,6 +1256,8 @@ function splitOffenseData(stringOffenseData) {
     let landSpeedBase = splitSpeed.match(/\d+/)[0];
     let landSpeedTotal = landSpeedBase;
     let landSpeedContext = "";
+    
+    formattedInput.notes.speed = splitSpeed;
     
     formattedInput.speed.land.base = landSpeedBase;
             
@@ -1534,17 +1572,17 @@ function splitTacticsData(stringTacticsData) {
     splitTacticsData = splitTacticsData.replace(/\n/gm," ");    
     // Check for Keywords "During Combat, Before Combat and Morale"
     if(splitTacticsData.search(/Before Combat/m) !== -1) {
-        let splitTacticsBeforeCombat = splitTacticsData.match(/Before Combat .+?(?=Morale|During|Base Statistics|$)/);
+        let splitTacticsBeforeCombat = splitTacticsData.match(/Before Combat ([\s\S]*?)(?=Morale|During|Base Statistics)|Before Combat ([\s\S]*?)$/)[0].replace(/^Before Combat/i, "");
         formattedInput.tactics.before_combat = splitTacticsBeforeCombat;
     }
     
     if(splitTacticsData.search(/During Combat/mi) !== -1) {
-        let splitTacticsDuringCombat = splitTacticsData.match(/During Combat .+?(?=Morale|Before|Base Statistics|$)/)[0].replace(/During Combat /,"");
+        let splitTacticsDuringCombat = splitTacticsData.match(/During Combat ([\s\S]*?)(?=Morale|Before|Base Statistics)|During Combat ([\s\S]*?)$/)[0].replace(/^During Combat /i,"");
         formattedInput.tactics.during_combat = splitTacticsDuringCombat;
     }
         
     if(splitTacticsData.search(/Morale/m) !== -1) {
-        let splitTacticsMorale = splitTacticsData.match(/Morale .+?(?=(Base Statistics)|$)/)[0].replace(/Morale /,"");
+        let splitTacticsMorale = splitTacticsData.match(/Morale ([\s\S]*?)(?=Base Statistics)|Morale ([\s\S]*?)$/)[0].replace(/Morale /,"");
         formattedInput.tactics.morale = splitTacticsMorale;
     }
     
@@ -1558,6 +1596,17 @@ function splitTacticsData(stringTacticsData) {
     }
     
     if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing tactics data") };
+}
+
+// Split Ecology Data
+function splitEcologyData(stringEcologyData) {
+    if(DEBUG==true) { console.log("sbc-pf1 | Parsing Ecology data") };
+    
+    formattedInput.ecology.environment = stringEcologyData.match(/Environment (.*)/i)[0];
+    formattedInput.ecology.organization = stringEcologyData.match(/Organization (.*)/i)[0];
+    formattedInput.ecology.treasure = stringEcologyData.match(/Treasure (.*)/i)[0];
+    
+    if(DEBUG==true) { console.log("sbc-pf1 | Done parsing Ecology data") };
 }
 
 // Split Statistics
@@ -1624,6 +1673,9 @@ function splitStatisticsData(stringStatisticsData) {
         // Cleanup and remove stray linebreaks
         splitFeats = splitFeats.replace(/Skills$/i, "").replace(/\n/g, " ");
         splitFeats = splitFeats.replace(/Feats /i, "");
+        
+        formattedInput.notes.feats = splitFeats;
+        
         splitFeats = splitFeats.replace(/,\s|;\s/g, ",");
         splitFeats = splitFeats.split(/,/);
 
@@ -1634,6 +1686,9 @@ function splitStatisticsData(stringStatisticsData) {
     if (stringStatisticsData.search(/(?:Skills )/) !== -1) {
         let splitSkills = stringStatisticsData.match(/(?:Skills\s*)(.*)(?:[0-9)]+?)/gim)[0];
         splitSkills = splitSkills.replace(/Skills\s*/i, "");
+        
+        formattedInput.notes.skills = splitSkills;
+        
         splitSkills = splitSkills.replace(/,\s|;\s/g, ",");
         splitSkills = splitSkills.replace(/\n/, "");
                 
@@ -1806,6 +1861,9 @@ function splitStatisticsData(stringStatisticsData) {
     if (stringStatisticsData.search(/(\bLanguages\b )/) !== -1) {
         let splitLanguages = stringStatisticsData.match(/(?:Languages )(.*)(?:\n+?)/gim)[0].replace(/\n/gm,"");
         splitLanguages = splitLanguages.replace(/Languages /i, "");
+        
+        formattedInput.notes.languages = splitLanguages;
+        
         splitLanguages = splitLanguages.replace(/,\s|;\s/g, ",");
         splitLanguages = splitLanguages.split(/,/);
 
@@ -1816,6 +1874,8 @@ function splitStatisticsData(stringStatisticsData) {
     if (stringStatisticsData.search(/(\bSQ\b )/gm) !== -1) {
         let splitSQ = stringStatisticsData.match(/(?:\bSQ\b )(.*)(?:\n+?)/gim)[0].replace(/\n/gm,"");
         splitSQ = splitSQ.replace(/\bSQ\b /, "");
+        
+        formattedInput.notes.sq = splitSQ;
                 
         let tempSQs = [];
         if (splitSQ.search(/,|;/g) !== -1) {
@@ -1882,6 +1942,26 @@ function splitStatisticsData(stringStatisticsData) {
     }
     
     // Gear
+    if (stringStatisticsData.search(/(\bCombat Gear\b )/gm) !== -1) {
+        let splitCombatGear = stringStatisticsData.match(/(?:\bCombat Gear\b )(.*)(?=;)|(?:\bCombat Gear\b )(.*)(?=Other Gear)|(?:\bCombat Gear\b )(.*)$/gim)[0].replace(/\n/gm,"");
+        splitCombatGear = splitCombatGear.replace(/\bCombat Gear\b /, "");
+         
+        formattedInput.notes.combatGear = splitCombatGear;
+    }
+    
+    if (stringStatisticsData.search(/(\bOther Gear\b )/gm) !== -1) {
+        let splitOtherGear = stringStatisticsData.match(/(?:\bOther Gear\b )(.*)(?=;)|(?:\bOther Gear\b )(.*)$/gim)[0].replace(/\n/gm,"");
+        splitOtherGear = splitOtherGear.replace(/\bOther Gear\b /, "");
+         
+        formattedInput.notes.otherGear = splitOtherGear;
+    }
+    
+    if (stringStatisticsData.search(/^(?:\bGear\b )/gm) !== -1) {
+        let splitGear = stringStatisticsData.match(/^(?:\bGear\b )(.*)(?=;)|^(?:\bGear\b )(.*)$/gim)[0].replace(/\n/gm,"");
+        splitGear = splitGear.replace(/\bGear\b /, "");
+         
+        formattedInput.notes.gear = splitGear;
+    }
 
     if(DEBUG==true) { console.log("sbc-pf1 | DONE parsing statistics data") };
 }
@@ -2473,7 +2553,7 @@ function mapDefenseData () {
     tempImmunities = tempImmunities.replace(/Electricity/gi, "electric");
     
     let tempResistances = formattedInput.resistances;
-    tempResistances = tempResistances.replace(/Electricity/gi, "electric");
+    tempResistances = tempResistances.replace(/Electricity/gi, "electric").replace(/;$/,"");
     
     let tempWeaknesses = formattedInput.weaknesses;
     tempWeaknesses = tempWeaknesses.replace(/Electricity/gi, "electric");
@@ -3994,66 +4074,195 @@ function mapStatisticData () {
 
 // Map Notes in HTML
 function mapNotesData() {
-    let tempNotes = "";
     
-    // H2 - DESCRIPTION
-    if (formattedInput.description !== "") {
-        let tempDescriptionSection = "<section id='tactics'><h2>DESCRIPTION</h2>";
-        tempDescriptionSection += "<p>" + formattedInput.description + "</p>";
-        tempDescriptionSection += "</section>";
-        tempNotes += tempDescriptionSection;
-    }
+    let inputTemplate =
+        `
+            ${dataOutput.name} CR ${dataOutput.data.details.cr.total}
+            XP ${dataOutput.data.details.xp.value} 
+        `;
     
-    // H2 - TACTICS
-    if (dataInputHasTactics === true) {
-        let tempTacticsSection = "<section id='tactics'><h2>TACTICS</h2>";
-        if (formattedInput.tactics.before_combat !== "") {
-            tempTacticsSection += "<p><span style='font-weight: 900'>Before Combat:</span> " + formattedInput.tactics.before_combat + "</p>";
-        }
-        if (formattedInput.tactics.during_combat !== "") {
-            tempTacticsSection += "<p><span style='font-weight: 900'>During Combat:</span> " + formattedInput.tactics.during_combat + "</p>";
-        }
-        if (formattedInput.tactics.morale !== "") {
-            tempTacticsSection += "<p><span style='font-weight: 900'>Morale:</span> " + formattedInput.tactics.morale + "</p>";
-        }
-        tempTacticsSection += "</section>";
-        tempNotes += tempTacticsSection;
-    }
-    
-    // H2 - DEFENSIVE ABILITIES
-    if (formattedInput.defensive_abilities !== "") {
-        let tempDefensiveAbilitiesSection = "<section id='defensiveAbilities'><h2>DEFENSIVE ABILITIES</h2>";
-        tempDefensiveAbilitiesSection += "<p>" + formattedInput.defensive_abilities + "</p>";
-        tempDefensiveAbilitiesSection += "</section>";
-        
-        tempNotes += tempDefensiveAbilitiesSection;
-    }
-    
-    // H2 - SPECIAL QUALITIES
-    if (formattedInput.special_qualities[0] !== null && formattedInput.special_qualities[0] !== undefined && formattedInput.special_qualities[0] !== "") {
-        let tempSpecialQualities = "<section id='defensiveAbilities'><h2>SPECIAL QUALITIES</h2>";
-        tempSpecialQualities += "<p>";
-        
-        for (let i=0; i<formattedInput.special_qualities.length; i++) {
-            tempSpecialQualities += formattedInput.special_qualities[i] + ", ";
-        }
-        
-        tempSpecialQualities = tempSpecialQualities.replace(/, $/,"");
-        tempSpecialQualities += "</p>";
-        tempSpecialQualities += "</section>";
-        
-        tempNotes += tempSpecialQualities;
-    }
-    
-    // H2 - RAW STATBLOCK
-    let tempStatblockSection = "<section id='statblock'><h2>IMPORTED RAW DATA</h2>";
-    tempStatblockSection += "<p>" + dataInput + "</p></section>";
-    
-    tempNotes += tempStatblockSection;
+    let styledNotes =
+        `
+            <div style="margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
+                <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
+                <div style="padding: 5px;">
+                    <h1 style="border: none; text-transform: uppercase; color: #7a0800;">${formattedInput.name} ${formattedInput.cr ? "CR " + formattedInput.cr : ""}</h1>
+                    ${formattedInput.shortDescription ? "<div><em>" + formattedInput.shortDescription + "</em></div>": ""}
+                    
+                    <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                    <div style="break-inside: avoid;">
+                        ${formattedInput.xp ? "<strong>XP " + formattedInput.xp + "</strong><br/>" : ""}
+                        ${formattedInput.gender ? formattedInput.gender : ""} ${formattedInput.template ? formattedInput.template : ""} ${formattedInput.race ? formattedInput.race : ""} ${formattedInput.notes.classes ? formattedInput.notes.classes + "<br/>" : ""}
+                        ${formattedInput.alignment} ${formattedInput.size} ${formattedInput.creature_type} ${formattedInput.creature_subtype ? "(" + formattedInput.creature_subtype + ")" : ""}<br/>
+                        <strong>Init</strong> ${formattedInput.initiative}; <strong>Senses</strong> ${formattedInput.senses} <br/>
+                        ${formattedInput.aura ? "<strong>Aura</strong> " + formattedInput.aura : ""}
+                    </div>
+                    <div style="break-inside: avoid;">
+                        <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
+                        <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                        <strong>AC</strong> ${formattedInput.ac}, <strong>Touch</strong> ${formattedInput.ac}, <strong>Flat-Footed</strong> ${formattedInput.flat_footed} ${formattedInput.notes.acBonus}<br/>
+                        <strong>Hit Points</strong> ${formattedInput.hp.total} (${formattedInput.hit_dice.hd.total} HD; ${formattedInput.notes.hpDice})<br/>
+                        <strong>Fort</strong> ${formattedInput.fort_save.total}, <strong>Ref</strong> ${formattedInput.ref_save.total}, <strong>Will</strong> ${formattedInput.will_save.total}; ${formattedInput.save_notes}
+                        ${formattedInput.defensive_abilities ? "<br/><strong>Defensive Abilities</strong> " + formattedInput.defensive_abilities + "; " : ""} ${formattedInput.damage_reduction.dr_value !== 0 ? "<strong>DR</strong> " + formattedInput.damage_reduction.dr_value + "/" + formattedInput.damage_reduction.dr_type + "; " : ""} ${formattedInput.immunities !== "" ? "<strong>Immune</strong> " + formattedInput.immunities + "; " : ""} ${formattedInput.resistances !== "" ? "<strong>Resist</strong> " + formattedInput.resistances + "; " : ""} ${formattedInput.spell_resistance.total !== 0 ? "<strong>SR</strong> " + formattedInput.spell_resistance.total : ""} ${formattedInput.spell_resistance.context ? "(" + formattedInput.spell_resistance.context + ")" : ""}
+                        ${formattedInput.weaknesses !== "" ? "<br/><strong>Weaknesses</strong> " + formattedInput.weaknesses : ""}
+                    </div>
+                    <div>
+                        <div style="break-inside: avoid;">
+                            <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Offense</h4>
+                            <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                            <strong>Speed</strong> ${formattedInput.notes.speed}<br/>
+                            ${formattedInput.meleeAttacks ? "<strong>Melee</strong> " + formattedInput.meleeAttacks + "<br/>" : ""}
+                            ${formattedInput.rangedAttacks ? "<strong>Ranged</strong> " + formattedInput.rangedAttacks + "<br/>" : ""}
+                            ${formattedInput.space ? "<strong>Space</strong> " + formattedInput.space + "; " : ""} ${formattedInput.reach ? "<strong>Reach</strong> " + formattedInput.reach + "" : ""}<br/>
+                            ${formattedInput.specialAttacks ? "<strong>Special Attacks</strong> " + formattedInput.specialAttacks + "<br/>" : ""}
+                        </div>
+                        ` +
+                        tagSpellcasting`
+                        ${formattedInput.spellcasting ? formattedInput.spellcasting : ""}
+                        ` +
+                        `
+                    </div>
+                    ${dataInputHasTactics ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Tactics</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.tactics.before_combat ? "<strong>Before Combat:</strong> " + formattedInput.tactics.before_combat + "<br/>" : ""}
+                    ${formattedInput.tactics.during_combat ? "<strong>During Combat:</strong> " + formattedInput.tactics.during_combat + "<br/>" : ""}
+                    ${formattedInput.tactics.morale ? "<strong>Morale:</strong> " + formattedInput.tactics.morale + "<br/>" : ""}
+                    ${formattedInput.tactics.base_statistics ? "<strong>Base Statistics:</strong> " + formattedInput.tactics.base_statistics + "<br/>" : ""}
+                    ${dataInputHasTactics ? "</div>" : ""}
+                    <div style="break-inside: avoid;">
+                        <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Statistics</h4>
+                        <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                        <strong>Str</strong> ${formattedInput.str.total}, <strong>Dex</strong> ${formattedInput.dex.total}, <strong>Con</strong> ${formattedInput.con.total}, <strong>Int</strong> ${formattedInput.int.total}, <strong>Wis</strong> ${formattedInput.wis.total}, <strong>Cha</strong> ${formattedInput.cha.total}<br/>
+                        <strong>Base Atk</strong> +${formattedInput.bab}; <strong>CMB</strong> +${formattedInput.cmb.total} ${formattedInput.cmb.context ? formattedInput.cmb.context : ""}; <strong>CMD</strong> ${formattedInput.cmd.total} ${formattedInput.cmd.context ? formattedInput.cmd.context : ""}<br/>
+                        <strong>Feats</strong> ${formattedInput.notes.feats}<br/>
+                        <strong>Skills</strong> ${formattedInput.notes.skills}<br/>
+                        <strong>Languages</strong> ${formattedInput.notes.languages}<br/>
+                        ${formattedInput.notes.sq ? "<strong>SQ</strong> " + formattedInput.notes.sq + "<br/>" : ""}
+                        ${formattedInput.notes.combatGear ? "<strong>Combat Gear</strong> " + formattedInput.notes.combatGear + "<br/>" : ""}
+                        ${formattedInput.notes.otherGear ? "<strong>Other Gear</strong> " + formattedInput.notes.otherGear + "<br/>" : ""}
+                        ${formattedInput.notes.gear ? "<strong>Gear</strong> " + formattedInput.notes.gear + "<br/>" : ""}
+                    </div>
+                    ${dataInputHasEcology ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Ecology</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.ecology.environment ? "<strong>Environment:</strong> " + formattedInput.ecology.environment + "<br/>" : ""}
+                    ${formattedInput.ecology.organization ? "<strong>Organization:</strong> " + formattedInput.ecology.organization + "<br/>" : ""}
+                    ${formattedInput.ecology.treasure ? "<strong>Treasure:</strong> " + formattedInput.ecology.treasure + "<br/>" : ""}
+                    ` +
+                    tagSpecialAbilities`
+                    ${Object.keys(formattedInput.special_abilities).length !== 0 ? formattedInput.special_abilities : ""}
+                    ` +
+                    `
+                    ${formattedInput.description ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Description</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.description ? formattedInput.description + "<br/>" : ""}
+                </div>
+                <hr style="margin-left: 0; margin-bottom: -3px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
+            </div>
+
+
+            
+            
+        `;
     
     // WRITE EVERYTHING TO THE NOTES
-    dataOutput.data.details.notes.value = tempNotes;
+    dataOutput.data.details.notes.value = styledNotes;
+    
 }
+
+function tagSpecialAbilities(string, ...expressions) {
+    console.log("tagSpecialAbilities");
+    console.log(string);
+    console.log(expressions);
+    
+    if (Object.keys(formattedInput.special_abilities).length !== 0) {
+        let header = "<h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Special Abilities</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />";
+        
+        let body = "";
+        for (let i=0; i<formattedInput.special_abilities.length; i++) {
+            console.log(formattedInput.special_abilities[i]);
+            let item = formattedInput.special_abilities[i];
+            
+            let name = item.match(/([^)]*\))/)[0];
+            let content = item.match(/\) ([\s\S]*)/)[1];
+            
+            body += "<div style='break-inside: avoid;'><strong>" + name + "</strong> " + content + "</div>";
+            
+        }
+        
+        return header + body;
+    }
+    
+    return "";
+}
+
+function tagSpellcasting(string, ...expressions) {
+    console.log("tagSpellcasting");
+    console.log(string);
+    console.log(expressions);
+    
+    if (Object.keys(formattedInput.spellcasting).length !== 0) {
+        console.log("spellcasting");
+        console.log(formattedInput.spellcasting);
+        
+        
+        let spellcastingGroup = Object.keys(formattedInput.spellcasting);
+        
+        let spellcastingString = "";
+        
+        for (let i=0; i<spellcastingGroup.length; i++) {
+            
+            let groupHeader = "<div style='break-inside: avoid;'>";
+            let groupBody = "";
+            
+            console.log(formattedInput.spellcasting[spellcastingGroup[i]]);
+            
+            let groupType = formattedInput.spellcasting[spellcastingGroup[i]].groupType;
+            let type = formattedInput.spellcasting[spellcastingGroup[i]].type;
+            let cl = formattedInput.spellcasting[spellcastingGroup[i]].CL;
+            let concentration = formattedInput.spellcasting[spellcastingGroup[i]].concentration;
+            
+            switch (groupType) {
+                case "spelllike": groupHeader += "<strong>Spell-Like Abilities</strong>"; break;
+                case "Spells Known": groupHeader += "<strong>" + type + " Spells Known</strong>"; break;
+                case "Spells Prepared": groupHeader += "<strong>" + type + " Spells Prepared</strong>"; break;
+            }
+            
+            if (cl !== "" || concentration !== "") {
+                groupHeader += " (";
+                if (cl !== "") {
+                    groupHeader += "CL " + cl;
+                }
+                if (cl !== "" && concentration !== "") {
+                    groupHeader += "; ";
+                }
+                if (concentration !== "") {
+                    groupHeader += "Concentration " + concentration;
+                }
+                groupHeader += ")<br/>";
+            }
+            
+            spellcastingString += groupHeader;
+            
+            let spellsArray = formattedInput.spellcasting[spellcastingGroup[i]].spells;
+            
+            for (let j=0; j<spellsArray.length; j++) {
+                let spellRow = formattedInput.spellcasting[spellcastingGroup[i]].spells[j];
+                console.log(spellRow);
+                let bold = spellRow.match(/(.*-|Bloodline|Domains|Opposition Schools)/)[0];
+                let spells = spellRow.match(/(.*-|Bloodline|Domains|Opposition Schools)(.*)/)[2];
+                
+                groupBody = "<strong>" + bold + "</strong> " + spells + "</br>";
+                spellcastingString += groupBody;
+            }
+            
+            spellcastingString += "</div>"
+            
+        }
+        
+        return spellcastingString;
+        
+    }
+    
+    return "";
+}
+
 
 /* ------------------------------------ */
 /* CREATE ACTOR WITH INPUT DATA			*/

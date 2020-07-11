@@ -51,6 +51,10 @@ Primer#2220 | FoundryVTT Discord
 
 # Change Log
 
+2020_07_11
+*  Reworked the notes section to include the input as a written statblock
+*  Added support for NPCs without CR or XP
+
 2020_07_10
 *  Finished and fixed Spell- & SLA-Parsing
 *  Merging PR for the auto-conversion of bestiaries, see [PF1 Bestiary](https://github.com/JamesDeVore/pf1_Bestiary)
