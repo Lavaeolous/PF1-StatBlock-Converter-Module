@@ -31,6 +31,7 @@
 // Import TypeScript modules
 import templateData from "./templateData.js"
 import templateActor from "./templateActor.js"
+import templateActorPC from "./templateActorPC.js"
 import templateClassData from "./templateClassData.js"
 import templateClassItem from "./templateClassItem.js"
 import templateRaceItem from "./templateRaceItem.js"
@@ -452,10 +453,11 @@ window.convertStatBlock = convertStatBlock;
 window.auto_csv_flag = false;
 
 /* ------------------------------------ */
-/* Debug    							*/
+/* FLAGS    							*/
 /* ------------------------------------ */
 
-const DEBUG = false;
+var DEBUG = false;
+var createPC = true;
 
 /* ------------------------------------ */
 /* Initialize module					*/
@@ -521,19 +523,28 @@ class statBlockConverterModalDialog {
             id: "sbcModal"
         };
         
-        const content = '<p>Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ' + sbcVersion + ']</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>';
+        const content = `
+            <p>
+                Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ' + sbcVersion + ']
+            </p>
+            <textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>`;
         
         let d = new Dialog({
             title: "PF1 Statblock Converter",
             content: content,
             buttons: {
-                import: {
+                importNPC: {
                     icon: '<i class="fas fa-check"></i>',
-                    label: "Import",
-                    callback: () => convertStatBlock(input)
+                    label: "Import as NPC",
+                    callback: () => convertStatBlock(input, "npc")
+                },
+                importPC: {
+                    icon: '<i class="fas fa-check"></i>',
+                    label: "Import as PC",
+                    callback: () => convertStatBlock(input, "pc")
                 }
             },
-            default: "import",
+            default: "importNPC",
             
             close: () => console.log("sbc-pf1 | Dialog closed")
         }, options);
@@ -575,7 +586,7 @@ async function initializeSBC() {
     dataInputHasSpecialAbilities = false;
     dataInputHasEcology = false;
     
-    dataTemplate = await JSON.parse(JSON.stringify(templateActor));
+    dataTemplate = await JSON.parse(JSON.stringify(templateActorPC));
     formattedInput = await JSON.parse( await JSON.stringify(templateData));
     dataOutput = await JSON.parse(JSON.stringify(dataTemplate));
     
@@ -585,7 +596,11 @@ async function initializeSBC() {
 /* sbc-pf1 | StatBlock Converter    	*/
 /* ------------------------------------ */
 
-async function convertStatBlock(input) {
+async function convertStatBlock(input, statblockType) {
+    
+    if (statblockType === "pc") {
+        createPC = true;
+    }
     
     // Reset everything when opening the modal dialog
     await resetSBC();
@@ -2162,8 +2177,11 @@ function mapGeneralData() {
     
     // Details
     dataOutput.data.details.level.value = +formattedInput.level;
-    dataOutput.data.details.cr.base = dataOutput.data.details.cr.total = +formattedInput.cr;
-    dataOutput.data.details.xp.value = formattedInput.xp;
+    if (createPC === false) {
+        dataOutput.data.details.cr.base = dataOutput.data.details.cr.total = +formattedInput.cr;
+        dataOutput.data.details.xp.value = formattedInput.xp;
+    }
+    
     dataOutput.data.details.alignment = formattedInput.alignment.toLowerCase();
     
     // Changes for Undead Creatures
@@ -4223,11 +4241,19 @@ function mapStatisticData () {
 // Map Notes in HTML
 function mapNotesData() {
     
-    let inputTemplate =
-        `
+    let inputTemplate = ``;
+    
+    if (createPC === false) {
+        inputTemplate = `
             ${dataOutput.name} CR ${dataOutput.data.details.cr.total}
-            XP ${dataOutput.data.details.xp.value} 
+            XP ${dataOutput.data.details.xp.value}
         `;
+    } else {
+        inputTemplate = `
+            ${dataOutput.name}
+        `;
+    }
+        
     
     let styledNotes =
         `
