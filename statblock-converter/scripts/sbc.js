@@ -1,13 +1,31 @@
-/**
- * This is your TypeScript entry file for Foundry VTT.
- * Register custom settings, sheets, and constants using the Foundry API.
- * Change this heading to be more descriptive to your module, or remove it.
- * Author: Lavaeolou
- * Content License: [copyright and-or license] If using an existing system
- * 					you may want to put a (link to a) license or copyright
- * 					notice here (e.g. the OGL).
- * Software License: [your license] Put your desired license here, which
- * 					 determines how others may use and modify your module
+/*
+ * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
+ *
+ * Author:              Lavaeolous
+ *
+ * Version:             1.0.0
+ *
+ * Software License:    MIT License
+ *
+ *                      Copyright (c) 2020 Lavaeolous
+ *
+ *                      Permission is hereby granted, free of charge, to any person obtaining a copy
+ *                      of this software and associated documentation files (the "Software"), to deal
+ *                      in the Software without restriction, including without limitation the rights
+ *                      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *                      copies of the Software, and to permit persons to whom the Software is
+ *                      furnished to do so, subject to the following conditions:
+ *
+ *                      The above copyright notice and this permission notice shall be included in all
+ *                      copies or substantial portions of the Software.
+ *
+ *                      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *                      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *                      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *                      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *                      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *                      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *                      SOFTWARE.
  */
 
 // Import TypeScript modules
@@ -23,6 +41,7 @@ import templateMeleeAttackItem from "./templateMeleeAttackItem.js"
 import templateNaturalAttackItem from "./templateNaturalAttackItem.js"
 import templateSpecialAbilityItem from "./templateSpecialAbilityItem.js"
 import templateSkills from "./templateSkills.js"
+import templateSpell from "./templateSpell.js"
 import enumRaces from "./enumRaces.js"
 import enumTypes from "./enumTypes.js"
 import enumSubtypes from "./enumSubtypes.js"
@@ -34,6 +53,12 @@ import enumDamageTypes from "./enumDamageTypes.js"
 import enumAttackDamageTypes from "./enumAttackDamageTypes.js"
 import enumSkills from "./enumSkills.js"
 import enumLanguages from "./enumLanguages.js"
+
+/* ------------------------------------ */
+/* Version    							*/
+/* ------------------------------------ */
+
+const sbcVersion = "v1.0.0";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -323,6 +348,101 @@ var enumSpellcastingClasses = [
     "warpriest",
     "witch",
     "wizard"
+];
+
+var enumMetamagic = [
+    "Apocalyptic",
+    "Aquatic",
+    "Ascendant",
+    "Authoritative",
+    "Benthic",
+    "Blissful",
+    "Bouncing",
+    "Brackish",
+    "Brisk",
+    "Burning",
+    "Centered",
+    "Cherry Blossom",
+    "Coaxing",
+    "Concussive",
+    "Conditional",
+    "Consecrate",
+    "Contagious",
+    "Contingent",
+    "Crypt",
+    "Dazing",
+    "Delayed",
+    "Disruptive",
+    "Echoing",
+    "Eclipsed",
+    "Ectoplasmic",
+    "Elemental",
+    "Empower",
+    "Empowered",
+    "Encouraging",
+    "Enlarge",
+    "Enlarged",
+    "Extend",
+    "Extended",
+    "Familiar",
+    "Fearsome",
+    "Flaring",
+    "Fleeting",
+    "Focused",
+    "Furious",
+    "Heighten",
+    "Heightened",
+    "Intensified",
+    "Intuitive",
+    "Jinxed",
+    "Latent Curse",
+    "Lingering",
+    "Logical",
+    "Maximize",
+    "Maximized",
+    "Merciful",
+    "Murky",
+    "Persistent",
+    "Piercing",
+    "Quicken",
+    "Quickened",
+    "Reach",
+    "Rime",
+    "Scarring",
+    "Scouting Summons",
+    "Seeking",
+    "Selective",
+    "Shadow Grasp",
+    "Sickening",
+    "Silent",
+    "Snuffing",
+    "Solar",
+    "Solid Shadows",
+    "Stable",
+    "Steam",
+    "Still",
+    "Stilled",
+    "Studied",
+    "Stygian",
+    "Stylized",
+    "Tenacious",
+    "Tenebrous",
+    "Thanatopic",
+    "Threatening Illusion",
+    "Threnodic",
+    "Thundering",
+    "Toppling",
+    "Toxic",
+    "Traumatic",
+    "Trick",
+    "Tumultuous",
+    "Umbral",
+    "Ursurping",
+    "Vast",
+    "Verdant",
+    "Widen",
+    "Widened",
+    "Yai-Mimic"
 ]
 
 // Get HTML Elements
@@ -335,7 +455,7 @@ window.auto_csv_flag = false;
 /* Debug    							*/
 /* ------------------------------------ */
 
-const DEBUG = true;
+const DEBUG = false;
 
 /* ------------------------------------ */
 /* Initialize module					*/
@@ -401,10 +521,10 @@ class statBlockConverterModalDialog {
             id: "sbcModal"
         };
         
-        const content = '<p>Enter the StatBlock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is a Work-in-Progress thats not feature-complete (e.g. spells are not converted yet). It is advised to update regularily.</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste StatBlock here"></textarea>';
+        const content = '<p>Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ' + sbcVersion + ']</p><textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>';
         
         let d = new Dialog({
-            title: "PF1 StatBlock Converter",
+            title: "PF1 Statblock Converter",
             content: content,
             buttons: {
                 import: {
@@ -609,11 +729,8 @@ async function convertStatBlock(input) {
     */
     if(dataInput.search(/\nECOLOGY\n/i) !== -1) {
         dataInputHasEcology = true;
-        console.log("FOUND ECOLOGY");
         splitInput = dataInput.match(/\nEcology\n([\s\S]*?)(?=Special Abilities|Description|$)/i);
         stringEcologyData = splitInput[0];
-        console.log("stringEcologyData");
-        console.log(stringEcologyData);
         splitInput = "";
     }    
     
@@ -697,14 +814,14 @@ function splitGeneralData(stringGeneralData) {
     
     let splitGeneralData = stringGeneralData.replace(/defense$|defenses$/i,"");
     
-    let splitName = splitGeneralData.match(/^.*/)[0].replace(/ CR\s*\d+/, "");
+    let splitName = splitGeneralData.match(/^.*/)[0].replace(/ \bCR (\d+\/*\d*)/, "");
     let splitCR = 0;
     let splitXP = 0;
     
     
     
     if (splitGeneralData.search(/\bCR/) !== -1) {
-        splitCR = splitGeneralData.match(/\bCR (\d+)/)[1];
+        splitCR = splitGeneralData.match(/\bCR (\d+\/*\d*)/)[1];
         
         // Save the Challenge Rating as a number
         if (splitCR.search("/") !== -1) {
@@ -1291,7 +1408,6 @@ function splitOffenseData(stringOffenseData) {
         splitSpeeds = splitSpeeds.replace(/^\d+\s*ft\..*,/, "");
         splitSpeeds = splitSpeeds.split(/,/g);
         
-        console.log("splitSpeeds: " + splitSpeeds);
                 
         splitSpeeds.forEach ( function (item, index) {
             
@@ -1307,18 +1423,14 @@ function splitOffenseData(stringOffenseData) {
                 speedTotal = speedContext.match(/\d+/)[0];
             } else if (item.search(/fly/) !== -1 && item.search(/\(([^)]+)\)/g) !== -1) {
                 let flyManeuverability = item.match(/\(([^)]+)\)/)[1];
-                console.log("item: " + item);
-                console.log("match2: " + item.match(/\(([^)]+)\)/)[2]);
                 
                 if (item.match(/\(([^)]+)\)/g)[2] !== undefined) {
                     speedContext = item.match(/\(([^)]+)\)/g)[2];
                     speedTotal = speedContext.match(/\d+/)[0];
-                    console.log("contextTotal: " + speedTotal);
                 } else {
                     speedContext = item.match(/\(([^)]+)\)/g)[1];
                     
                 }
-                console.log("speedContext: " + speedContext);
                 
                 formattedInput.speed.fly.maneuverability = flyManeuverability;
             } else {
@@ -1343,7 +1455,6 @@ function splitOffenseData(stringOffenseData) {
     // Check, if space and reach are as intended for the creature size
     // and if not, change it
     if (splitOffenseData.search(/\bReach\b/i) !== -1) {
-        console.log("splitOffenseData: " + splitOffenseData);
         let splitReach = splitOffenseData.match(/(\bReach\b\s*.*)/i)[0];
         let reachValue = splitReach.match(/(\d+)/)[0];
         let reachContext = "";
@@ -1357,7 +1468,6 @@ function splitOffenseData(stringOffenseData) {
                 formattedInput.reach = reachValue + " ft.";
             } else {
                 // SEARCH FOR A MATCHING CONTEXT
-                console.log("searching for matching reach context");
                 formattedInput.reach = reachValue + " ft.";
                 formattedInput.reach_context = reachContext;
             }
@@ -1383,8 +1493,8 @@ function splitOffenseData(stringOffenseData) {
     let splitOffenseSpells = [];    
     
     if (splitOffenseData.search(/\bSpell/i) !== -1) {
-        splitOffenseAttacks = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gim)[0];
-        let tempSplitOffenseSpells = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gim);
+        splitOffenseAttacks = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gm)[0];
+        let tempSplitOffenseSpells = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gm);
         
         // Push everything apart from the attacks into splitOffenseSpells as separate objects
         for (let i=1; i < tempSplitOffenseSpells.length; i++) {
@@ -1506,6 +1616,7 @@ function splitOffenseData(stringOffenseData) {
                 }
                 
                 // Set the spells as an array of lines for each row of input, e.g. 1/day, 1st
+            
                 let tempSpells = spellcastingGroup.split(/\n/);
                 let splitSpellRows = [];
                 
@@ -1545,7 +1656,7 @@ function splitOffenseData(stringOffenseData) {
                 // Opposition Schools illusion, transmutation
                 if (spellcastingGroup.search(/Opposition/i) !== -1) {
                     let tempOppositionSchools = spellcastingGroup.match(/(?:Opposition Schools )(.*)/)[1];
-                    let oppositionSchools = tempDomains.split(/,/);
+                    let oppositionSchools = tempOppositionSchools.split(/,/);
 
                     oppositionSchools.forEach ( async function (item) {
                         let oppositionSchool = "oppositionSchool (" + item.replace(/^ | $/g, "") + ")";
@@ -3267,7 +3378,7 @@ async function setSpecialAttackItem (specialAttacks) {
 
 // Map Spellbooks
 async function mapSpellbooks (actorID) {
-    console.log("sbc | START MAPPING SPELLBOOKS");
+    if (DEBUG == true) { console.log("sbc | START MAPPING SPELLBOOKS"); }
     
     // Suppose we are working with a particular pack named "dnd5e.spells"
     const spellPack = game.packs.get("pf1.spells");
@@ -3292,7 +3403,7 @@ async function mapSpellbooks (actorID) {
     
     let spellbookKeys = Object.keys(formattedInput.spellcasting);
     for (let i=0; i<spellbookKeys.length; i++) {
-        console.log("sbc | START MAPPING - " + i + " - SPELLBOOK");
+        if (DEBUG == true) { console.log("sbc | START MAPPING - " + i + " - SPELLBOOK"); }
         
         let spellBook = spellbookKeys[i];
                 
@@ -3311,7 +3422,7 @@ async function mapSpellbooks (actorID) {
         
         let spellRows = Object.keys(formattedInput.spellcasting[spellBook].spells);
         for (let j=0; j<spellRows.length; j++) {
-            console.log("sbc | START MAPPING - " + j + " - SPELLROW");
+            if (DEBUG == true) { console.log("sbc | START MAPPING - " + j + " - SPELLROW"); }
             
             // Get the complete Row
             let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRows[j]];
@@ -3377,15 +3488,12 @@ async function mapSpellbooks (actorID) {
                     
                 case "Spell-Like Abilities":
                 case "spelllike":
-                    console.log("Spell-Like Abilities");
-                    
                     spells.preparation.preparedAmount = +uses.max;
                     spells.preparation.maxAmount = +uses.max;
                     
                     break;
                     
                 case "Spells Prepared":
-                    console.log("Spells Prepared");
                     // Variables at Spellbook Level
                     
                     // Variables at Spell Level
@@ -3394,7 +3502,6 @@ async function mapSpellbooks (actorID) {
                     break;
                     
                 case "Spells Known":
-                    console.log("Spells Known");
                     // Variables at Spellbook Level
                     
                     // Variables at Spell Level
@@ -3414,7 +3521,7 @@ async function mapSpellbooks (actorID) {
             
             let spellKeys = Object.keys(spells.spellList);
             for (let k=0; k<spellKeys.length; k++) {
-                console.log("sbc | START MAPPING - " + k + " - SPELL");
+                if (DEBUG == true) { console.log("sbc | START MAPPING - " + k + " - SPELL"); }
                 let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
                 let spellDC = 0;
                 let spellName = "";
@@ -3434,6 +3541,11 @@ async function mapSpellbooks (actorID) {
                 spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
                 spellName = spellName.replace(/(ACG)$/,"");
                 spellName = spellName.replace(/(APG)$/,"");
+                spellName = spellName.replace(/(UM)$/,"");
+                spellName = spellName.replace(/(M)$/,"");
+                spellName = spellName.replace(/(APG)$/,"");
+                spellName = spellName.replace(/(HA)$/,"");
+                spellName = spellName.replace(/(OA)$/,"");
                 spellName = spellName.replace(/(’)/,"'");
                 
                 let spellInput = {
@@ -3454,24 +3566,24 @@ async function mapSpellbooks (actorID) {
                     "level": spells.spellLevel
                 }
 
-                console.log("sbc | FINISH MAPPING - " + k + " - SPELL");
+                if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + k + " - SPELL"); }
                 spellArray.push(spellInput);                
                 
             };
             
             await setSpellsItem(spellArray, actorID, spellBook, spellPack, spellPackIndex);
             
-            console.log("sbc | FINISH MAPPING - " + j + " - SPELLROW");
+            if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + j + " - SPELLROW"); }
             
         };
         
-        console.log("sbc | FINISH MAPPING - " + i + " - SPELLBOOK");
+        if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + i + " - SPELLBOOK"); }
         
     };
     
     //await setSpellsItem(spellEntities, actorID, spellBook, spellPack, spellPackIndex);
     
-    console.log("sbc | FINISH MAPPING SPELLBOOKS");
+    if (DEBUG == true) { console.log("sbc | FINISH MAPPING SPELLBOOKS"); }
 
 }
 
@@ -3480,7 +3592,7 @@ async function mapSpellbooks (actorID) {
 // THIS IS A FOUNDRY ONLY FUNCTION AND WILL NOT WORK IN A STAND ALONE VERSION AS THE REST CURRENTLY WOULD
 
 async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPackIndex) {
-    console.log("sbc | START SETTING SPELL");    
+    if (DEBUG == true) { console.log("sbc | START SETTING SPELL"); }
     
     const actor = await game.actors.get(actorID);
 
@@ -3491,12 +3603,30 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
     for (let i=0; i<spellArray.length; i++) {
         let spellInput = spellArray[i];
         try{
-                
-            let entry =  spellPack.index.find(e => e.name.toLowerCase() === spellInput.name.toLowerCase());
+            
+            // Search for the spell in the compendium
+            let entry;
+            let spellName = spellInput.name;
+            let formattedSpellName = spellName.toLowerCase();
+            
+            // Format "Mass" and "Greater" Version
+            formattedSpellName = formattedSpellName.replace(/^(greater |mass )(.*)/, "$2, $1");            
+            
+            try {
+                // Remove Metamagic Attributes and check if a spell can be found
+                let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
+                formattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
+                entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
+            } catch (e) {
+                // If not, try to find the spell without removing anything
+                entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
+            }
+            
+             
             // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
-            let spell = await spellPack.getEntity(entry._id)
+            let spell = await spellPack.getEntity(entry._id);
 
-            console.log(spell);
+            spell.data.name = spellName;
             spell.data.data.spellbook = spellBook;
             spell.data.data.level = spellInput.level;
             spell.data.data.uses.value = +spellInput.uses.value;
@@ -3510,13 +3640,31 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
 
             spellOutputArray.push(spell);
             dataOutput.items.push(spell.data);
-            //actor.createEmbeddedEntity("OwnedItem", spell);
 
-            console.log("sbc | FINISH SETTING SPELL");
-        } catch (error) {
+            if (DEBUG == true) { console.log("sbc | FINISH SETTING SPELL"); }
+        } catch (e) {
     
-            console.log("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!");
-            ui.notifications.info("sbc | Error: Spell '" + spellInput.name + "' could not be parsed!")
+            ui.notifications.info("sbc | Error: Spell '" + spellInput.name + "' not found in compendium! Creating a Placeholder")
+            
+            let spell = JSON.parse(JSON.stringify(templateSpell));
+
+            spell.name = "sbc | Placeholder | " + spellInput.name;
+            
+            spell.data.spellbook = spellBook;
+            spell.data.level = spellInput.level;
+            spell.data.uses.value = +spellInput.uses.value;
+            spell.data.uses.max = +spellInput.uses.max;
+            spell.data.uses.per = spellInput.uses.per;
+            spell.data.preparation.preparedAmount = +spellInput.preparation.preparedAmount;
+            spell.data.preparation.maxAmount = +spellInput.preparation.maxAmount;
+            spell.data.effectNotes = spellInput.effectNotes;
+            spell.data.atWill = spellInput.atWill;
+            
+
+            dataOutput.items.push(spell);
+
+            if (DEBUG == true) { console.log("sbc | FINISH SETTING PLACEHOLDER SPELL"); }
+            
         }
                 
     };
@@ -4167,16 +4315,12 @@ function mapNotesData() {
 }
 
 function tagSpecialAbilities(string, ...expressions) {
-    console.log("tagSpecialAbilities");
-    console.log(string);
-    console.log(expressions);
     
     if (Object.keys(formattedInput.special_abilities).length !== 0) {
         let header = "<h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Special Abilities</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />";
         
         let body = "";
         for (let i=0; i<formattedInput.special_abilities.length; i++) {
-            console.log(formattedInput.special_abilities[i]);
             let item = formattedInput.special_abilities[i];
             
             let name = item.match(/([^)]*\))/)[0];
@@ -4193,14 +4337,8 @@ function tagSpecialAbilities(string, ...expressions) {
 }
 
 function tagSpellcasting(string, ...expressions) {
-    console.log("tagSpellcasting");
-    console.log(string);
-    console.log(expressions);
     
     if (Object.keys(formattedInput.spellcasting).length !== 0) {
-        console.log("spellcasting");
-        console.log(formattedInput.spellcasting);
-        
         
         let spellcastingGroup = Object.keys(formattedInput.spellcasting);
         
@@ -4210,9 +4348,7 @@ function tagSpellcasting(string, ...expressions) {
             
             let groupHeader = "<div style='break-inside: avoid;'>";
             let groupBody = "";
-            
-            console.log(formattedInput.spellcasting[spellcastingGroup[i]]);
-            
+                        
             let groupType = formattedInput.spellcasting[spellcastingGroup[i]].groupType;
             let type = formattedInput.spellcasting[spellcastingGroup[i]].type;
             let cl = formattedInput.spellcasting[spellcastingGroup[i]].CL;
@@ -4244,9 +4380,8 @@ function tagSpellcasting(string, ...expressions) {
             
             for (let j=0; j<spellsArray.length; j++) {
                 let spellRow = formattedInput.spellcasting[spellcastingGroup[i]].spells[j];
-                console.log(spellRow);
-                let bold = spellRow.match(/(.*-|Bloodline|Domains|Opposition Schools)/)[0];
-                let spells = spellRow.match(/(.*-|Bloodline|Domains|Opposition Schools)(.*)/)[2];
+                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools)/)[0];
+                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools)(.*)/)[2];
                 
                 groupBody = "<strong>" + bold + "</strong> " + spells + "</br>";
                 spellcastingString += groupBody;
@@ -4371,7 +4506,7 @@ async function getItemFromCompendium(packInput, item) {
     });
 
     // We can find a specific entry in the compendium by its name
-    let entry = await pack.index.find(e => e.name === item);
+    let entry = await pack.index.find(e => e.name.toLowerCase() === item.toLowerCase());
             
     // Given the entity ID we can load the full Entity from the compendium
     let output = await pack.getEntity(entry._id).then(entity => {
