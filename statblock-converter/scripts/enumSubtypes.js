@@ -51,6 +51,7 @@ export default [
     "Lawful",
     "Leshy",
     "Mortic",
+    "Munavri",
     "Mythic",
     "Native",
     "Nightshade",

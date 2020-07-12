@@ -8,6 +8,7 @@ export default {
     "size": "",
     "alignment": "",
     "gender": "",
+    "template": "",
     "race": "",
     "creature_type": "",
     "creature_subtype": "",
@@ -36,6 +37,7 @@ export default {
     "flat_footed" : 0,
     "ac_race_bonus": 0,
     "ac_bonus_types" : {},
+    "bab": 0,
     "cmd": {
         "total": 0,
         "context": ""
@@ -312,5 +314,30 @@ export default {
     "environment": "",
     "organization": "",
     "special_abilities": {},
-    "description": ""
+    "description": "",
+    "shortDescription": "",
+    "ecology": {
+        "environment": "",
+        "organization": "",
+        "treasure": ""
+    },
+    "ecology": {
+        "environment": "",
+        "organization": "",
+        "treasure": ""
+    },
+    "notes": {
+        "classes": "",
+        "acBonus": "",
+        "hpDice": "",
+        "speed": "",
+        "feats": "",
+        "skills": "",
+        "sq": "",
+        "combatGear": "",
+        "otherGear": "",
+        "gear": "",
+        "languages": ""
+    }
+    
 };
