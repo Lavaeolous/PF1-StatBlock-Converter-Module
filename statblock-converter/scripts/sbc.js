@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v1.0.0";
+const sbcVersion = "v1.0.2";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -457,7 +457,7 @@ window.auto_csv_flag = false;
 /* ------------------------------------ */
 
 var DEBUG = false;
-var createPC = true;
+var createPC = false;
 
 /* ------------------------------------ */
 /* Initialize module					*/
@@ -525,7 +525,7 @@ class statBlockConverterModalDialog {
         
         const content = `
             <p>
-                Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ' + sbcVersion + ']
+                Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ` + sbcVersion + `]
             </p>
             <textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>`;
         
@@ -564,6 +564,7 @@ async function resetSBC() {
     delete window.dataOutput;
     delete window.dataTemplate;
     delete window.formattedInput;
+    createPC = false;
     
 }
 
@@ -586,7 +587,12 @@ async function initializeSBC() {
     dataInputHasSpecialAbilities = false;
     dataInputHasEcology = false;
     
-    dataTemplate = await JSON.parse(JSON.stringify(templateActorPC));
+    if (createPC === false) {
+        dataTemplate = await JSON.parse(JSON.stringify(templateActor));
+    } else {
+        dataTemplate = await JSON.parse(JSON.stringify(templateActorPC));
+    }
+    
     formattedInput = await JSON.parse( await JSON.stringify(templateData));
     dataOutput = await JSON.parse(JSON.stringify(dataTemplate));
     
@@ -598,12 +604,15 @@ async function initializeSBC() {
 
 async function convertStatBlock(input, statblockType) {
     
+    
+    
+    // Reset everything when opening the modal dialog
+    await resetSBC();
+    
     if (statblockType === "pc") {
         createPC = true;
     }
     
-    // Reset everything when opening the modal dialog
-    await resetSBC();
     await initializeSBC();
         
     // Initial Clean-up of input
@@ -2177,7 +2186,7 @@ function mapGeneralData() {
     
     // Details
     dataOutput.data.details.level.value = +formattedInput.level;
-    if (createPC === false) {
+    if (createPC == false) {
         dataOutput.data.details.cr.base = dataOutput.data.details.cr.total = +formattedInput.cr;
         dataOutput.data.details.xp.value = formattedInput.xp;
     }
@@ -4443,10 +4452,9 @@ async function createNewActor () {
     
     await mapSpellbooks(newActor.id);
     
-    const tempActor = await game.actors.get(newActor.id);
     
     await game.actors.get(newActor.id).update(dataOutput);
-    await game.actors.get(newActor.id).update(dataOutput);
+    //await game.actors.get(newActor.id).update(dataOutput);
         
     await newActor.render(true);
     
