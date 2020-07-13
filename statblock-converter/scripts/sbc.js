@@ -945,7 +945,7 @@ function splitGeneralData(stringGeneralData) {
                     className = classNameAndLevel.split(/[\s](?:\d)/)[0].match(regExClasses);
                 }
                 classNameSuffix = classNameAndLevel.split(/[\s](?:\d)/)[0].replace(regExClasses, "").replace(/^ | $/, "");
-                classLevel = classNameAndLevel.match(/(\d+?)/)[0];
+                classLevel = classNameAndLevel.match(/(\d+)/)[0];
 
                 // If it's an NPC Class, add Npc to the Name
                 // Because thats the notation used in the gameSystem
@@ -2195,7 +2195,7 @@ function mapGeneralData() {
     
     // Changes for Undead Creatures
     let tempHPTotal = 0;
-    if (formattedInput.creature_type === "undead") {
+    if (formattedInput.creature_type.search(/Undead/i) !== -1) {
         dataOutput.data.attributes.hpAbility = "cha";
         dataOutput.data.attributes.savingThrows.fort.ability = "cha";
         dataOutput.data.attributes.hp.value = dataOutput.data.attributes.hp.max = +formattedInput.hp.total;
@@ -3566,6 +3566,7 @@ async function mapSpellbooks (actorID) {
                 
                 // Search for Name
                 spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
+                spellName = spellName.replace(/\[|\]/g,"");
                 spellName = spellName.replace(/(ACG)$/,"");
                 spellName = spellName.replace(/(APG)$/,"");
                 spellName = spellName.replace(/(UM)$/,"");
@@ -4415,8 +4416,8 @@ function tagSpellcasting(string, ...expressions) {
             
             for (let j=0; j<spellsArray.length; j++) {
                 let spellRow = formattedInput.spellcasting[spellcastingGroup[i]].spells[j];
-                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools)/)[0];
-                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools)(.*)/)[2];
+                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron)/)[0];
+                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron)(.*)/)[2];
                 
                 groupBody = "<strong>" + bold + "</strong> " + spells + "</br>";
                 spellcastingString += groupBody;
