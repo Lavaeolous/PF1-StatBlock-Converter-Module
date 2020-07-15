@@ -4,7 +4,7 @@ export default {
         "flags": {},
         "name": "",
         "type": "race",
-        "img": "icons/svg/mystery-man.svg",
+        "img": "systems/pf1/icons/skills/yellow_36.jpg",
         "data": {
             "description": {
             "value": "sbc | This Race was parsed automatically and has no detailed information",

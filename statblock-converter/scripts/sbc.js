@@ -110,6 +110,69 @@ var enumGender = [
     "Female"
 ];
 
+var enumRaceSubtype = [
+    "Adlet",
+    "Aeon",
+    "Agathion",
+    "Angel",
+    "Archon",
+    "Asura",
+    "Automaton",
+    "Azata",
+    "Behemoth",
+    "Catfolk",
+    "Clockwork",
+    "Colossus",
+    "Daemon",
+    "Dark Folk",
+    "Deep One",
+    "Demodand",
+    "Demon",
+    "Devil",
+    "Div",
+    "Dwarf",
+    "Elemental",
+    "Elf",
+    "Giant",
+    "Gnome",
+    "Goblinoid",
+    "Godspawn",
+    "Great Old One",
+    "Halfling",
+    "Herald",
+    "Hive",
+    "Human",
+    "Inevitable",
+    "Kaiju",
+    "Kami",
+    "Kasatha",
+    "Kitsune",
+    "Kyton",
+    "Leshy",
+    "Mortic",
+    "Nightshade",
+    "Oni",
+    "Orc",
+    "Protean",
+    "Psychopomp",
+    "Qlippoth",
+    "Rakshasa",
+    "Ratfolk",
+    "Reptilian",
+    "Robot",
+    "Samsaran",
+    "Sasquatch",
+    "Shapechanger",
+    "Swarm",
+    "Troop",
+    "Udaeus",
+    "Unbreathing",
+    "Vanara",
+    "Vishkanya",
+    "Wayang",
+    "Wild Hunt"
+];
+
 var carrySizeModificators = {
     "Fine": 1/8,
     "Diminutive": 1/4,
@@ -841,9 +904,7 @@ function splitGeneralData(stringGeneralData) {
     let splitName = splitGeneralData.match(/^.*/)[0].replace(/ \bCR (\d+\/*\d*)/, "");
     let splitCR = 0;
     let splitXP = 0;
-    
-    
-    
+
     if (splitGeneralData.search(/\bCR/) !== -1) {
         splitCR = splitGeneralData.match(/\bCR (\d+\/*\d*)/)[1];
         
@@ -868,20 +929,7 @@ function splitGeneralData(stringGeneralData) {
         splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
         formattedInput.xp = splitXP;
     }
-    
-    /*
-    // Name (every char until "CR" is found)
-    splitName = splitGeneralData.match(/.+?(?=CR)/)[0];
-    
-    // CR
-    splitCR = splitGeneralData.match(/(1\/\d|\d+)/)[0];
-    
-    // XP
-    splitXP =0;
-    if (splitGeneralData.search(/(\s*XP\s*)/im) !== -1) {
-        splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
-    }
-    */
+
         
     //Alignment
     let splitAlignment = "";
@@ -916,6 +964,11 @@ function splitGeneralData(stringGeneralData) {
     formattedInput.notes.classes = splitClasses;
     
     // If there are classes, get them, their level and the race / gender as well
+    
+    // !! DOESNT CAPTURE CASES WHERE THERE IS JUST A RACE AND NO CLASS
+    console.log("splitGeneralData: " + splitGeneralData);
+    let regExRaceSubtype = new RegExp ("(" + enumRaceSubtype.join("\\b|\\b") + ")", "i");
+    
     if ( (splitClasses !== null) && (splitClasses !== "") ) {
         // Set Flag
         dataInputHasClasses = true;
@@ -953,6 +1006,7 @@ function splitGeneralData(stringGeneralData) {
                     className = className[0].concat("Npc");
                 }
                 
+                // If it'S a wizard that goes by his schools name, change the class to wizard and add the rest in parenthesis
                 if (className[0].search(/necromancer|diviner|evoker|illusionist|transmuter|abjurer|conjurer|enchanter/i) === -1) {
                     formattedInput.classes[className] = {
                         "name" : className[0],
@@ -973,12 +1027,15 @@ function splitGeneralData(stringGeneralData) {
         }
         
         // Get Gender and Race if available
-        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:\\s+\\d+)", "ig");
-
+        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:\\s+\\d+)", "ig");        
+        let stringGenderAndRace = "";
+        
         // Search if there is info before the class to evaluate
         if (splitGeneralData.split(regExGenderAndRace)[1]) {
         
-            let stringGenderAndRace = splitGeneralData.split(regExGenderAndRace)[1];
+            stringGenderAndRace = splitGeneralData.split(regExGenderAndRace)[1];
+            
+            console.log("stringGenderAndRace: " + stringGenderAndRace);
             
             // Get Gender
             let regExGender = new RegExp("(" + enumGender.join("|") + ")", "i");
@@ -998,20 +1055,50 @@ function splitGeneralData(stringGeneralData) {
                 // Test playable Races
                 foundRace = stringGenderAndRace.match(regExPlayableRace)[0];
                 dataInputHasPlayableRace = true;
-                
-                // FOR NOW JUST USE EVERYTHING AS NONPLAYABLE
-                //foundRace = stringGenderAndRace.split(regExNonPlayableRace).join("").replace(/^ | $/, "");
-                //dataInputHasNonPlayableRace = true;
             } else {
                 // If no playable Race is found, simply remove the gender(s) and use the rest as race
                 foundRace = stringGenderAndRace.split(regExNonPlayableRace).join("").replace(/^ | $/, "");
                 dataInputHasNonPlayableRace = true;
             }
+            
+            console.log("foundRace: " + foundRace);
           
             formattedInput.gender = foundGender;
             formattedInput.race = capitalize(foundRace);
         }        
         
+    } else if (splitGeneralData.search(regExRaceSubtype) !== -1) {
+        // Race without Class found
+        let stringRace = splitGeneralData.match(regExRaceSubtype)[1];
+        
+        // Get Gender
+            let regExGender = new RegExp("(" + enumGender.join("|") + ")", "i");
+            let foundGender = "";
+            
+            if (splitGeneralData.search(regExGender) !== -1) {
+                foundGender = splitGeneralData.match(regExGender)[1];
+            }
+            
+            // Get Race, check first if there is a playable race
+            let regExPlayableRace = new RegExp("(" + enumRaces.join("|") + ")", "i");
+            let regExNonPlayableRace = new RegExp("(?:" + enumGender.join("|") + ")(?:[\\s]*?)([^0-9]*)", "gi");
+            
+            let foundRace = "";
+            
+            if (splitGeneralData.search(regExPlayableRace) !== -1) {
+                // Test playable Races
+                foundRace = splitGeneralData.match(regExPlayableRace)[1];
+                dataInputHasPlayableRace = true;
+            } else {
+                // 
+                foundRace = stringRace;
+                dataInputHasNonPlayableRace = true;
+            }
+            
+            console.log("foundRace: " + foundRace);
+          
+            formattedInput.gender = foundGender;
+            formattedInput.race = capitalize(foundRace);
     }
     
     // Creature Type and Subtype(s)
@@ -1570,7 +1657,7 @@ function splitOffenseData(stringOffenseData) {
             let spellGroupSubType = "";
             let spellGroupCL = 0;
             let spellGroupConcentration = 0;
-            let spontaneousCasting = true;
+            let spontaneousCasting = false;
             
             // Set the spellGroupType and Subtype
             enumSpellGroups.forEach ( function (item) {
@@ -1599,8 +1686,8 @@ function splitOffenseData(stringOffenseData) {
                             });
                         }
                         
-                        if (spellcastingGroup.search(/(prepared)/i) !== -1) {
-                            spontaneousCasting = false;
+                        if (spellcastingGroup.search(/(known)/i) !== -1) {
+                            spontaneousCasting = true;
                             
                         }
                         
@@ -1737,9 +1824,18 @@ function splitTacticsData(stringTacticsData) {
 function splitEcologyData(stringEcologyData) {
     if(DEBUG==true) { console.log("sbc-pf1 | Parsing Ecology data") };
     
-    formattedInput.ecology.environment = stringEcologyData.match(/Environment (.*)/i)[0];
-    formattedInput.ecology.organization = stringEcologyData.match(/Organization (.*)/i)[0];
-    formattedInput.ecology.treasure = stringEcologyData.match(/Treasure (.*)/i)[0];
+    if (stringEcologyData.search(/Environment (.*)/i) !== -1) {
+        formattedInput.ecology.environment = stringEcologyData.match(/Environment (.*)/i)[0];
+    }
+    if (stringEcologyData.search(/Organization (.*)/i) !== -1) {
+        formattedInput.ecology.organization = stringEcologyData.match(/Organization (.*)/i)[0];
+    }
+    if (stringEcologyData.search(/Treasure (.*)/i) !== -1) {
+        formattedInput.ecology.treasure = stringEcologyData.match(/Treasure (.*)/i)[0];
+    }
+    
+    
+    
     
     if(DEBUG==true) { console.log("sbc-pf1 | Done parsing Ecology data") };
 }
@@ -1804,7 +1900,7 @@ function splitStatisticsData(stringStatisticsData) {
     
     // Feats (String from "Feats" to next linebreak)
     if (stringStatisticsData.search(/(?:Feats )/) !== -1) {
-        let splitFeats = stringStatisticsData.match(/(?:Feats )([\s\S]+?)(?=Skills|Languages)/gim)[0];
+        let splitFeats = stringStatisticsData.match(/(?:Feats )([\s\S]+?(?=Skills|Languages|SQ|Other Gear|Gear|Combat Gear|$))/gim)[0];
         // Cleanup and remove stray linebreaks
         splitFeats = splitFeats.replace(/Skills$/i, "").replace(/\n/g, " ");
         splitFeats = splitFeats.replace(/Feats /i, "");
@@ -2000,9 +2096,26 @@ function splitStatisticsData(stringStatisticsData) {
         formattedInput.notes.languages = splitLanguages;
         
         splitLanguages = splitLanguages.replace(/,\s|;\s/g, ",");
-        splitLanguages = splitLanguages.split(/,/);
+        
+        
+        // Save Skills with parenthesis separately
+        let splitLanguagesWithoutParenthesis = splitLanguages.replace(/(,*[^,)]*\([^)]+\)[\s+-\d,]*)/g, "");
+        
+        let languagesArray = [];
+        
+        if (splitLanguagesWithoutParenthesis) {
+            languagesArray = splitLanguagesWithoutParenthesis.split(/,/g);
+        }
+        
+        if (splitLanguages.search (/([^,)]*\([^)]+\)[\s+-\d]*)/g) !== -1) {
+            let splitLanguagesWithParenthesis = splitLanguages.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);  
 
-        formattedInput.languages = splitLanguages;
+            splitLanguagesWithParenthesis.forEach ( function (language) {
+                languagesArray.push(language);
+            })
+        }
+        
+        formattedInput.languages = languagesArray;
     }
     
     // Special Qualities
@@ -2204,6 +2317,7 @@ function mapGeneralData() {
     // Attributes
     //dataOutput.data.attributes.init.value = formattedInput.initiative - getModifier(formattedInput.dex.total);
     dataOutput.data.attributes.init.total = +formattedInput.initiative;
+    dataOutput.data.attributes.hd.total = formattedInput.hit_dice.total;
     
     // Size and Size-Related Stuff
     switch(formattedInput.size) {
@@ -2384,6 +2498,7 @@ async function setRaceItem (raceInput) {
         if(DEBUG==true) { console.log("sbc-pf1 | Something went wrong parsing the race") };
     }
     
+    console.log("itemEntry RACE: " + itemEntry);
         
     
     for (let i=0; i<raceChanges.length; i++) {
@@ -2981,7 +3096,7 @@ async function setAttackItem (attackGroups, attackType) {
                 }
                 // damageBonus
                 if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1] - +enhancementBonus;
+                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];
                     let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
                     attackNotes += notesDamageBonus;
                 }
@@ -3149,6 +3264,7 @@ async function setAttackItem (attackGroups, attackType) {
             // Push Damage Parts & Calculate the difference between input and calculatedDamageBonus
             let strDamageBonus = getModifier(formattedInput.str.total);
             let calculatedDamageBonus = +strDamageBonus + +enhancementBonus;
+            
             damageModifier = +damageBonus - +calculatedDamageBonus;
             
             // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
@@ -3440,7 +3556,16 @@ async function mapSpellbooks (actorID) {
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.value = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.total = +formattedInput.spellcasting[spellBook].CL;
         
-        dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration;
+        let tempCL = dataOutput.data.attributes.spells.spellbooks[spellBook].cl.total;
+        
+        // Set the CL Offset if it differs from the default calculation (CL + int.mod)
+        if (spellBook !== "spelllike") {
+            dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration - (+getModifier(formattedInput.int.total) + tempCL);
+        } else {
+            dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration - (+getModifier(formattedInput.cha.total) + tempCL);
+        }
+        
+        
         dataOutput.data.attributes.spells.spellbooks[spellBook].spontaneous = formattedInput.spellcasting[spellBook].spontaneous;
         
         /* ------------------------------------ */
@@ -3489,8 +3614,32 @@ async function mapSpellbooks (actorID) {
             /* ------------------------------------ */
             
             // Set spellTemplate
+            
+            let tempSpells = tempSpellRow.replace(/(.*\-)/, "");
+            let splitSpellsWithParenthesis = "";
+            let splitSpellsWithoutParenthesis = "";
+            let spellNamesArray = [];
+            
+            if (tempSpells.search(/\(/) !== -1) {
+                splitSpellsWithParenthesis = tempSpells.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);
+                splitSpellsWithoutParenthesis = tempSpells.replace(/(,*[^,)]*\([^)]+\))/g, "").replace(/^, /, "").replace(/, /g, ",");
+                console.log("splitSpellsWithoutParenthesis: " + splitSpellsWithoutParenthesis);
+                console.log("splitSpellsWithParenthesis: " + splitSpellsWithParenthesis);
+
+                if (splitSpellsWithoutParenthesis !== "") {
+                    spellNamesArray = splitSpellsWithoutParenthesis.split(/,/);
+                }                
+
+                splitSpellsWithParenthesis.forEach ( function (item) {
+                    let tempItem = item.replace(/^ | $/g, "")
+                    console.log("tempItem: " + tempItem);
+                    spellNamesArray.push(tempItem);
+                });
+            } else {
+                spellNamesArray = tempSpells.split(/,/);
+            };
+                        
             let spells = {
-                "spellLevel": spellLevel,
                 "uses": {
                     "value": uses.value,
                     "max": uses.max,
@@ -3502,12 +3651,23 @@ async function mapSpellbooks (actorID) {
                     "spontaneousPrepared": true,
                 },
                 "atWill": false,
-                "spellList": tempSpellRow.replace(/(.*\-)/, "").split(/,/),
+                "spellList": spellNamesArray,
             };
             
+            // Set Spell Level if available
+            if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
+                spells.spellLevel = spellLevel;
+            }
+            
             // set atWill variable
-            if (tempSpellRow.search(/at will/) !== -1) {
+            if (tempSpellRow.search(/at will/i) !== -1) {
                 spells.atWill = true;
+            }
+            
+            // set Constant Note
+            let constantNote = "";
+            if (tempSpellRow.search(/constant/i) !== -1) {
+                constantNote = "Constant: ";
             }
             
             // If Spontaneous            
@@ -3550,19 +3710,20 @@ async function mapSpellbooks (actorID) {
             for (let k=0; k<spellKeys.length; k++) {
                 if (DEBUG == true) { console.log("sbc | START MAPPING - " + k + " - SPELL"); }
                 let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
-                let spellDC = 0;
                 let spellName = "";
                 let domainSpell = "";
-                
-                // Search for DC
-                if (spell.search(/(?:\bDC\b\s*)(\d+)/) !== -1) {
-                    spellDC = spell.match(/(?:\bDC\b\s*)(\d+)/)[1];
-                }
-                
+                let spellPreparedAmount = 1;
+                let spellDCOffset = 0;
+                let spellContext = "";
+                let spellEffectNotes = "";
+                                
                 // Check, if its a Domain Spell
                 if (spell.search(/(D$)/) !== -1) {
                     domainSpell = "Domain Spell";
+                    spellEffectNotes += domainSpell;
                 }
+                
+                console.log("spell: " + spell);
                 
                 // Search for Name
                 spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
@@ -3575,6 +3736,34 @@ async function mapSpellbooks (actorID) {
                 spellName = spellName.replace(/(HA)$/,"");
                 spellName = spellName.replace(/(OA)$/,"");
                 spellName = spellName.replace(/(’)/,"'");
+                                
+                // CIf its a Summon Entry, use the whole string as the spellName
+                if (spell.search(/Summon \([^\)]+\)/i) === -1) {
+                    // Remove Parenthesis from Spellname
+                    spellName = spellName.replace(/\(([^)]+)\)/g, "");
+
+                    // Search for Content in Parenthesis
+                    if (spell.search(/\(([^)]+)\)/g) !== -1) {
+                        spellContext = spell.match(/\(([^)]+)\)/g)[0];
+                        if (spellContext.search(/\((\d+)[,)]/) !== -1) {
+                            spellPreparedAmount = spellContext.match(/\((\d+)[,)]/)[1];
+                            console.log("spellPreparedAmount: " + spellPreparedAmount);
+                        }
+                        if (spellContext.search(/DC/) !== -1) {
+                            let inputSpellDC = spellContext.match(/DC\s*(\d+)/)[1];
+                            // Currently not calculating the DC Offset
+
+                            spellDCOffset = 0;
+
+                            // NEEDS THIS CALCULATION!!!
+                        }
+
+                        spellEffectNotes += "\n" + spellContext;
+
+                    }
+                } else {
+                    spellName = spell.replace(/^ | $/g, "");
+                }                
                 
                 let spellInput = {
                     "name": spellName,
@@ -3584,16 +3773,21 @@ async function mapSpellbooks (actorID) {
                         "per": spells.spellUsesDenominator
                     },
                     "preparation": {
-                      "preparedAmount": spells.preparation.preparedAmount,
-                      "maxAmount": spells.preparation.maxAmount,
+                      "preparedAmount": +spellPreparedAmount,
+                      "maxAmount": +spellPreparedAmount,
                       "spontaneousPrepared": true,
                     },
                     "atWill": spells.atWill,
-                    "saveDC": spellDC,
-                    "effectNotes": domainSpell,
-                    "level": spells.spellLevel
+                    "saveDC": spellDCOffset,
+                    "effectNotes": spellEffectNotes,
+                    "constant": constantNote
                 }
-
+                
+                // Set Spell Level if available
+                if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
+                    spellInput.level = spells.spellLevel;
+                }
+                
                 if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + k + " - SPELL"); }
                 spellArray.push(spellInput);                
                 
@@ -3638,25 +3832,41 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             let formattedSpellName = spellName.toLowerCase();
             
             // Format "Mass" and "Greater" Version
-            formattedSpellName = formattedSpellName.replace(/^(greater |mass )(.*)/, "$2, $1");            
+            formattedSpellName = formattedSpellName.replace(/^(greater |mass )(.*)/, "$2, $1");   
             
-            try {
+            let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
+            let tempFormattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
+            
+            if(spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName)) {
                 // Remove Metamagic Attributes and check if a spell can be found
-                let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
-                formattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
-                entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
-            } catch (e) {
+                entry = spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName);
+            } else {
+                console.log("Failed to find de-metamagicked spell");
                 // If not, try to find the spell without removing anything
                 entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
             }
             
-             
+            /*
+            try {
+                // Remove Metamagic Attributes and check if a spell can be found
+                let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
+                let tempFormattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
+                entry = spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName);
+            } catch (e) {
+                console.log("Failed to finde de-metamagicked spell");
+                // If not, try to find the spell without removing anything
+                entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
+            }
+            */
+            
             // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
             let spell = await spellPack.getEntity(entry._id);
 
-            spell.data.name = spellName;
+            spell.data.name = spellInput.constant + capitalize(spellName);
             spell.data.data.spellbook = spellBook;
-            spell.data.data.level = spellInput.level;
+            if (spellInput.level) {
+                spell.data.data.level = spellInput.level;
+            };            
             spell.data.data.uses.value = +spellInput.uses.value;
             spell.data.data.uses.max = +spellInput.uses.max;
             spell.data.data.uses.per = spellInput.uses.per;
@@ -3676,10 +3886,17 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             
             let spell = JSON.parse(JSON.stringify(templateSpell));
 
-            spell.name = "sbc | Placeholder | " + spellInput.name;
+            if (spellInput.name.search(/Summon/i) !== -1) {
+                spell.name = "Summon: " + spellInput.name.replace(/Summon |[\(\)]/gi, "");
+            } else {
+                spell.name = "sbc | Placeholder | " + spellInput.name;
+            }
+            
             
             spell.data.spellbook = spellBook;
-            spell.data.level = spellInput.level;
+            if (spellInput.level) {
+                spell.data.level = spellInput.level;
+            };
             spell.data.uses.value = +spellInput.uses.value;
             spell.data.uses.max = +spellInput.uses.max;
             spell.data.uses.per = spellInput.uses.per;
@@ -4454,8 +4671,8 @@ async function createNewActor () {
     await mapSpellbooks(newActor.id);
     
     
-    await game.actors.get(newActor.id).update(dataOutput);
-    //await game.actors.get(newActor.id).update(dataOutput);
+    let tempActor = await game.actors.get(newActor.id).update(dataOutput);
+    //await game.actors.get(newActor.id).update(tempActor);
         
     await newActor.render(true);
     

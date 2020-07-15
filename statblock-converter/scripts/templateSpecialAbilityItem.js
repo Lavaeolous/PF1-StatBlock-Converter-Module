@@ -92,7 +92,7 @@ export default {
         "identifiedName": ""
     },
     "sort": 1000000,
-    "img": "icons/svg/mystery-man.svg",
+    "img": "systems/pf1/icons/skills/yellow_36.jpg",
     "labels": {
         "featType": "Miscellaneous",
         "abilityType": "",
