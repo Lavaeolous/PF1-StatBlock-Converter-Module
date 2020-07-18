@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             1.0.0
+ * Version:             1.0.5
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v1.0.2";
+const sbcVersion = "v1.0.5";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -803,7 +803,7 @@ async function convertStatBlock(input, statblockType) {
     
     if(dataInput.search(/\bDescription\b/i) !== -1) {
         foundDescriptionData = true;
-        stringDescriptionData = tempInputRest;
+        stringDescriptionData = dataInput.match(/(?:^Description)([\s\S]*)/im)[1];
     }
     
     /*
@@ -901,15 +901,36 @@ function splitGeneralData(stringGeneralData) {
     
     let splitGeneralData = stringGeneralData.replace(/defense$|defenses$/i,"");
     
-    let splitName = splitGeneralData.match(/^.*/)[0].replace(/ \bCR (\d+\/*\d*)/, "");
+    let splitName = splitGeneralData.match(/^.*/)[0].replace(/\bCR (\d+\/*\d*|-)/, "");
     let splitCR = 0;
+    let splitMR = 0;
     let splitXP = 0;
+    let splitSource= "";
+    
+    if (splitGeneralData.search(/\bSource\b/) !== -1) {
+        splitSource = splitGeneralData.match(/(?:Source )(.*)/i)[1];
+        formattedInput.notes.source = splitSource;
+    }
 
     if (splitGeneralData.search(/\bCR/) !== -1) {
-        splitCR = splitGeneralData.match(/\bCR (\d+\/*\d*)/)[1];
+        
+        
+        splitCR = splitGeneralData.match(/\bCR (\d+\/*\d*|-)(?!MR)/)[1];
+        
+        // Get Mythic Ranks
+        if (splitGeneralData.search(/MR\s*\d+/) !== -1) {
+            splitMR = splitGeneralData.match(/MR\s*(\d+)/)[1];
+            splitName = splitName.replace(/\bMR (\d+\/*\d*|-)/, "");
+
+            formattedInput.mr = splitMR;
+        }
+        
+        formattedInput.notes.cr = splitCR;
+        formattedInput.notes.mr = splitMR;
+        
         
         // Save the Challenge Rating as a number
-        if (splitCR.search("/") !== -1) {
+        if (splitCR.search(/\/\d+/) !== -1) {
             let nominator = 1;
             let denominator = splitCR.match(/\/(\d)/)[1];
             if (denominator == 3) {
@@ -919,6 +940,8 @@ function splitGeneralData(stringGeneralData) {
             } else {
                 formattedInput.cr = +nominator / +denominator;
             }
+        } else if (splitCR.search("-") !== -1) {
+            formattedInput.cr = 0;
         } else {
             formattedInput.cr = splitCR;
         }
@@ -966,7 +989,7 @@ function splitGeneralData(stringGeneralData) {
     // If there are classes, get them, their level and the race / gender as well
     
     // !! DOESNT CAPTURE CASES WHERE THERE IS JUST A RACE AND NO CLASS
-    console.log("splitGeneralData: " + splitGeneralData);
+
     let regExRaceSubtype = new RegExp ("(" + enumRaceSubtype.join("\\b|\\b") + ")", "i");
     
     if ( (splitClasses !== null) && (splitClasses !== "") ) {
@@ -1034,9 +1057,7 @@ function splitGeneralData(stringGeneralData) {
         if (splitGeneralData.split(regExGenderAndRace)[1]) {
         
             stringGenderAndRace = splitGeneralData.split(regExGenderAndRace)[1];
-            
-            console.log("stringGenderAndRace: " + stringGenderAndRace);
-            
+                        
             // Get Gender
             let regExGender = new RegExp("(" + enumGender.join("|") + ")", "i");
             let foundGender = "";
@@ -1060,9 +1081,7 @@ function splitGeneralData(stringGeneralData) {
                 foundRace = stringGenderAndRace.split(regExNonPlayableRace).join("").replace(/^ | $/, "");
                 dataInputHasNonPlayableRace = true;
             }
-            
-            console.log("foundRace: " + foundRace);
-          
+                      
             formattedInput.gender = foundGender;
             formattedInput.race = capitalize(foundRace);
         }        
@@ -1094,9 +1113,7 @@ function splitGeneralData(stringGeneralData) {
                 foundRace = stringRace;
                 dataInputHasNonPlayableRace = true;
             }
-            
-            console.log("foundRace: " + foundRace);
-          
+                      
             formattedInput.gender = foundGender;
             formattedInput.race = capitalize(foundRace);
     }
@@ -1403,13 +1420,13 @@ function splitDefenseData(stringDefenseData) {
         
         item = item.replace(/,/g, "");
         
-        if (this[index].search(/(fort)/i) !== -1) {
+        if (this[index].search(/\bfort\b/i) !== -1) {
             let splitFort = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.fort_save.total = splitFort.replace(/\+/,"");
-        } else if (this[index].search(/(ref)/i) !== -1) {
+        } else if (this[index].search(/\bref\b/i) !== -1) {
             let splitRef = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.ref_save.total = splitRef.replace(/\+/,"");
-        } else if (this[index].search(/(will)/i) !== -1) {
+        } else if (this[index].search(/\bwill\b/i) !== -1) {
             let splitWill = item.match(/(\+\d+|\-\d+|\d+)/ig)[0];
             formattedInput.will_save.total = splitWill.replace(/\+/,"");
         } else {
@@ -1453,8 +1470,8 @@ function splitDefenseData(stringDefenseData) {
     
     // Spell Resistance
     if (searchableDefenseData.search(/\bSR\b/i) !== -1) {
-        let splitSR = searchableDefenseData.match(/(?:\bSR\b )(.*?)(?:;)/i)[0].replace(/\bSR\b /i, "");
-        splitSR = splitSR.replace(/;|,| |\n/g, "");
+        let splitSR = searchableDefenseData.match(/(?:\bSR\b )(.*?)(?:;)/i)[0].replace(/(\bSR\b|spell resistance specific)/gi, "");
+        splitSR = splitSR.replace(/(;|,| |\n)/g, "");
         formattedInput.spell_resistance.total = splitSR.match(/(^\d+)/)[0];
         if (splitSR.search(/\(([^)]+)\)/) !== -1) {
             formattedInput.spell_resistance.context = splitSR.match(/\(([^)]+)\)/)[0];
@@ -1751,30 +1768,7 @@ function splitOffenseData(stringOffenseData) {
             } else {
                 // IF ITS NOT A SPELLCASTING GROUP, BUT e.g. CONTEXT DATA (Domain, etc.)
                 
-                // ADD DOMAINS AS CLASS FEATURES
-                if (spellcastingGroup.search(/Domains/) !== -1) {
-                    let tempDomains = spellcastingGroup.match(/(?:Domains )(.*)/)[1];
-                    let domains = tempDomains.split(/,/);
-
-                    domains.forEach ( async function (item) {
-                        let domain = "Domain (" + item.replace(/^ | $/g, "") + ")";
-
-                        await setSpecialAbilityItem(domain, "class", "Spellcasting");
-                    })
-                }
                 
-                // ADD OPPOSITION SCHOOLS
-                // Opposition Schools illusion, transmutation
-                if (spellcastingGroup.search(/Opposition/i) !== -1) {
-                    let tempOppositionSchools = spellcastingGroup.match(/(?:Opposition Schools )(.*)/)[1];
-                    let oppositionSchools = tempOppositionSchools.split(/,/);
-
-                    oppositionSchools.forEach ( async function (item) {
-                        let oppositionSchool = "oppositionSchool (" + item.replace(/^ | $/g, "") + ")";
-
-                        await setSpecialAbilityItem(oppositionSchool, "class", "Opposed School");
-                    })
-                }
                 
             }
 
@@ -2218,13 +2212,28 @@ function splitStatisticsData(stringStatisticsData) {
 function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     
     
+    
+    
+    // YE OLDE WAY, SPLITTING BY EX; SU OR SP
+    /*
     // Prepare the string for splitting regardless of linebreaks
     let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\n/g, " ");
     tempSpecialAbilities = tempSpecialAbilities.replace(/(?:\.)(?:([\w\d\s’-]*\())(Ex|Su|Sp)/g, ".###$1$2");
-    
     let specialAbilities = tempSpecialAbilities.split(/###/g);
-        
+    */
+    
+    // THE NEW WAY, FOR TESTING (FOR NOW)
+    let tempSpecialAbilities = stringSpecialAbilitiesData.split(/\n/);
+    let specialAbilities = [];
+    
+    for (let i=0; i<tempSpecialAbilities.length; i++) {
+        if (tempSpecialAbilities[i] !== "") {
+            specialAbilities.push(tempSpecialAbilities[i]);
+        }
+    }
+    
     formattedInput.special_abilities = specialAbilities;
+
 
 }
 
@@ -2295,13 +2304,17 @@ function mapGeneralData() {
     dataOutput.token.name = dataOutput.token.name = formattedInput.name;
     dataOutput.token.width = dataOutput.token.height = enumTokenSize[formattedInput.size].w;
     dataOutput.token.scale = enumTokenSize[formattedInput.size].scale;
-    dataOutput.token.bar1 = { "attribute": "attributes.hp" };
     
     // Details
     dataOutput.data.details.level.value = +formattedInput.level;
     if (createPC == false) {
         dataOutput.data.details.cr.base = dataOutput.data.details.cr.total = +formattedInput.cr;
         dataOutput.data.details.xp.value = formattedInput.xp;
+    }
+    
+    // Mythic Ranks
+    if (formattedInput.mr !== 0) {
+        setSpecialAbilityItem (formattedInput.mr + " Ranks", "class", "Mythic")
     }
     
     dataOutput.data.details.alignment = formattedInput.alignment.toLowerCase();
@@ -2497,9 +2510,6 @@ async function setRaceItem (raceInput) {
     } else {
         if(DEBUG==true) { console.log("sbc-pf1 | Something went wrong parsing the race") };
     }
-    
-    console.log("itemEntry RACE: " + itemEntry);
-        
     
     for (let i=0; i<raceChanges.length; i++) {
         
@@ -3579,221 +3589,276 @@ async function mapSpellbooks (actorID) {
             // Get the complete Row
             let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRows[j]];
             
-            /* ------------------------------------ */
-            /* Variables at Spellbook Level     	*/
-            /* ------------------------------------ */
-            
-            
-            
-            // Get Spell Level if available
-            let spellLevel = 0;
-            if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/) !== -1) {
-                spellLevel = tempSpellRow.match(/(0|\d+(?=st|nd|rd|th))/)[0];
-            }
-            let spellLevelString = "spell" + spellLevel;
-            
-            // Get Uses
-            let uses = {
-                "value": 0,
-                "max": 0,
-                "per": ""
-            };
-            
-            if (tempSpellRow.search(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/) !== -1) {
-                uses.value = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[1];
-                uses.max = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[1];
-                uses.per =tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[2];
-            }
-            
-            dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].value = +uses.value;
-            dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].max = +uses.max;
-            dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].base = uses.max;
-            
-            /* ------------------------------------ */
-            /* Variables at Spell Level         	*/
-            /* ------------------------------------ */
-            
-            // Set spellTemplate
-            
-            let tempSpells = tempSpellRow.replace(/(.*\-)/, "");
-            let splitSpellsWithParenthesis = "";
-            let splitSpellsWithoutParenthesis = "";
-            let spellNamesArray = [];
-            
-            if (tempSpells.search(/\(/) !== -1) {
-                splitSpellsWithParenthesis = tempSpells.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);
-                splitSpellsWithoutParenthesis = tempSpells.replace(/(,*[^,)]*\([^)]+\))/g, "").replace(/^, /, "").replace(/, /g, ",");
-                console.log("splitSpellsWithoutParenthesis: " + splitSpellsWithoutParenthesis);
-                console.log("splitSpellsWithParenthesis: " + splitSpellsWithParenthesis);
+            // CHECK, IF ITS A SPELL ROW OR CONTEXT INFO
+            if (tempSpellRow.search(/^(Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|Spirit|\bM\b|\bS\b)/i) !== -1) {
+                
+                // ADD DOMAINS AS CLASS FEATURES
+                if (tempSpellRow.search(/Domains/i) !== -1) {
+                    let tempDomains = tempSpellRow.match(/(?:Domains )(.*)/)[1];
+                    let domains = tempDomains.split(/,/);
 
-                if (splitSpellsWithoutParenthesis !== "") {
-                    spellNamesArray = splitSpellsWithoutParenthesis.split(/,/);
-                }                
+                    domains.forEach ( async function (item) {
+                        let domain = "Domain (" + item.replace(/^ | $/g, "") + ")";
 
-                splitSpellsWithParenthesis.forEach ( function (item) {
-                    let tempItem = item.replace(/^ | $/g, "")
-                    console.log("tempItem: " + tempItem);
-                    spellNamesArray.push(tempItem);
-                });
-            } else {
-                spellNamesArray = tempSpells.split(/,/);
-            };
-                        
-            let spells = {
-                "uses": {
-                    "value": uses.value,
-                    "max": uses.max,
-                    "per": uses.per
-                },
-                "preparation": {
-                    "preparedAmount": 1,
-                    "maxAmount": 1,
-                    "spontaneousPrepared": true,
-                },
-                "atWill": false,
-                "spellList": spellNamesArray,
-            };
-            
-            // Set Spell Level if available
-            if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
-                spells.spellLevel = spellLevel;
-            }
-            
-            // set atWill variable
-            if (tempSpellRow.search(/at will/i) !== -1) {
-                spells.atWill = true;
-            }
-            
-            // set Constant Note
-            let constantNote = "";
-            if (tempSpellRow.search(/constant/i) !== -1) {
-                constantNote = "Constant: ";
-            }
-            
-            // If Spontaneous            
-            switch (formattedInput.spellcasting[spellBook].groupType) {
-                    
-                case "Spell-Like Abilities":
-                case "spelllike":
-                    spells.preparation.preparedAmount = +uses.max;
-                    spells.preparation.maxAmount = +uses.max;
-                    
-                    break;
-                    
-                case "Spells Prepared":
-                    // Variables at Spellbook Level
-                    
-                    // Variables at Spell Level
-                    spells.preparation.preparedAmount = 1;
-                    spells.preparation.maxAmount = 1;
-                    break;
-                    
-                case "Spells Known":
-                    // Variables at Spellbook Level
-                    
-                    // Variables at Spell Level
-                    spells.preparation.spontaneousPrepared = true;
-                    break;
-                    
-                default:
-                    ui.notifications.info("sbc | Error: Could not set the type of Spellcasting! Input was: " + formattedInput.spellcasting[spellBook].groupType)
-                    break;
-            }
-            
-            /* ------------------------------------ */
-            /* Loop through the Spells in the Row 	*/
-            /* ------------------------------------ */
-            
-            let spellArray = [];
-            
-            let spellKeys = Object.keys(spells.spellList);
-            for (let k=0; k<spellKeys.length; k++) {
-                if (DEBUG == true) { console.log("sbc | START MAPPING - " + k + " - SPELL"); }
-                let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
-                let spellName = "";
-                let domainSpell = "";
-                let spellPreparedAmount = 1;
-                let spellDCOffset = 0;
-                let spellContext = "";
-                let spellEffectNotes = "";
-                                
-                // Check, if its a Domain Spell
-                if (spell.search(/(D$)/) !== -1) {
-                    domainSpell = "Domain Spell";
-                    spellEffectNotes += domainSpell;
+                        await setSpecialAbilityItem(domain, "class", "Spellcasting");
+                    })
                 }
                 
-                console.log("spell: " + spell);
+                // ADD MYSTERIES
+                if (tempSpellRow.search(/Mystery|Mysteries/i) !== -1) {
+                    let tempMysteries = tempSpellRow.match(/(?:Mystery |Mysteries )(.*)/)[1];
+                    let mysteries = tempMysteries.split(/,/);
+
+                    domains.forEach ( async function (item) {
+                        let mystery = "Mystery (" + item.replace(/^ | $/g, "") + ")";
+
+                        await setSpecialAbilityItem(mystery, "class", "Mystery");
+                    })
+                }
                 
-                // Search for Name
-                spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
-                spellName = spellName.replace(/\[|\]/g,"");
-                spellName = spellName.replace(/(ACG)$/,"");
-                spellName = spellName.replace(/(APG)$/,"");
-                spellName = spellName.replace(/(UM)$/,"");
-                spellName = spellName.replace(/(M)$/,"");
-                spellName = spellName.replace(/(APG)$/,"");
-                spellName = spellName.replace(/(HA)$/,"");
-                spellName = spellName.replace(/(OA)$/,"");
-                spellName = spellName.replace(/(’)/,"'");
-                                
-                // CIf its a Summon Entry, use the whole string as the spellName
-                if (spell.search(/Summon \([^\)]+\)/i) === -1) {
-                    // Remove Parenthesis from Spellname
-                    spellName = spellName.replace(/\(([^)]+)\)/g, "");
+                // ADD SPIRIT
+                if (tempSpellRow.search(/Spirit|Spirits/i) !== -1) {
+                    let tempSpirits = tempSpellRow.match(/(?:^|[^S] )(Spirit|Spirits)(.*)/i)[2];
+                    let spirits = tempSpirits.split(/,/);
+                    
+                    spirits.forEach ( async function (item) {
+                        let spirit = "Spirit (" + item.replace(/^ | $/g, "") + ")";
 
-                    // Search for Content in Parenthesis
-                    if (spell.search(/\(([^)]+)\)/g) !== -1) {
-                        spellContext = spell.match(/\(([^)]+)\)/g)[0];
-                        if (spellContext.search(/\((\d+)[,)]/) !== -1) {
-                            spellPreparedAmount = spellContext.match(/\((\d+)[,)]/)[1];
-                            console.log("spellPreparedAmount: " + spellPreparedAmount);
-                        }
-                        if (spellContext.search(/DC/) !== -1) {
-                            let inputSpellDC = spellContext.match(/DC\s*(\d+)/)[1];
-                            // Currently not calculating the DC Offset
+                        await setSpecialAbilityItem(spirit, "class", "Spirit");
+                    })
+                }
+                
+                // ADD OPPOSITION SCHOOLS
+                // Opposition Schools illusion, transmutation
+                if (tempSpellRow.search(/Opposition/i) !== -1) {
+                    let tempOppositionSchools = tempSpellRow.match(/(?:Opposition Schools )(.*)/i)[1];
+                    let oppositionSchools = tempOppositionSchools.split(/,/);
 
-                            spellDCOffset = 0;
+                    oppositionSchools.forEach ( async function (item) {
+                        let oppositionSchool = "oppositionSchool (" + item.replace(/^ | $/g, "") + ")";
 
-                            // NEEDS THIS CALCULATION!!!
-                        }
+                        await setSpecialAbilityItem(oppositionSchool, "class", "Opposed School");
+                    })
+                }
+                
+            } else {
+                /* ------------------------------------ */
+                /* Variables at Spellbook Level     	*/
+                /* ------------------------------------ */
 
-                        spellEffectNotes += "\n" + spellContext;
 
-                    }
+
+                // Get Spell Level if available
+                let spellLevel = 0;
+                if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/) !== -1) {
+                    spellLevel = tempSpellRow.match(/(0|\d+(?=st|nd|rd|th))/)[0];
+                }
+                let spellLevelString = "spell" + spellLevel;
+
+                // Get Uses
+                let uses = {
+                    "value": 0,
+                    "max": 0,
+                    "per": ""
+                };
+
+                if (tempSpellRow.search(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/) !== -1) {
+                    uses.value = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[1];
+                    uses.max = tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[1];
+                    uses.per =tempSpellRow.match(/(\d+)\/(\b\w+\b)(?=[^-]*\-)/)[2];
+                }
+
+                dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].value = +uses.value;
+                dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].max = +uses.max;
+                dataOutput.data.attributes.spells.spellbooks[spellBook].spells[spellLevelString].base = uses.max;
+
+                /* ------------------------------------ */
+                /* Variables at Spell Level         	*/
+                /* ------------------------------------ */
+
+                // Set spellTemplate
+                let tempSpells = tempSpellRow.replace(/([^-]*\-)/, "");
+                let splitSpellsWithParenthesis = "";
+                let splitSpellsWithoutParenthesis = "";
+                let spellNamesArray = [];
+
+                if (tempSpells.search(/\(/) !== -1) {
+                    splitSpellsWithParenthesis = tempSpells.match(/([^,)]*\([^)]+\)[\s+-\d]*)/g);
+                    splitSpellsWithoutParenthesis = tempSpells.replace(/(,*[^,)]*\([^)]+\))/g, "").replace(/^, /, "").replace(/, /g, ",");
+
+
+                    if (splitSpellsWithoutParenthesis !== "") {
+                        spellNamesArray = splitSpellsWithoutParenthesis.split(/,|;/);
+                    }                
+
+                    splitSpellsWithParenthesis.forEach ( function (item) {
+                        let tempItem = item.replace(/^ | $/g, "")
+                        spellNamesArray.push(tempItem);
+                    });
                 } else {
-                    spellName = spell.replace(/^ | $/g, "");
-                }                
-                
-                let spellInput = {
-                    "name": spellName,
+  
+                    spellNamesArray = tempSpells.split(/,|;/);
+                };
+
+
+                let spells = {
                     "uses": {
-                        "value": spells.spellUses,
-                        "max": spells.spellUses,
-                        "per": spells.spellUsesDenominator
+                        "value": uses.value,
+                        "max": uses.max,
+                        "per": uses.per
                     },
                     "preparation": {
-                      "preparedAmount": +spellPreparedAmount,
-                      "maxAmount": +spellPreparedAmount,
-                      "spontaneousPrepared": true,
+                        "preparedAmount": 1,
+                        "maxAmount": 1,
+                        "spontaneousPrepared": true,
                     },
-                    "atWill": spells.atWill,
-                    "saveDC": spellDCOffset,
-                    "effectNotes": spellEffectNotes,
-                    "constant": constantNote
-                }
-                
+                    "atWill": false,
+                    "spellList": spellNamesArray,
+                };
+
                 // Set Spell Level if available
                 if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
-                    spellInput.level = spells.spellLevel;
+                    spells.spellLevel = spellLevel;
                 }
+
+                // set atWill variable
+                if (tempSpellRow.search(/at will/i) !== -1) {
+                    spells.atWill = true;
+                }
+
+                // set Constant Note
+                let constantNote = "";
+                if (tempSpellRow.search(/constant/i) !== -1) {
+                    constantNote = "Constant: ";
+                }
+
+                // If Spontaneous            
+                switch (formattedInput.spellcasting[spellBook].groupType) {
+
+                    case "Spell-Like Abilities":
+                    case "spelllike":
+                        spells.preparation.preparedAmount = +uses.max;
+                        spells.preparation.maxAmount = +uses.max;
+
+                        break;
+
+                    case "Spells Prepared":
+                        // Variables at Spellbook Level
+
+                        // Variables at Spell Level
+                        spells.preparation.preparedAmount = 1;
+                        spells.preparation.maxAmount = 1;
+                        break;
+
+                    case "Spells Known":
+                        // Variables at Spellbook Level
+
+                        // Variables at Spell Level
+                        spells.preparation.spontaneousPrepared = true;
+                        break;
+
+                    default:
+                        ui.notifications.info("sbc | Error: Could not set the type of Spellcasting! Input was: " + formattedInput.spellcasting[spellBook].groupType)
+                        break;
+                }
+
+                /* ------------------------------------ */
+                /* Loop through the Spells in the Row 	*/
+                /* ------------------------------------ */
+
+                let spellArray = [];
+
+                let spellKeys = Object.keys(spells.spellList);
+                for (let k=0; k<spellKeys.length; k++) {
+                    if (DEBUG == true) { console.log("sbc | START MAPPING - " + k + " - SPELL"); }
+                    let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
+                    let spellName = "";
+                    let domainSpell = "";
+                    let spellPreparedAmount = 1;
+                    let spellDCOffset = 0;
+                    let spellContext = "";
+                    let spellEffectNotes = "";
+
+                    // Check, if its a Domain Spell
+                    if (spell.search(/(D$)/) !== -1) {
+                        domainSpell = "Domain Spell";
+                        spellEffectNotes += domainSpell;
+                    }
+
+
+                    // Search for Name
+                    spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
+                    spellName = spellName.replace(/\[|\]/g,"");
+                    spellName = spellName.replace(/(ACG)$/,"");
+                    spellName = spellName.replace(/(APG)$/,"");
+                    spellName = spellName.replace(/(UM)$/,"");
+                    spellName = spellName.replace(/(M)$/,"");
+                    spellName = spellName.replace(/(S)$/,"");
+                    spellName = spellName.replace(/(D)$/,"");
+                    spellName = spellName.replace(/(APG)$/,"");
+                    spellName = spellName.replace(/(HA)$/,"");
+                    spellName = spellName.replace(/(OA)$/,"");
+                    spellName = spellName.replace(/(’)/,"'");
+
+                    // If its a Summon Entry, use the whole string as the spellName
+                    if (spell.search(/Summon \([^\)]+\)/i) === -1) {
+                        // Remove Parenthesis from Spellname
+                        spellName = spellName.replace(/\(([^)]+)\)/g, "");
+
+                        // Search for Content in Parenthesis
+                        if (spell.search(/\(([^)]+)\)/g) !== -1) {
+                            spellContext = spell.match(/\(([^)]+)\)/g)[0];
+                            if (spellContext.search(/\((\d+)[,)]/) !== -1) {
+                                spellPreparedAmount = spellContext.match(/\((\d+)[,)]/)[1];
+                            }
+                            if (spellContext.search(/DC/) !== -1) {
+                                let inputSpellDC = spellContext.match(/DC\s*(\d+)/)[1];
+                                // Currently not calculating the DC Offset
+
+                                spellDCOffset = 0;
+
+                                // NEEDS THIS CALCULATION!!!
+                            }
+
+                            spellEffectNotes += "\n" + spellContext;
+
+                        }
+                    } else {
+                        spellName = spell.replace(/^ | $/g, "");
+                    }                
+
+                    let spellInput = {
+                        "name": spellName,
+                        "uses": {
+                            "value": spells.spellUses,
+                            "max": spells.spellUses,
+                            "per": spells.spellUsesDenominator
+                        },
+                        "preparation": {
+                          "preparedAmount": +spellPreparedAmount,
+                          "maxAmount": +spellPreparedAmount,
+                          "spontaneousPrepared": true,
+                        },
+                        "atWill": spells.atWill,
+                        "saveDC": spellDCOffset,
+                        "effectNotes": spellEffectNotes,
+                        "constant": constantNote
+                    }
+
+                    // Set Spell Level if available
+                    if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
+                        spellInput.level = spells.spellLevel;
+                    }
+
+                    if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + k + " - SPELL"); }
+                    spellArray.push(spellInput);                
+
+                };
                 
-                if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + k + " - SPELL"); }
-                spellArray.push(spellInput);                
-                
-            };
+                await setSpellsItem(spellArray, actorID, spellBook, spellPack, spellPackIndex);
+            }            
             
-            await setSpellsItem(spellArray, actorID, spellBook, spellPack, spellPackIndex);
+            
             
             if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + j + " - SPELLROW"); }
             
@@ -3832,17 +3897,20 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             let formattedSpellName = spellName.toLowerCase();
             
             // Format "Mass" and "Greater" Version
-            formattedSpellName = formattedSpellName.replace(/^(greater |mass )(.*)/, "$2, $1");   
+            let correctedSpellName = formattedSpellName.replace(/^(greater |lesser |mass |major )(.*)/, "$2, $1");   
             
             let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
-            let tempFormattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
+            let tempCorrectedSpellName = correctedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
             
-            if(spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName)) {
+            if(spellPack.index.find(e => e.name.toLowerCase() === tempCorrectedSpellName)) {
                 // Remove Metamagic Attributes and check if a spell can be found
-                entry = spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName);
-            } else {
-                console.log("Failed to find de-metamagicked spell");
+                entry = spellPack.index.find(e => e.name.toLowerCase() === tempCorrectedSpellName);
+            } else if (spellPack.index.find(e => e.name.toLowerCase() === correctedSpellName)) {
+                if (DEBUG == true) { console.log("Failed to find de-metamagicked spell"); }
                 // If not, try to find the spell without removing anything
+                entry = spellPack.index.find(e => e.name.toLowerCase() === correctedSpellName);
+            } else {
+                if (DEBUG == true) { console.log("Failed to find a version using correction spell formatting, try with the input directly"); }
                 entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
             }
             
@@ -3998,7 +4066,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         }
     }
     
-    if (existingItemFound == false) {
+    //if (existingItemFound == false) {
         // Create a new Item for new special Abilities
         let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
         
@@ -4015,7 +4083,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         newSpecialAbility.labels.featType = tempFeatType;
         
         dataOutput.items.push(newSpecialAbility);
-    }
+    //}
 }
 
 // Map Statistics to data.attributes
@@ -4467,31 +4535,18 @@ function mapStatisticData () {
 
 // Map Notes in HTML
 function mapNotesData() {
-    
-    let inputTemplate = ``;
-    
-    if (createPC === false) {
-        inputTemplate = `
-            ${dataOutput.name} CR ${dataOutput.data.details.cr.total}
-            XP ${dataOutput.data.details.xp.value}
-        `;
-    } else {
-        inputTemplate = `
-            ${dataOutput.name}
-        `;
-    }
         
-    
     let styledNotes =
         `
             <div style="margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
                 <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
                 <div style="padding: 5px;">
-                    <h1 style="border: none; text-transform: uppercase; color: #7a0800;">${formattedInput.name} ${formattedInput.cr ? "CR " + formattedInput.cr : ""}</h1>
+                    <h1 style="border: none; text-transform: uppercase; color: #7a0800;">${formattedInput.name} ${formattedInput.notes.cr ? "CR " + formattedInput.notes.cr : ""}${formattedInput.notes.mr ? "/MR " + formattedInput.notes.mr : ""}</h1>
                     ${formattedInput.shortDescription ? "<div><em>" + formattedInput.shortDescription + "</em></div>": ""}
                     
                     <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
                     <div style="break-inside: avoid;">
+                        ${formattedInput.notes.source ? "<strong>Source:</strong> " + formattedInput.notes.source + "<br/>" : ""}
                         ${formattedInput.xp ? "<strong>XP " + formattedInput.xp + "</strong><br/>" : ""}
                         ${formattedInput.gender ? formattedInput.gender : ""} ${formattedInput.template ? formattedInput.template : ""} ${formattedInput.race ? formattedInput.race : ""} ${formattedInput.notes.classes ? formattedInput.notes.classes + "<br/>" : ""}
                         ${formattedInput.alignment} ${formattedInput.size} ${formattedInput.creature_type} ${formattedInput.creature_subtype ? "(" + formattedInput.creature_subtype + ")" : ""}<br/>
@@ -4576,8 +4631,18 @@ function tagSpecialAbilities(string, ...expressions) {
         for (let i=0; i<formattedInput.special_abilities.length; i++) {
             let item = formattedInput.special_abilities[i];
             
-            let name = item.match(/([^)]*\))/)[0];
-            let content = item.match(/\) ([\s\S]*)/)[1];
+            let name = "";
+            let content = "";
+            
+            if (item.search(/([^)]*\))/) !== -1) {
+                name = item.match(/([^)]*\))/)[0];
+                content = item.match(/\) ([\s\S]*)/)[1];
+            } else {
+                name = item.match(/(^\b\w*\b)/)[0];
+                content = item.match(/(?:^\b\w*\b)(.*)/)[1];
+            }
+            
+            
             
             body += "<div style='break-inside: avoid;'><strong>" + name + "</strong> " + content + "</div>";
             
@@ -4633,8 +4698,8 @@ function tagSpellcasting(string, ...expressions) {
             
             for (let j=0; j<spellsArray.length; j++) {
                 let spellRow = formattedInput.spellcasting[spellcastingGroup[i]].spells[j];
-                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron)/)[0];
-                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron)(.*)/)[2];
+                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|\bM\b|\bS\b)/)[0];
+                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|\bM\b|\bS\b)(.*)/)[2];
                 
                 groupBody = "<strong>" + bold + "</strong> " + spells + "</br>";
                 spellcastingString += groupBody;

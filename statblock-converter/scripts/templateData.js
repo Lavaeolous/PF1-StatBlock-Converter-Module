@@ -4,6 +4,7 @@ export default {
     "slug": "",
     "flavor_text": "",
     "cr": 0,
+    "mr": 0,
     "xp": 0,
     "size": "",
     "alignment": "",
@@ -327,6 +328,7 @@ export default {
         "treasure": ""
     },
     "notes": {
+        "source": "",
         "classes": "",
         "acBonus": "",
         "hpDice": "",

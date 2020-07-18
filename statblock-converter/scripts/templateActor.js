@@ -987,7 +987,7 @@ export default {
   "token": {
     "flags": {},
     "name": "templateNPC",
-    "displayName": 0,
+    "displayName": 20,
     "img": "icons/svg/mystery-man.svg",
     "width": 1,
     "height": 1,
@@ -1006,9 +1006,13 @@ export default {
     "actorLink": false,
     "actorData": {},
     "disposition": -1,
-    "displayBars": 0,
-    "bar1": {},
-    "bar2": {},
+    "displayBars": 20,
+    "bar1": {
+      "attribute": "attributes.hp"
+    },
+    "bar2": {
+      "attribute": "attributes.ac.normal.total"
+    },
     "randomImg": false
   },
   "items": [],
