@@ -2231,12 +2231,13 @@ function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     
     // THE NEW WAY, FOR TESTING (FOR NOW)
     
-    let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\)\n/,") ").split(/\n/);
+    let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\)\n/g,") ").split(/\n/);
     let specialAbilities = [];
     
     for (let i=0; i<tempSpecialAbilities.length; i++) {
         if (tempSpecialAbilities[i] !== "") {
             specialAbilities.push(tempSpecialAbilities[i]);
+            console.log("tempSpecialAbilities[i]: " + tempSpecialAbilities[i]);
         }
     }
     
@@ -2958,6 +2959,9 @@ function mapSpecialAbilitiesData () {
         let featType = "misc";
         let specialAbility = formattedInput.special_abilities[i];
         
+        console.log("specialAbility in mapping");
+        console.log(specialAbility);
+        
         setSpecialAbilityItem(specialAbility, featType, "Special Ability");
     }
 }
@@ -3140,7 +3144,6 @@ async function setAttackItem (attackGroups, attackType) {
                 /* Damage Calculation for Str = "-"		*/
                 /* ------------------------------------ */
                 
-                
                 if (attack.match(/\d+d\d+/) !== null) {
                     
                     // If the attack has damage dice
@@ -3176,7 +3179,7 @@ async function setAttackItem (attackGroups, attackType) {
                                 attackEffects += specialEffect;
                             };
                             
-                            if (subIndex < tempItem.length-1) {
+                            if (j < tempItem.length-1) {
                                 attackNotes += " plus ";
                                 attackEffects += "\n";
                             };
@@ -4015,7 +4018,10 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
     let specialAbilityNameSuffix = "";
     let specialAbilityDescription = "";
     let specialAbilityType = "";
-        
+       
+    /*
+     * OLDE WAY TO SET NAME AND CONTENT
+     
     if (specialAbility.search(/(?:[^\(]*\()(.*)(?:\))/) !== -1) {
         specialAbilityName = specialAbility.match(/([^\(]*)(?:\()/i)[1].replace(/^ | $/g, "");
         specialAbilityNameSuffix = " (" + specialAbility.match(/(?:[^\(]*\()(.*)(?:\))/)[1] + ")";
@@ -4028,10 +4034,16 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         specialAbilityType = specialAbility.match(/(?:[^\(]*\()(Su|Sp|Ex)(?:\))/i)[1];
     }
     
+    */
+    
+    // NEW WAY TO SET NAME AND CONTENT
+    console.log("SPECIAL ABILITY");
+    console.log(specialAbility);
+    
     // Set featType
     let tempFeatType = "";
     let tempFeatTypeShort = "";
-    
+
     switch(featType) {
         case "misc":
             tempFeatType = "Miscellaneous";
@@ -4054,49 +4066,73 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
             tempFeatType = "Miscellaneous";
             tempFeatTypeShort = "misc";
             break;
-    }
-        
-    // Check if there already is an item with the same name
-    let itemKeys = Object.keys(dataOutput.items);
+    };
     
-    let tempAbilityName = specialAbilityName.replace(/[/]/g, "\/");
-            
-    for (let i=0; i<itemKeys.length; i++) {
-        let itemKey = itemKeys[i];
-        
-        //let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
-        
-        let searchString = new RegExp (tempAbilityName, "i");
-                
-        if (dataOutput.items[itemKey].name.search(searchString) !== -1) {
-            
-            existingItemFound = true;
-            
-            dataOutput.items[itemKey].name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
-            
-            dataOutput.items[itemKey].data.abilityType = specialAbilityType.toLowerCase();
-            dataOutput.items[itemKey].abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
-            dataOutput.items[itemKey].abilityTypeShort = specialAbilityType;
-            
-            dataOutput.items[itemKey].data.description.value = specialAbilityDescription;
-            
-            // Set FeatType
-            dataOutput.items[itemKey].data.featType = tempFeatTypeShort;
-            dataOutput.items[itemKey].labels.featType = tempFeatType;
+    if (abilityType.search(/Special Ability/i) !== -1) {
+
+        specialAbilityName = specialAbility.match(/([^.\n]*?)(\s)((\b[A-Z][a-z]*\b|\+\d+) \b[a-z]+?\b)/)[1];
+        specialAbilityDescription = specialAbility.replace(specialAbilityName, "");
+
+        console.log("specialAbilityName: " + specialAbilityName);
+        console.log("specialAbilityDescription: " + specialAbilityDescription);
+
+        // Check if there already is an item with the same name
+        let itemKeys = Object.keys(dataOutput.items);
+
+        let tempAbilityName = specialAbilityName.replace(/[/]/g, "\/");
+
+        for (let i=0; i<itemKeys.length; i++) {
+            let itemKey = itemKeys[i];
+
+            //let searchString = new RegExp (specialAbilityName + specialAbilityNameSuffix.replace(/\+/g, "\\+"), "i");
+
+            let searchString = new RegExp (tempAbilityName, "i");
+
+            if (dataOutput.items[itemKey].name.search(searchString) !== -1) {
+
+                existingItemFound = true;
+
+                dataOutput.items[itemKey].name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
+
+                dataOutput.items[itemKey].data.abilityType = specialAbilityType.toLowerCase();
+                dataOutput.items[itemKey].abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
+                dataOutput.items[itemKey].abilityTypeShort = specialAbilityType;
+
+                dataOutput.items[itemKey].data.description.value = specialAbilityDescription;
+
+                // Set FeatType
+                dataOutput.items[itemKey].data.featType = tempFeatTypeShort;
+                dataOutput.items[itemKey].labels.featType = tempFeatType;
+            }
         }
-    }
-    
-    if (existingItemFound == false) {
+
+        if (existingItemFound == false) {
+            // Create a new Item for new special Abilities
+            let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
+
+            newSpecialAbility.name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
+
+            newSpecialAbility.data.abilityType = specialAbilityType.toLowerCase();
+            newSpecialAbility.abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
+            newSpecialAbility.abilityTypeShort = specialAbilityType;
+
+            newSpecialAbility.data.description.value = specialAbilityDescription;
+
+            // Set FeatType
+            newSpecialAbility.data.featType = tempFeatTypeShort;
+            newSpecialAbility.labels.featType = tempFeatType;
+
+            dataOutput.items.push(newSpecialAbility);
+        }
+    } else {
         // Create a new Item for new special Abilities
         let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
-        
-        newSpecialAbility.name = abilityType + ": " + specialAbilityName + specialAbilityNameSuffix;
-        
+
+        newSpecialAbility.name = abilityType + ": " + specialAbility;
+
         newSpecialAbility.data.abilityType = specialAbilityType.toLowerCase();
         newSpecialAbility.abilityType = enumAbilityTypes[specialAbilityType.toLowerCase()];
         newSpecialAbility.abilityTypeShort = specialAbilityType;
-            
-        newSpecialAbility.data.description.value = specialAbilityDescription;
         
         // Set FeatType
         newSpecialAbility.data.featType = tempFeatTypeShort;
@@ -4104,6 +4140,8 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         
         dataOutput.items.push(newSpecialAbility);
     }
+    
+    
 }
 
 // Map Statistics to data.attributes
