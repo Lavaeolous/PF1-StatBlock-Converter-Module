@@ -794,11 +794,18 @@ async function convertStatBlock(input, statblockType) {
     }
     
     if(foundSpecialAbilitiesData == true) {
-        splitInput = tempInputRest.split(/\bDESCRIPTION\b/i);
+        //splitInput = tempInputRest.split(/\bDESCRIPTION\b/i);
         
-        tempInputRest = splitInput[1];
-        stringSpecialAbilitiesData = splitInput[0];
-        splitInput = "";
+        //tempInputRest = splitInput[1];
+        //stringSpecialAbilitiesData = splitInput[0];
+        
+        if (dataInput.search(/(^Special Abilities[\s\S]*(Ecology|Description))/im) !== -1) {
+            stringSpecialAbilitiesData = dataInput.match(/(?:^Special Abilities)([\s\S]*)(?:Ecology|Description)/im)[1];
+        } else {
+            stringSpecialAbilitiesData = dataInput.match(/(?:^Special Abilities)([\s\S]*)/im)[1];
+        }
+                
+        //splitInput = "";
     }
     
     if(dataInput.search(/\bDescription\b/i) !== -1) {
@@ -2212,7 +2219,7 @@ function splitStatisticsData(stringStatisticsData) {
 function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     
     
-    
+    console.log("stringSpecialAbilitiesData: " + stringSpecialAbilitiesData);
     
     // YE OLDE WAY, SPLITTING BY EX; SU OR SP
     /*
@@ -2223,7 +2230,8 @@ function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     */
     
     // THE NEW WAY, FOR TESTING (FOR NOW)
-    let tempSpecialAbilities = stringSpecialAbilitiesData.split(/\n/);
+    
+    let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\)\n/,") ").split(/\n/);
     let specialAbilities = [];
     
     for (let i=0; i<tempSpecialAbilities.length; i++) {
@@ -3390,7 +3398,7 @@ async function setSpecialAttackItem (specialAttacks) {
         name = specialAttack.match(/^([^(]*)|$/g)[0].replace(/^ | $/g, "");
         
         // Set Action Type
-        let specialAttacksRegEx = new RegExp(enumSpecialAttacks.join("\\b|\\b"), "i");
+        let specialAttacksRegEx = new RegExp(enumSpecialAttacks.join("\\b|\\b"), "gi");
         if (name.search(/\bChannel\b/i) !== -1) {
             actionType = "heal";
         } else if (name.search(specialAttacksRegEx) !== -1) {
@@ -3590,7 +3598,7 @@ async function mapSpellbooks (actorID) {
             let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRows[j]];
             
             // CHECK, IF ITS A SPELL ROW OR CONTEXT INFO
-            if (tempSpellRow.search(/^(Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|Spirit|\bM\b|\bS\b)/i) !== -1) {
+            if (tempSpellRow.search(/^(Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|Spirit|Psychic Discipline|\bM\b|\bS\b)/i) !== -1) {
                 
                 // ADD DOMAINS AS CLASS FEATURES
                 if (tempSpellRow.search(/Domains/i) !== -1) {
@@ -3613,6 +3621,18 @@ async function mapSpellbooks (actorID) {
                         let mystery = "Mystery (" + item.replace(/^ | $/g, "") + ")";
 
                         await setSpecialAbilityItem(mystery, "class", "Mystery");
+                    })
+                }
+                
+                // ADD PSYCHIC DISCIPLINES
+                if (tempSpellRow.search(/Psychic Discipline/i) !== -1) {
+                    let tempDiscipline = tempSpellRow.match(/(?:Psychic Discipline )(.*)/)[1];
+                    let disciplines = tempDiscipline.split(/,/);
+
+                    disciplines.forEach ( async function (item) {
+                        let discipline = "Discipline (" + item.replace(/^ | $/g, "") + ")";
+
+                        await setSpecialAbilityItem(discipline, "class", "Discipline");
                     })
                 }
                 
@@ -4066,7 +4086,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         }
     }
     
-    //if (existingItemFound == false) {
+    if (existingItemFound == false) {
         // Create a new Item for new special Abilities
         let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
         
@@ -4083,7 +4103,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         newSpecialAbility.labels.featType = tempFeatType;
         
         dataOutput.items.push(newSpecialAbility);
-    //}
+    }
 }
 
 // Map Statistics to data.attributes
@@ -4631,6 +4651,8 @@ function tagSpecialAbilities(string, ...expressions) {
         for (let i=0; i<formattedInput.special_abilities.length; i++) {
             let item = formattedInput.special_abilities[i];
             
+            console.log("item: " + item);
+            
             let name = "";
             let content = "";
             
@@ -4698,8 +4720,8 @@ function tagSpellcasting(string, ...expressions) {
             
             for (let j=0; j<spellsArray.length; j++) {
                 let spellRow = formattedInput.spellcasting[spellcastingGroup[i]].spells[j];
-                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|\bM\b|\bS\b)/)[0];
-                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|\bM\b|\bS\b)(.*)/)[2];
+                let bold = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|Psychic Discipline|\bM\b|\bS\b)/)[0];
+                let spells = spellRow.match(/(.*-|Bloodline|Domains|Domain|Opposition Schools|Patron|Mystery|Psychic Discipline|\bM\b|\bS\b)(.*)/)[2];
                 
                 groupBody = "<strong>" + bold + "</strong> " + spells + "</br>";
                 spellcastingString += groupBody;
