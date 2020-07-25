@@ -2222,15 +2222,15 @@ function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     console.log("stringSpecialAbilitiesData: " + stringSpecialAbilitiesData);
     
     // YE OLDE WAY, SPLITTING BY EX; SU OR SP
-    
+    /*
     // Prepare the string for splitting regardless of linebreaks
     let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\n/g, " ");
     tempSpecialAbilities = tempSpecialAbilities.replace(/(?:\.)(?:([\w\d\s’-]*\())(Ex|Su|Sp)/g, ".###$1$2");
     let specialAbilities = tempSpecialAbilities.split(/###/g);
-    
+    */
     
     // THE NEW WAY, FOR TESTING (FOR NOW)
-    /*
+    
     let tempSpecialAbilities = stringSpecialAbilitiesData.replace(/\)\n/g,") ").split(/\n/);
     let specialAbilities = [];
     
@@ -2242,7 +2242,7 @@ function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     }
     
     formattedInput.special_abilities = specialAbilities;
-    */
+
 
 }
 
@@ -4079,7 +4079,19 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         // Check if there already is an item with the same name
         let itemKeys = Object.keys(dataOutput.items);
 
-        let tempAbilityName = specialAbilityName.replace(/[/]/g, "\/");
+        let tempAbilityName = specialAbilityName.replace(/(\([^\(]*\))/, "").replace(/[/]/g, "\/");
+        let tempAbilityContext = "";
+        
+        if (specialAbilityName.search(/(\([^\(]*\))/) !== -1) {
+            tempAbilityContext = specialAbilityName.match(/(\([^\(]*\))/)[1];
+            if (tempAbilityContext.search(/(\bSu\b|\bSp\b|\bEx\b)/i) !== -1) {
+                specialAbilityType = tempAbilityContext.match(/(\bSu\b|\bSp\b|\bEx\b)/i)[1];
+            }
+        }
+         
+        
+        console.log("tempAbilityName: " + tempAbilityName);
+        console.log("tempAbilityContext: " + tempAbilityContext);
 
         for (let i=0; i<itemKeys.length; i++) {
             let itemKey = itemKeys[i];
@@ -4125,6 +4137,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
             dataOutput.items.push(newSpecialAbility);
         }
     } else {
+        /*
         // Create a new Item for new special Abilities
         let newSpecialAbility = JSON.parse(JSON.stringify(templateSpecialAbilityItem));
 
@@ -4139,6 +4152,7 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         newSpecialAbility.labels.featType = tempFeatType;
         
         dataOutput.items.push(newSpecialAbility);
+        */
     }
     
     
