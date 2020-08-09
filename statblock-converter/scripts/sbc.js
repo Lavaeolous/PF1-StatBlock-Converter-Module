@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v1.0.5";
+const sbcVersion = "v1.0.9";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -515,6 +515,15 @@ var inputTextArea = document.getElementById("input");
 window.convertStatBlock = convertStatBlock;
 window.auto_csv_flag = false;
 
+window.addEventListener('keydown',function(e) {
+    if(e.keyIdentifier=='U+000A' || e.keyIdentifier=='Enter' || e.keyCode==13) {
+        if(e.target.id=='sbcInput') {
+            e.stopPropagation();
+            return false;
+        }
+    }
+},true);
+
 /* ------------------------------------ */
 /* FLAGS    							*/
 /* ------------------------------------ */
@@ -555,6 +564,7 @@ Hooks.once('setup', function() {
 Hooks.once('ready', function() {
   // Do anything once the module is ready
   //hookRenderSBCButton();
+    
 });
 
 // Add any additional hooks if necessary
@@ -563,34 +573,217 @@ function hookRenderSBCButton() {
     // Appends a button onto the actor directory to open the modal dialog.
     Hooks.on("renderActorDirectory", (app, html, data) => {
         console.log('sbc-pf1 | StatBlock Converter PF1 Ready');
+        
+        
+        
         const importButton = $('<button class="create-entity sbcButton"><i class="fas fa-file-import"></i></i>Import StatBlock</button>');
         html.find(".directory-footer").append(importButton);
-        importButton.click((ev) => {
-            statBlockConverterModalDialog.openModalDialog();
+        importButton.click(async (ev) => {
+            await openModalDialog();
+            //activateListeners();
         });
+        
+        
     });
 }
+
+/* ------------------------------------ */
+/* Add event listeners						*/
+/* ------------------------------------ */
+
+/*
+function activateListeners(html){
+    
+    console.log("calling function activateListeners");
+    
+    const textArea = $('#sbcInput');
+    
+    console.log("textArea:");
+    console.log(textArea);
+    
+    const errorArea = $('.sbc-container #sbcError')
+    const previewArea = $('.sbc-container #sbcPreview')
+    
+    
+    
+    //const textArea = $('.sbc-container #sbcInput');
+    
+        
+
+    textArea.on('input', async event => {
+        
+        console.log("registered input on textArea");
+        
+        previewArea.empty()
+        errorArea.empty()
+        const currentMonsterString = $('.sbc-container #sbcInput').val().toString()
+        if(currentMonsterString!==""){
+            try{
+                this.currentMatches = {}
+                let monsterObj = createMonsterStringObject(currentMonsterString, this.currentMatches)
+                this.monsterJSON = monsterObj
+                console.log("Actual monster object",monsterObj)
+                const previewHTML = await renderTemplate('modules/statblockimporter/templates/sbcPreview.html')
+                previewArea.append(previewHTML)
+            }catch(error) {
+                errorArea.append(error.toString())
+            }
+        }
+    })
+}
+*/
+
 
 /* ------------------------------------ */
 /* Modal Dialog							*/
 /* ------------------------------------ */
 
+function openModalDialog() {
+                        
+    const options = {
+        width: 1024,
+        height: 800,
+        id: "sbcModal",
+        resizable: true,
+        popOut: true
+    };
+        
+    const content = `
+        <p>
+            Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ` + sbcVersion + `]
+        </p>
+        <div class="sbc-container">
+            
+            <section class="input-container">
+                <div class="sbcTitle">Input</div>
+                <div class="highlight-container">
+                    <div class="backdrop">
+                        <div class="highlights">
+                        </div>
+                    </div>
+                    <textarea class="statBlockInput" id="sbcInput" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here">test</textarea>
+                </div>
+            </section>
+            <section class="preview-container">
+                <div class="sbcTitle">Preview</div>
+                <div id="sbcPreview">
+                    This does nothing (for now)
+                </div>
+            </section>
+        </div>
+        <section class="error-container">
+            <div class="sbcTitle errorTitle">Errors</div>
+            <div id="sbcError">
+                This does nothing (for now)
+            </div>
+        </section>
+    `;
+        
+    let d = new Dialog({
+        title: "PF1 Statblock Converter",
+        content: content,
+        buttons: {
+            importNPC: {
+                icon: '<i class="fas fa-check"></i>',
+                label: "Import as NPC",
+                callback: () => convertStatBlock(sbcInput, "npc")
+            },
+            importPC: {
+                icon: '<i class="fas fa-check"></i>',
+                label: "Import as PC",
+                callback: () => convertStatBlock(sbcInput, "pc")
+            }
+        },
+        default: "importNPC",
+        
+        close: () => console.log("sbc-pf1 | Dialog closed")
+    }, options);
+    d.render(true);
+                
+}
+
+function activateListeners(){
+    
+    console.log("calling function activateListeners");
+    
+    const textArea = $('.sbc-container #sbcInput');
+    
+    console.log("textArea:");
+    console.log(textArea.val());
+    
+    const errorArea = $('.sbc-container #sbcError')
+    const previewArea = $('.sbc-container #sbcPreview')
+
+    //const textArea = $('.sbc-container #sbcInput');
+
+    textArea.on('input', async event => {
+        
+        console.log("registered input on textArea");
+        
+        previewArea.empty()
+        errorArea.empty()
+        const currentMonsterString = $('.sbc-container #sbcInput').val().toString()
+        if(currentMonsterString!==""){
+            try {
+                this.currentMatches = {}
+                let monsterObj = createMonsterStringObject(currentMonsterString, this.currentMatches)
+                this.monsterJSON = monsterObj
+                console.log("Actual monster object",monsterObj)
+                const previewHTML = await renderTemplate('modules/statblockimporter/templates/sbcPreview.html')
+                previewArea.append(previewHTML)
+            } catch(error) {
+                errorArea.append(error.toString())
+            }
+        }
+    })
+}
+
+/*
 class statBlockConverterModalDialog {
     constructor() {}
     
     static openModalDialog() {
-                
+                        
         const options = {
-            width: 650,
-            height: 550,
-            id: "sbcModal"
+            width: 1024,
+            height: 800,
+            id: "sbcModal",
+            resizable: true,
+            popOut: true
         };
+        
         
         const content = `
             <p>
                 Enter the Statblock you want to convert to an actor</p><p style="font-size: 8pt;">Disclaimer: This Converter is nearly feature-complete, but none the less it is advised to update regularily. [sbc | ` + sbcVersion + `]
             </p>
-            <textarea class="statBlockInput" id="input" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>`;
+            <div class="sbc-container">
+                
+                <section class="input-container">
+                    <div class="sbcTitle">Input</div>
+                    <div class="highlight-container">
+                        <div class="backdrop">
+                            <div class="highlights">
+
+                            </div>
+                        </div>
+
+                    <textarea class="statBlockInput" id="sbcInput" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here">test</textarea>
+                    </div>
+                </section>
+                <section class="preview-container">
+                    <div class="sbcTitle">Preview</div>
+                    <div id="sbcPreview">
+
+                    </div>
+                </section>
+            </div>
+            <section class="error-container">
+                <div class="sbcTitle errorTitle">Errors</div>
+                    <div id="sbcError">
+                </div>
+            </section>
+        `;
         
         let d = new Dialog({
             title: "PF1 Statblock Converter",
@@ -612,8 +805,46 @@ class statBlockConverterModalDialog {
             close: () => console.log("sbc-pf1 | Dialog closed")
         }, options);
         d.render(true);
+                
     }
+    
+    static async activateListeners(){
+    
+    console.log("calling function activateListeners");
+    
+    const textArea = $('#sbcInput');
+    
+    console.log("textArea:");
+    console.log(textArea);
+    
+    const errorArea = $('.sbc-container #sbcError')
+    const previewArea = $('.sbc-container #sbcPreview')
+
+    //const textArea = $('.sbc-container #sbcInput');
+
+    textArea.on('input', async event => {
+        
+        console.log("registered input on textArea");
+        
+        previewArea.empty()
+        errorArea.empty()
+        const currentMonsterString = $('.sbc-container #sbcInput').val().toString()
+        if(currentMonsterString!==""){
+            try {
+                this.currentMatches = {}
+                let monsterObj = createMonsterStringObject(currentMonsterString, this.currentMatches)
+                this.monsterJSON = monsterObj
+                console.log("Actual monster object",monsterObj)
+                const previewHTML = await renderTemplate('modules/statblockimporter/templates/sbcPreview.html')
+                previewArea.append(previewHTML)
+            } catch(error) {
+                errorArea.append(error.toString())
+            }
+        }
+    })
 }
+}
+*/
 
 /* ------------------------------------ */
 /* Reset SBC-Templates and Variables   	*/
@@ -667,7 +898,7 @@ async function initializeSBC() {
 
 async function convertStatBlock(input, statblockType) {
     
-    
+    const errorArea = $('.sbc-container #sbcError');
     
     // Reset everything when opening the modal dialog
     await resetSBC();
@@ -2218,7 +2449,6 @@ function splitStatisticsData(stringStatisticsData) {
 // Split Special Abilities
 function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     
-    
     console.log("stringSpecialAbilitiesData: " + stringSpecialAbilitiesData);
     
     // YE OLDE WAY, SPLITTING BY EX; SU OR SP
@@ -3019,11 +3249,14 @@ async function setAttackItem (attackGroups, attackType) {
             let numberOfIterativeAttacks = 0;
             let attackNotes = "";
             
+            console.log("attack: " + attack);
+            
             // Search for Touch or Ranged Touch
-            if (attack.search(/(\d+\s*)(ranged\s*touch|touch)(\s*\()/i) !== -1) {
-                let attackType = attack.match(/(\d+\s*)(ranged\s*touch|touch)(\s*\()/i)[2];
+            if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
+                let attackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
+                console.log("attackType: " + attackType);
                 attackNotes += attackType + "\n";
-                attack = attack.replace(/(\d+\s*)(ranged\s*touch|touch)(\s*\()/i, "$1 $3");
+                attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
             }
                         
             // Check if its Melee or Ranged
@@ -3109,34 +3342,42 @@ async function setAttackItem (attackGroups, attackType) {
                 /* ------------------------------------ */
                 /* Normal Damage Calculation			*/
                 /* ------------------------------------ */
-                 
-                // NumberOfDamageDice and DamageDie
+                
+                // If the attack has damage dice
                 if (attack.match(/\d+d\d+/) !== null) {
-                    numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1];
-                    damageDie = attack.match(/(\d+)d(\d+)/)[2];
-                    attackNotes += " (" + numberOfDamageDice + "d" + damageDie;
-                }
-                // damageBonus
-                if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                    damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];
-                    let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
-                    attackNotes += notesDamageBonus;
-                }
-                // critRange
-                if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
-                    critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1];
-                    attackNotes += "/" + critRange + "-20";
-                }
-                // critMult
-                if (attack.match(/(?:\/x)(\d+)/) !== null) {
-                    critMult = attack.match(/(?:\/x)(\d+)/)[1];
-                    attackNotes += "/x" + critMult;
-                }
-                // attackEffects
-                if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
-                    attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1];
-                    attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ");
-                    attackNotes += " plus " + attackEffects;
+                    // NumberOfDamageDice and DamageDie
+                    if (attack.match(/\d+d\d+/) !== null) {
+                        numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1];
+                        damageDie = attack.match(/(\d+)d(\d+)/)[2];
+                        attackNotes += " (" + numberOfDamageDice + "d" + damageDie;
+                    }
+                    // damageBonus
+                    if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                        damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];
+                        let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];                
+                        attackNotes += notesDamageBonus;
+                    }
+                    // critRange
+                    if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                        critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1];
+                        attackNotes += "/" + critRange + "-20";
+                    }
+                    // critMult
+                    if (attack.match(/(?:\/x)(\d+)/) !== null) {
+                        critMult = attack.match(/(?:\/x)(\d+)/)[1];
+                        attackNotes += "/x" + critMult;
+                    }
+                    // attackEffects
+                    if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
+                        attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1];
+                        attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ");
+                        attackNotes += " plus " + attackEffects;
+                    }
+                } else {
+                    // If there is just a specialEffect
+                    let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1];
+                    attackNotes += " (" + specialEffect;
+                    attackEffects += specialEffect;
                 }
             } else {
                 
@@ -3221,7 +3462,6 @@ async function setAttackItem (attackGroups, attackType) {
 
                         tempAttackItem = JSON.parse(JSON.stringify(templateNaturalAttackItem[naturalAttackKeys[i]]));
                     }
-                    
                 }
             }
             
@@ -3231,13 +3471,10 @@ async function setAttackItem (attackGroups, attackType) {
    
                 // Calculate if there is a difference between the calculatedAttackModifier and the one noted in the input statblock
                 let calculatedAttackModifier = +formattedInput.bab + +enumSizeModifiers[formattedInput.size] + +attackAttrModifier - 5;
-                
-                
-                
+                                
                 if (calculatedAttackModifier !== inputAttackModifier) {
                     secondaryAttackModifier = +inputAttackModifier - +calculatedAttackModifier;
                 }
-                
             }
             
             // Set the attackBonus: Modifier - secondaryAttackModifier 
@@ -3249,7 +3486,6 @@ async function setAttackItem (attackGroups, attackType) {
             } else {
                 tempAttackItem.name = attackName;
             };
-            
             
             // Set Masterwork Status
             if (mwkWeapon !== false) {
@@ -3307,7 +3543,7 @@ async function setAttackItem (attackGroups, attackType) {
             }
 
             // If it's a normal attack, push Damage as normal
-            if (formattedInput.str.total !== "-") {
+            if (formattedInput.str.total !== "-" && numberOfDamageDice !== 0) {
                 tempAttackItem.data.damage.parts.push(
                     [
                         "sizeRoll(" + numberOfDamageDice + ", " + damageDie + ", 0, @critMult) + " + damageModifier,
@@ -3533,6 +3769,10 @@ async function setSpecialAttackItem (specialAttacks) {
         
         // Set Name
         newSpecialAttack.name = "Special Attack: " + capitalize(name);
+        
+        // Set Ability Types
+        newSpecialAttack.data.ability.attack = "";
+        newSpecialAttack.data.ability.damage = "";
         
         dataOutput.items.push(newSpecialAttack);
         

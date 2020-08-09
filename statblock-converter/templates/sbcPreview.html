@@ -1,0 +1,73 @@
+<div style="margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
+                <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
+                <div style="padding: 5px;">
+                    <h1 style="border: none; text-transform: uppercase; color: #7a0800;">${formattedInput.name} ${formattedInput.notes.cr ? "CR " + formattedInput.notes.cr : ""}${formattedInput.notes.mr ? "/MR " + formattedInput.notes.mr : ""}</h1>
+                    ${formattedInput.shortDescription ? "<div><em>" + formattedInput.shortDescription + "</em></div>": ""}
+                    
+                    <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                    <div style="break-inside: avoid;">
+                        ${formattedInput.notes.source ? "<strong>Source:</strong> " + formattedInput.notes.source + "<br/>" : ""}
+                        ${formattedInput.xp ? "<strong>XP " + formattedInput.xp + "</strong><br/>" : ""}
+                        ${formattedInput.gender ? formattedInput.gender : ""} ${formattedInput.template ? formattedInput.template : ""} ${formattedInput.race ? formattedInput.race : ""} ${formattedInput.notes.classes ? formattedInput.notes.classes + "<br/>" : ""}
+                        ${formattedInput.alignment} ${formattedInput.size} ${formattedInput.creature_type} ${formattedInput.creature_subtype ? "(" + formattedInput.creature_subtype + ")" : ""}<br/>
+                        <strong>Init</strong> ${formattedInput.initiative}; <strong>Senses</strong> ${formattedInput.senses} <br/>
+                        ${formattedInput.aura ? "<strong>Aura</strong> " + formattedInput.aura : ""}
+                    </div>
+                    <div style="break-inside: avoid;">
+                        <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
+                        <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                        <strong>AC</strong> ${formattedInput.ac}, <strong>Touch</strong> ${formattedInput.ac}, <strong>Flat-Footed</strong> ${formattedInput.flat_footed} ${formattedInput.notes.acBonus}<br/>
+                        <strong>Hit Points</strong> ${formattedInput.hp.total} (${formattedInput.hit_dice.hd.total} HD; ${formattedInput.notes.hpDice})<br/>
+                        <strong>Fort</strong> ${formattedInput.fort_save.total}, <strong>Ref</strong> ${formattedInput.ref_save.total}, <strong>Will</strong> ${formattedInput.will_save.total}; ${formattedInput.save_notes}
+                        ${formattedInput.defensive_abilities ? "<br/><strong>Defensive Abilities</strong> " + formattedInput.defensive_abilities + "; " : ""} ${formattedInput.damage_reduction.dr_value !== 0 ? "<strong>DR</strong> " + formattedInput.damage_reduction.dr_value + "/" + formattedInput.damage_reduction.dr_type + "; " : ""} ${formattedInput.immunities !== "" ? "<strong>Immune</strong> " + formattedInput.immunities + "; " : ""} ${formattedInput.resistances !== "" ? "<strong>Resist</strong> " + formattedInput.resistances + "; " : ""} ${formattedInput.spell_resistance.total !== 0 ? "<strong>SR</strong> " + formattedInput.spell_resistance.total : ""} ${formattedInput.spell_resistance.context ? "(" + formattedInput.spell_resistance.context + ")" : ""}
+                        ${formattedInput.weaknesses !== "" ? "<br/><strong>Weaknesses</strong> " + formattedInput.weaknesses : ""}
+                    </div>
+                    <div>
+                        <div style="break-inside: avoid;">
+                            <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Offense</h4>
+                            <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                            <strong>Speed</strong> ${formattedInput.notes.speed}<br/>
+                            ${formattedInput.meleeAttacks ? "<strong>Melee</strong> " + formattedInput.meleeAttacks + "<br/>" : ""}
+                            ${formattedInput.rangedAttacks ? "<strong>Ranged</strong> " + formattedInput.rangedAttacks + "<br/>" : ""}
+                            ${formattedInput.space ? "<strong>Space</strong> " + formattedInput.space + "; " : ""} ${formattedInput.reach ? "<strong>Reach</strong> " + formattedInput.reach + "" : ""}<br/>
+                            ${formattedInput.specialAttacks ? "<strong>Special Attacks</strong> " + formattedInput.specialAttacks + "<br/>" : ""}
+                        </div>
+                        ` +
+                        tagSpellcasting`
+                        ${formattedInput.spellcasting ? formattedInput.spellcasting : ""}
+                        ` +
+                        `
+                    </div>
+                    ${dataInputHasTactics ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Tactics</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.tactics.before_combat ? "<strong>Before Combat:</strong> " + formattedInput.tactics.before_combat + "<br/>" : ""}
+                    ${formattedInput.tactics.during_combat ? "<strong>During Combat:</strong> " + formattedInput.tactics.during_combat + "<br/>" : ""}
+                    ${formattedInput.tactics.morale ? "<strong>Morale:</strong> " + formattedInput.tactics.morale + "<br/>" : ""}
+                    ${formattedInput.tactics.base_statistics ? "<strong>Base Statistics:</strong> " + formattedInput.tactics.base_statistics + "<br/>" : ""}
+                    ${dataInputHasTactics ? "</div>" : ""}
+                    <div style="break-inside: avoid;">
+                        <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Statistics</h4>
+                        <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
+                        <strong>Str</strong> ${formattedInput.str.total}, <strong>Dex</strong> ${formattedInput.dex.total}, <strong>Con</strong> ${formattedInput.con.total}, <strong>Int</strong> ${formattedInput.int.total}, <strong>Wis</strong> ${formattedInput.wis.total}, <strong>Cha</strong> ${formattedInput.cha.total}<br/>
+                        <strong>Base Atk</strong> +${formattedInput.bab}; <strong>CMB</strong> +${formattedInput.cmb.total} ${formattedInput.cmb.context ? formattedInput.cmb.context : ""}; <strong>CMD</strong> ${formattedInput.cmd.total} ${formattedInput.cmd.context ? formattedInput.cmd.context : ""}<br/>
+                        <strong>Feats</strong> ${formattedInput.notes.feats}<br/>
+                        <strong>Skills</strong> ${formattedInput.notes.skills}<br/>
+                        <strong>Languages</strong> ${formattedInput.notes.languages}<br/>
+                        ${formattedInput.notes.sq ? "<strong>SQ</strong> " + formattedInput.notes.sq + "<br/>" : ""}
+                        ${formattedInput.notes.combatGear ? "<strong>Combat Gear</strong> " + formattedInput.notes.combatGear + "<br/>" : ""}
+                        ${formattedInput.notes.otherGear ? "<strong>Other Gear</strong> " + formattedInput.notes.otherGear + "<br/>" : ""}
+                        ${formattedInput.notes.gear ? "<strong>Gear</strong> " + formattedInput.notes.gear + "<br/>" : ""}
+                    </div>
+                    ${dataInputHasEcology ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Ecology</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.ecology.environment ? "<strong>Environment:</strong> " + formattedInput.ecology.environment + "<br/>" : ""}
+                    ${formattedInput.ecology.organization ? "<strong>Organization:</strong> " + formattedInput.ecology.organization + "<br/>" : ""}
+                    ${formattedInput.ecology.treasure ? "<strong>Treasure:</strong> " + formattedInput.ecology.treasure + "<br/>" : ""}
+                    ` +
+                    tagSpecialAbilities`
+                    ${Object.keys(formattedInput.special_abilities).length !== 0 ? formattedInput.special_abilities : ""}
+                    ` +
+                    `
+                    ${formattedInput.description ? "<div style='break-inside: avoid;'><h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Description</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />" : ""}
+                    ${formattedInput.description ? formattedInput.description + "<br/>" : ""}
+                </div>
+                <hr style="margin-left: 0; margin-bottom: -3px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
+            </div>

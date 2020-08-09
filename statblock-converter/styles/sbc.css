@@ -5,11 +5,39 @@
     margin-top: 5px;
 }
 
-#sbcModal .dialog-buttons {
-    flex: 0
+.sbc-container {
+    display: flex;
+}
+
+#sbcModal, #sbcModal .dialog-buttons {
+    flex: 0 1 auto;
+}
+
+.sbcTitle {
+    font-size: 16px;
+    text-transform: uppercase;
 }
 
 .statBlockInput {
-    width: 100%;
-    height: 85%;
+    /*width: 100%;*/
+    height: 500px;
+}
+
+.input-container, .preview-container {
+    flex: 1;
+    flex-flow: row nowrap;
+    padding: 5px;
+}
+.error-container {
+    
+    padding: 5px;
+    color: #880000;
+}
+
+.sbcTitle.errorTitle {
+    color: #880000;
+}
+
+.preview-container {
+    height: 500px;
 }
