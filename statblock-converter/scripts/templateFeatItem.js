@@ -74,6 +74,10 @@ export default {
           "heavyArmorFullSpeed": false
         },
         "contextNotes": [],
+        "links": {
+          "children": [],
+          "charges": []
+        },
         "featType": "feat",
         "associations": {
           "classes": []

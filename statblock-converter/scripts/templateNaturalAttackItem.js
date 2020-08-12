@@ -64,6 +64,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "Primary",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -159,6 +163,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "Primary",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -254,6 +262,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -349,6 +361,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -444,6 +460,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -539,6 +559,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -634,6 +658,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -729,6 +757,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -824,6 +856,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -919,6 +955,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -1014,6 +1054,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -1104,11 +1148,15 @@ export default {
           "critMult": 2
         },
         "save": {
-          "dc": "0",
+          "dc": 0,
           "description": ""
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "natural",
         "masterwork": false,
         "enh": null,
@@ -1119,7 +1167,7 @@ export default {
           "parts": []
         }
       },
-      "sort": 900000,
+      "sort": 100000,
       "labels": {
         "activation": "Attack Action",
         "target": "",

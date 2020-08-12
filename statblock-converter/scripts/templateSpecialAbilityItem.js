@@ -9,7 +9,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["sbc-generated"]
+        ],
         "activation": {
           "cost": 1,
           "type": ""
@@ -76,8 +78,10 @@ export default {
             "heavyArmorFullSpeed": false
         },
         "contextNotes": [],
+        "soundEffect": "",
         "links": {
-            "children": []
+            "children": [],
+            "charges": []
         },
         "featType": "misc",
         "associations": {
@@ -114,6 +118,5 @@ export default {
     "isCharged": false,
     "empty": false,
     "abilityType": "",
-    "abilityTypeShort": "",
-    "tag": "sbc-generated"
+    "abilityTypeShort": ""
 }

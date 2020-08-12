@@ -51,6 +51,9 @@ Primer#2220 | FoundryVTT Discord
 
 # Change Log
 
+2020_08_12
+*  Added Hotfix for Issue #286
+
 2020_08_09
 *  Started work on the Preview Window
 *  Further Bug Fixing

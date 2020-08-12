@@ -34,7 +34,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -45,7 +45,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -63,6 +64,10 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
+        "links": {
+          "children": []
+        },
         "attackType": "weapon",
         "masterwork": false,
         "enh": null,
@@ -71,10 +76,7 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
-        },
-        "changes": [],
-        "contextNotes": [],
-        "identifiedName": ""
+        }
       },
       "sort": 100000,
       "img": "icons/svg/mystery-man.svg",
@@ -96,6 +98,5 @@ export default {
       "isStack": false,
       "hasUses": false,
       "isCharged": false,
-      "empty": false,
-      "tag": ""
+      "empty": false
     }

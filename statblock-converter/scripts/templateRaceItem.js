@@ -25,6 +25,9 @@ export default {
                 "heavyArmorFullSpeed": false
             },
             "contextNotes": [],
+            "links": {
+                "children": []
+            },
             "creatureType": "",
             "subTypes": [],
             "damage": {

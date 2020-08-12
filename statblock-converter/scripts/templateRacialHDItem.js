@@ -11,7 +11,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["aberration"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -23,6 +25,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -95,8 +100,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "aberration"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -121,7 +125,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["animal"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -133,6 +139,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -205,8 +214,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "animal"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -231,7 +239,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["construct"]
+        ],
         "changes": [
           [
             "-@abilities.con.mod",
@@ -256,6 +266,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -328,8 +341,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "construct"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -354,7 +366,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["dragon"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -366,6 +380,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -438,8 +455,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "dragon"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -464,7 +480,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["fey"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -476,6 +494,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -548,8 +569,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "fey"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -574,7 +594,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["humanoid"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -586,6 +608,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -658,8 +683,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "humanoid"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -684,7 +708,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["magicalBeast"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -696,6 +722,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -768,8 +797,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "magicalBeast"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -794,7 +822,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["monstrousHumanoid"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -806,6 +836,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -878,8 +911,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "monstrousHumanoid"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -904,7 +936,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["ooze"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -916,6 +950,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -988,8 +1025,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "ooze"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -1014,7 +1050,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["outsider"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -1026,6 +1064,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -1098,8 +1139,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "outsider"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -1124,7 +1164,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["plant"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -1136,6 +1178,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -1208,8 +1253,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "plant"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -1234,7 +1278,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["undead"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -1246,6 +1292,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -1318,8 +1367,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "undead"
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -1344,7 +1392,9 @@ export default {
           "chat": "",
           "unidentified": ""
         },
-        "tags": [],
+        "tags": [
+            ["vermin"]
+        ],
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -1356,6 +1406,9 @@ export default {
           "noEncumbrance": false,
           "mediumArmorFullSpeed": false,
           "heavyArmorFullSpeed": false
+        },
+        "links": {
+            "children": []
         },
         "classType": "racial",
         "levels": 1,
@@ -1428,8 +1481,7 @@ export default {
         },
         "damage": {
           "parts": []
-        },
-        "tag": "vermin"
+        }
       },
       "sort": 100000,
       "labels": {},
