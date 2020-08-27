@@ -1,5 +1,5 @@
 export default {
-  "name": "template",
+  "name": "Template PC",
   "type": "character",
   "data": {
     "abilities": {
@@ -13,7 +13,9 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       },
       "dex": {
         "total": 10,
@@ -23,7 +25,9 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       },
       "con": {
         "total": 10,
@@ -33,7 +37,9 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       },
       "int": {
         "total": 10,
@@ -43,7 +49,9 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       },
       "wis": {
         "total": 10,
@@ -53,7 +61,9 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       },
       "cha": {
         "total": 10,
@@ -63,10 +73,18 @@ export default {
         "damage": 0,
         "drain": 0,
         "penalty": 0,
-        "userPenalty": 0
+        "userPenalty": 0,
+        "base": 10,
+        "baseMod": 0
       }
     },
-    "resources": {},
+    "resources": {
+      "ablativeSphere": {
+        "value": 0,
+        "max": 0,
+        "_id": "w0O4Hyxs69ETLdUJ"
+      }
+    },
     "attributes": {
       "encumbrance": {
         "level": 0,
@@ -89,7 +107,7 @@ export default {
           "_deprecated": true,
           "value": 0
         },
-        "total": 1,
+        "total": 0,
         "max": {
           "_deprecated": true,
           "value": 0
@@ -174,12 +192,14 @@ export default {
       },
       "wounds": {
         "min": 0,
-        "value": 0
+        "value": 20,
+        "max": 20
       },
       "vigor": {
         "min": 0,
         "value": 0,
-        "temp": 0
+        "temp": 0,
+        "max": 0
       },
       "init": {
         "value": 0,
@@ -194,19 +214,19 @@ export default {
         },
         "climb": {
           "base": 0,
-          "total": null
+          "total": 0
         },
         "swim": {
           "base": 0,
-          "total": null
+          "total": 0
         },
         "burrow": {
           "base": 0,
-          "total": null
+          "total": 0
         },
         "fly": {
           "base": 0,
-          "total": null,
+          "total": 0,
           "maneuverability": "average"
         }
       },
@@ -249,56 +269,52 @@ export default {
             "arcaneSpellFailure": true,
             "baseDCFormula": "10 + @sl + @ablMod",
             "spontaneous": false,
+            "spellPoints": {
+              "useSystem": false,
+              "value": 0,
+              "max": 0,
+              "maxFormula": ""
+            },
             "spells": {
               "spell0": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell1": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell2": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell3": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell4": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell5": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell6": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell7": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell8": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell9": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               }
             }
           },
@@ -320,56 +336,52 @@ export default {
             "arcaneSpellFailure": true,
             "baseDCFormula": "10 + @sl + @ablMod",
             "spontaneous": false,
+            "spellPoints": {
+              "useSystem": false,
+              "value": 0,
+              "max": 0,
+              "maxFormula": ""
+            },
             "spells": {
               "spell0": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell1": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell2": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell3": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell4": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell5": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell6": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell7": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell8": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell9": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               }
             }
           },
@@ -391,56 +403,52 @@ export default {
             "arcaneSpellFailure": true,
             "baseDCFormula": "10 + @sl + @ablMod",
             "spontaneous": false,
+            "spellPoints": {
+              "useSystem": false,
+              "value": 0,
+              "max": 0,
+              "maxFormula": ""
+            },
             "spells": {
               "spell0": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell1": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell2": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell3": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell4": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell5": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell6": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell7": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell8": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell9": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               }
             }
           },
@@ -450,7 +458,7 @@ export default {
             "cl": {
               "base": 0,
               "value": 0,
-              "total": 1,
+              "total": 0,
               "formula": ""
             },
             "concentration": 0,
@@ -462,56 +470,52 @@ export default {
             "arcaneSpellFailure": true,
             "baseDCFormula": "10 + @sl + @ablMod",
             "spontaneous": false,
+            "spellPoints": {
+              "useSystem": false,
+              "value": 0,
+              "max": 0,
+              "maxFormula": ""
+            },
             "spells": {
               "spell0": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell1": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell2": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell3": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell4": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell5": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell6": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell7": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell8": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               },
               "spell9": {
-                "value": 0,
-                "max": 0,
-                "base": null
+                "base": null,
+                "max": 0
               }
             }
           }
@@ -533,6 +537,7 @@ export default {
         "min": 0,
         "max": 40
       },
+      "bonusFeatFormula": "",
       "alignment": "tn",
       "biography": {
         "value": "",
@@ -546,7 +551,7 @@ export default {
       "xp": {
         "value": 0,
         "min": 0,
-        "max": 300,
+        "max": 0,
         "pct": null
       },
       "height": "",
@@ -564,7 +569,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "apr": {
         "value": 0,
@@ -574,7 +580,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "art": {
         "value": 0,
@@ -585,7 +592,8 @@ export default {
         "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {}
+        "subSkills": {},
+        "cs": false
       },
       "blf": {
         "value": 0,
@@ -595,7 +603,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "clm": {
         "value": 0,
@@ -605,7 +614,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "crf": {
         "value": 0,
@@ -616,7 +626,8 @@ export default {
         "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {}
+        "subSkills": {},
+        "cs": false
       },
       "dip": {
         "value": 0,
@@ -626,7 +637,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "dev": {
         "value": 0,
@@ -636,7 +648,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "dis": {
         "value": 0,
@@ -646,7 +659,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "esc": {
         "value": 0,
@@ -656,7 +670,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "fly": {
         "value": 0,
@@ -666,7 +681,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "han": {
         "value": 0,
@@ -676,7 +692,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "hea": {
         "value": 0,
@@ -686,7 +703,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "int": {
         "value": 0,
@@ -696,7 +714,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "kar": {
         "value": 0,
@@ -706,7 +725,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "kdu": {
         "value": 0,
@@ -716,7 +736,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "ken": {
         "value": 0,
@@ -726,7 +747,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "kge": {
         "value": 0,
@@ -736,7 +758,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "khi": {
         "value": 0,
@@ -746,7 +769,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "klo": {
         "value": 0,
@@ -756,7 +780,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "kna": {
         "value": 0,
@@ -766,7 +791,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "kno": {
         "value": 0,
@@ -776,7 +802,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "kpl": {
         "value": 0,
@@ -786,7 +813,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "kre": {
         "value": 0,
@@ -796,7 +824,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "lin": {
         "value": 0,
@@ -806,7 +835,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "lor": {
         "value": 0,
@@ -817,7 +847,8 @@ export default {
         "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {}
+        "subSkills": {},
+        "cs": false
       },
       "per": {
         "value": 0,
@@ -827,7 +858,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "prf": {
         "value": 0,
@@ -838,7 +870,8 @@ export default {
         "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {}
+        "subSkills": {},
+        "cs": false
       },
       "pro": {
         "value": 0,
@@ -849,7 +882,8 @@ export default {
         "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {}
+        "subSkills": {},
+        "cs": false
       },
       "rid": {
         "value": 0,
@@ -859,7 +893,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "sen": {
         "value": 0,
@@ -869,7 +904,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "slt": {
         "value": 0,
@@ -879,7 +915,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": true
+        "background": true,
+        "cs": false
       },
       "spl": {
         "value": 0,
@@ -889,7 +926,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "ste": {
         "value": 0,
@@ -899,7 +937,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "sur": {
         "value": 0,
@@ -909,7 +948,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "swm": {
         "value": 0,
@@ -919,7 +959,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       },
       "umd": {
         "value": 0,
@@ -929,7 +970,8 @@ export default {
         "rank": 0,
         "notes": "",
         "mod": 0,
-        "background": false
+        "background": false,
+        "cs": false
       }
     },
     "customSkills": {},
@@ -980,24 +1022,20 @@ export default {
       "gp": 0,
       "sp": 0,
       "cp": 0
-    },
-    "classes": {}
+    }
   },
   "sort": 100001,
   "flags": {
-    "pf1": {
-      "conditions": []
-    },
     "exportSource": {
-      "world": "rappan-athuk",
+      "world": "pf1-test",
       "system": "pf1",
       "coreVersion": "0.6.5",
-      "systemVersion": 0.64
+      "systemVersion": "0.73.7"
     }
   },
   "token": {
     "flags": {},
-    "name": "template",
+    "name": "grd",
     "displayName": 0,
     "img": "icons/svg/mystery-man.svg",
     "tint": null,
@@ -1014,7 +1052,7 @@ export default {
     "sightAngle": 360,
     "lightAngle": 360,
     "lightAlpha": 1,
-    "actorId": "w0d6yamrSv7nY2md",
+    "actorId": "1soNA6k5gYjZGDHr",
     "actorLink": false,
     "actorData": {},
     "disposition": -1,
@@ -1024,6 +1062,6 @@ export default {
     "randomImg": false
   },
   "items": [],
-  "_id": "w0d6yamrSv7nY2md",
+  "_id": "1soNA6k5gYjZGDHr",
   "img": "icons/svg/mystery-man.svg"
 }

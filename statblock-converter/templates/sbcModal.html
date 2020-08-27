@@ -1,0 +1,34 @@
+<div class="sbc-container">
+    <section class="input-container">
+        <div>
+            Enter the Statblock you want to convert to an actor</div><div style="font-size: 8pt;">Disclaimer: This converter is not perfect, so please check the output carefully. For Bugs and Issues please visit my <a href="https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues" target="_blank">Github</a>.
+        </div>
+        <div class="sbcTitle">Input</div>
+        <div class="highlight-container">
+            <div class="backdrop">
+                <div class="highlights">
+                </div>
+            </div>
+            <textarea class="sbcInput" id="sbcInput" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>
+        </div>
+    </section>
+    <section class="preview-container">
+        <div class="dialogButtons">
+            <div class="sbcImportButton" id="importNPC">
+                <i class="fas fa-check"></i> Import as NPC
+            </div>
+            <div class="sbcImportButton" id="importPC">
+                <i class="fas fa-check"></i> Import as PC
+            </div>
+        </div>
+        <div class="sbcTitle">Preview (Spellcasting &amp; Special Abilities currently not included, but will be parsed)</div>
+        <div id="sbcPreview">
+        </div>
+    </section>
+</div>
+<section class="error-container">
+    <div class="sbcTitle errorTitle"></div>
+    <div id="sbcError">
+        
+    </div>
+</section>

@@ -1,8 +1,9 @@
 export default {
       "_id": "",
       "flags": {},
-      "name": "Spell",
+      "name": "Template Spell",
       "type": "spell",
+      "img": "systems/pf1/icons/misc/magic-swirl.png",
       "data": {
         "description": {
           "value": "",
@@ -12,68 +13,77 @@ export default {
         "tags": [],
         "activation": {
           "cost": 1,
-          "type": ""
+          "type": "standard"
         },
         "duration": {
           "value": null,
           "units": ""
         },
         "target": {
-          "value": ""
+          "value": "you"
         },
         "range": {
           "value": null,
-          "units": "",
+          "units": "personal",
           "long": null
-        },
+        }, 
         "uses": {
           "value": 0,
           "max": 0,
-          "per": null,
-          "autoDeductCharges": true
+          "per": "",
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
-          "size": "",
+          "size": 0,
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
           "customTexture": ""
         },
-        "actionType": null,
+        "actionType": "",
         "attackBonus": "",
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
         "ability": {
-          "attack": null,
-          "damage": null,
+          "attack": "",
+          "damage": "",
           "damageMult": 1,
           "critRange": 20,
           "critMult": 2
         },
         "save": {
-          "dc": 0,
+          "dc": "0",
           "type": "",
           "description": ""
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
         "links": {
           "children": []
         },
         "learnedAt": {
-          "class": [],
+          "class": [
+            []
+          ],
           "domain": [],
-          "subDomain": [],
+          "subDomain": [
+            []
+          ],
           "elementalSchool": [],
-          "bloodline": []
+          "bloodline": [
+            []
+          ]
         },
-        "level": "0",
+        "level": 1,
         "clOffset": 0,
         "slOffset": 0,
         "school": "",
@@ -81,12 +91,12 @@ export default {
         "types": "",
         "components": {
           "value": "",
-          "verbal": false,
-          "somatic": false,
+          "verbal": true,
+          "somatic": true,
           "material": false,
           "focus": false,
           "divineFocus": 0
-        },
+        }, 
         "castTime": "",
         "materials": {
           "value": "",
@@ -97,40 +107,22 @@ export default {
           "preparedAmount": 0,
           "maxAmount": 0,
           "autoDeductCharges": true,
-          "spontaneousPrepared": true
+          "spontaneousPrepared": true,
+          "mode": "prepared"
         },
         "atWill": false,
-        "sr": true,
+        "sr": false,
         "shortDescription": "",
         "spellDuration": "",
         "spellEffect": "",
         "spellArea": "",
         "showInQuickbar": false,
+        "spellPoints": {
+          "cost": "1 + @sl"
+        },
         "attack": {
           "parts": []
-        }
+        } 
       },
-      "sort": 100000,
-      "img": "systems/pf1/icons/skills/yellow_36.jpg",
-      "labels": {
-        "level": "Cantrip/Orison",
-        "components": "",
-        "activation": "",
-        "target": "",
-        "range": "",
-        "duration": "",
-        "damage": "",
-        "damageTypes": ""
-      },
-      "hasAttack": false,
-      "hasMultiAttack": false,
-      "hasDamage": false,
-      "hasEffect": "",
-      "hasAction": false,
-      "showUnidentifiedData": false,
-      "isPrepared": false,
-      "isStack": false,
-      "hasUses": false,
-      "isCharged": false,
-      "empty": false
+      "sort": 1000000
     }

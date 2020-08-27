@@ -2,15 +2,16 @@
     "name": "statblockimporter",
     "title": "Stackblock Importer",
     "description": "A module to convert raw Statblocks to Actors",
-    "version": "1.0.10",
+    "version": "2.0.0",
     "author": "Lavaeolous",
     "systems": ["pf1"],
     "esmodules": ["./scripts/sbc.js"],
     "styles": ["./styles/sbc.css"],
+    "templates": ["./templates/sbcModal.html", "./templates/sbcPreview"],
     "packs": [],
     "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
     "manifest": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json",
-    "download": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/releases/1.0.10_statblock-converter.zip",
-    "minimumCoreVersion": "0.6.1",
-    "compatibleCoreVersion": "0.6.5"
+    "download": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/releases/2.0.0_statblock-converter.zip",
+    "minimumCoreVersion": "0.6.5",
+    "compatibleCoreVersion": "0.6.6"
 }

@@ -30,7 +30,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": null,
-          "autoDeductCharges": true
+          "autoDeductCharges": true,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -44,7 +45,9 @@ export default {
         "attackBonus": "",
         "critConfirmBonus": "",
         "damage": {
-          "parts": []
+          "parts": [],
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -57,10 +60,12 @@ export default {
         },
         "save": {
           "dc": 0,
+          "type": "",
           "description": ""
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
         "changes": [],
         "changeFlags": {
           "loseDexToAC": false,
@@ -84,6 +89,7 @@ export default {
         },
         "showInQuickbar": false,
         "abilityType": "none",
+        "crOffset": "",
         "attack": {
           "parts": []
         }

@@ -1,5 +1,5 @@
 export default {
-    "name": "",
+    "name": "preview",
     "classes": {},
     "slug": "",
     "flavor_text": "",
@@ -108,6 +108,7 @@ export default {
     "reach_context": "",
     "offensive_abilities": "",
     "spell_like_abilities": "",
+    "hasSpellcasting": false,
     "spellcasting": {},
     "special_qualities": [],
     "str": {
@@ -302,6 +303,7 @@ export default {
             "context": ""
         }
     },
+    "hasTactics": false,
     "tactics": {
         "before_combat" : "",
         "during_combat" : "",
@@ -314,9 +316,11 @@ export default {
     "other_abilities": "",
     "environment": "",
     "organization": "",
+    "hasSpecialAbilities": false,
     "special_abilities": {},
     "description": "",
     "shortDescription": "",
+    "hasEcology": false,
     "ecology": {
         "environment": "",
         "organization": "",

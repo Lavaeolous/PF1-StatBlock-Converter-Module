@@ -36,7 +36,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 4,
-        "creatureType": "aberration",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -150,7 +150,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 2,
-        "creatureType": "animal",
+
         "savingThrows": {
           "fort": {
             "value": "high"
@@ -277,7 +277,7 @@ export default {
         "hp": 10,
         "bab": "high",
         "skillsPerLevel": 2,
-        "creatureType": "construct",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -391,7 +391,7 @@ export default {
         "hp": 12,
         "bab": "high",
         "skillsPerLevel": 6,
-        "creatureType": "dragon",
+
         "savingThrows": {
           "fort": {
             "value": "high"
@@ -505,7 +505,7 @@ export default {
         "hp": 6,
         "bab": "low",
         "skillsPerLevel": 6,
-        "creatureType": "fey",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -613,13 +613,13 @@ export default {
             "children": []
         },
         "classType": "racial",
+        "tag": "",
         "levels": 1,
         "level": 1,
         "hd": 8,
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 2,
-        "creatureType": "humanoid",
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -733,7 +733,7 @@ export default {
         "hp": 10,
         "bab": "high",
         "skillsPerLevel": 2,
-        "creatureType": "magicalBeast",
+
         "savingThrows": {
           "fort": {
             "value": "high"
@@ -847,7 +847,7 @@ export default {
         "hp": 10,
         "bab": "high",
         "skillsPerLevel": 4,
-        "creatureType": "monstrousHumanoid",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -961,7 +961,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 2,
-        "creatureType": "ooze",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -1075,7 +1075,7 @@ export default {
         "hp": 10,
         "bab": "high",
         "skillsPerLevel": 6,
-        "creatureType": "outsider",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -1189,7 +1189,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 2,
-        "creatureType": "plant",
+
         "savingThrows": {
           "fort": {
             "value": "high"
@@ -1303,7 +1303,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 4,
-        "creatureType": "undead",
+
         "savingThrows": {
           "fort": {
             "value": "low"
@@ -1417,7 +1417,7 @@ export default {
         "hp": 8,
         "bab": "med",
         "skillsPerLevel": 2,
-        "creatureType": "vermin",
+
         "savingThrows": {
           "fort": {
             "value": "high"

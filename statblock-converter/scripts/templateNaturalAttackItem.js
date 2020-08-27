@@ -32,7 +32,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -47,7 +48,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -60,7 +62,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "Primary",
@@ -131,7 +134,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -146,7 +150,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -159,7 +164,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "Primary",
@@ -230,7 +236,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -245,7 +252,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -258,7 +266,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -329,7 +338,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -344,7 +354,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -357,7 +368,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -428,7 +440,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -443,7 +456,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -456,7 +470,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -527,7 +542,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -542,7 +558,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -555,7 +572,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -626,7 +644,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -641,7 +660,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -654,7 +674,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -725,7 +746,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -740,7 +762,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -753,7 +776,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -824,7 +848,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -839,7 +864,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -852,7 +878,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -923,7 +950,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -938,7 +966,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -951,7 +980,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -1022,7 +1052,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -1037,7 +1068,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -1050,7 +1082,8 @@ export default {
         },
         "save": {
           "dc": "0",
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",
@@ -1121,7 +1154,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",
@@ -1136,7 +1170,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
           "parts": [],
-          "critParts": []
+          "critParts": [],
+          "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -1149,7 +1184,8 @@ export default {
         },
         "save": {
           "dc": 0,
-          "description": ""
+          "description": "",
+          "type": ""
         },
         "effectNotes": "",
         "attackNotes": "",

@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             1.0.5
+ * Version:             2.0.0
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v1.0.9";
+const sbcVersion = "v2.0.0";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -78,9 +78,8 @@ var dataInputHasSpecialQualities = false;
 var dataInputHasEcology = false;
 var dataInputHasDescription = false;
 var dataOutput;
-var dataTemplate;
+var actorTemplate;
 var formattedInput;
-
 
 var enumAttributes = [
     "str",
@@ -530,6 +529,7 @@ window.addEventListener('keydown',function(e) {
 
 var DEBUG = false;
 var createPC = false;
+var isPreview = false;
 
 /* ------------------------------------ */
 /* Initialize module					*/
@@ -561,9 +561,16 @@ Hooks.once('setup', function() {
 /* ------------------------------------ */
 /* When ready							*/
 /* ------------------------------------ */
+
+let sbcModalInstance;
+
 Hooks.once('ready', function() {
   // Do anything once the module is ready
   //hookRenderSBCButton();
+    
+    sbcModalInstance = new sbcModal();
+    
+    loadTemplates(["modules/statblockimporter/templates/sbcModal.html", "modules/statblockimporter/templates/sbcPreview.html"])
     
 });
 
@@ -573,14 +580,11 @@ function hookRenderSBCButton() {
     // Appends a button onto the actor directory to open the modal dialog.
     Hooks.on("renderActorDirectory", (app, html, data) => {
         console.log('sbc-pf1 | StatBlock Converter PF1 Ready');
-        
-        
-        
+                
         const importButton = $('<button class="create-entity sbcButton"><i class="fas fa-file-import"></i></i>Import StatBlock</button>');
         html.find(".directory-footer").append(importButton);
         importButton.click(async (ev) => {
             await openModalDialog();
-            //activateListeners();
         });
         
         
@@ -635,9 +639,125 @@ function activateListeners(html){
 
 
 /* ------------------------------------ */
-/* Modal Dialog							*/
+/* New Modal Dialog						*/
 /* ------------------------------------ */
 
+function openModalDialog() {
+
+    sbcModalInstance.render(true);
+        
+}
+
+export class sbcModal extends Application {
+    constructor(options){
+        super(options)
+        //getTemplate()
+        //this.monsterJSON = undefined
+    }
+    
+    /**
+     * Assign the default options
+     */
+    // @ts-ignore
+    static get defaultOptions() {
+        // @ts-ignore
+        const options = super.defaultOptions
+        options.id = "sbcModal"
+        options.template = "modules/statblockimporter/templates/sbcModal.html"
+        options.width = 1600
+        options.height = 700
+        options.resizable = true
+        options.classes = ["sbcModal"]
+        options.popOut = true
+        options.title = "sbc | Statblock Converter by Lavaeolous"
+
+        return options
+    }
+    
+    
+    
+    async activateListeners(html){
+        const textArea = $('.sbc-container #sbcInput')
+        const errorArea = $('.error-container #sbcError')
+        //const highlights = $('.monster-import-ui-container .input-text .highlights')
+        //const backdrop = $('.monster-import-ui-container .input-text .backdrop')
+        const previewArea = $('.sbc-container #sbcPreview')
+        const importNPCButton = $('.sbc-container #importNPC')
+        const importPCButton = $('.sbc-container #importPC')
+        
+        var inputString = $('.sbc-container .sbcInput').val().toString();
+        var inputObj;
+        var previewHTML;
+        
+        textArea.on('input', async event => {
+            previewArea.empty()
+            errorArea.empty()
+            //const currentMonsterString = $('.sbc-container .sbcInput').val().toString();
+            inputString = $('.sbc-container .sbcInput').val().toString();
+                        
+            if (inputString !== "") {
+                try {     
+                    
+                    inputObj = await convertStatBlock(inputString, "npc", true);                    
+                    previewHTML = await renderTemplate('modules/statblockimporter/templates/sbcPreview.hbs' , {formattedInput: inputObj})
+                    previewArea.append(previewHTML)
+                    
+                } catch (error) {
+                    
+                    if (!errorArea.hasClass("visible")) {
+                        errorArea.addClass("visible");
+                    }
+                    
+                    if (errorArea.val().toString() !== error.toString()) {
+                        errorArea.append(error.toString() + "; ");
+                    }
+                }
+            }
+            
+        })
+        
+        importNPCButton.on('click', async event => {            
+            if (inputString !== "") {
+                try {     
+                    inputObj = await convertStatBlock(inputString, "npc", false);
+                    this.close();
+                } catch (error) {
+                    if (!errorArea.hasClass("visible")) {
+                        errorArea.addClass("visible");
+                    }
+                    errorArea.empty();
+                    errorArea.append(error.toString() + "; ");
+                }
+            } else {
+                errorArea.empty();
+                errorArea.append("Trying to import nothing? Why not divide by zero as well?")
+            }
+        })
+        
+        importPCButton.on('click', async event => {
+            if (inputString !== "") {
+                try {     
+                    inputObj = await convertStatBlock(inputString, "pc", false);
+                    this.close();
+                } catch (error) {
+                    if (!errorArea.hasClass("visible")) {
+                        errorArea.addClass("visible");
+                    }
+                    errorArea.empty();
+                    errorArea.append(error.toString() + "; ");
+                }
+            }
+        })
+    }
+
+    
+}
+
+/* ------------------------------------ */
+/* Old Modal Dialog						*/
+/* ------------------------------------ */
+
+/*
 function openModalDialog() {
                         
     const options = {
@@ -661,7 +781,7 @@ function openModalDialog() {
                         <div class="highlights">
                         </div>
                     </div>
-                    <textarea class="statBlockInput" id="sbcInput" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here">test</textarea>
+                    <textarea class="sbcInput" id="sbcInput" form="statBlockInputForm" placeholder="Copy &amp; Paste Statblock here"></textarea>
                 </div>
             </section>
             <section class="preview-container">
@@ -699,17 +819,19 @@ function openModalDialog() {
         close: () => console.log("sbc-pf1 | Dialog closed")
     }, options);
     d.render(true);
+    activateListeners(d);
                 
-}
+};
+*/
 
-function activateListeners(){
+/*
+function activateListeners(html){
     
     console.log("calling function activateListeners");
     
-    const textArea = $('.sbc-container #sbcInput');
-    
+    const textArea = $('.sbcInput');
     console.log("textArea:");
-    console.log(textArea.val());
+    console.log(textArea);
     
     const errorArea = $('.sbc-container #sbcError')
     const previewArea = $('.sbc-container #sbcPreview')
@@ -737,6 +859,7 @@ function activateListeners(){
         }
     })
 }
+*/
 
 /*
 class statBlockConverterModalDialog {
@@ -856,7 +979,7 @@ async function resetSBC() {
     
     delete window.dataInput;
     delete window.dataOutput;
-    delete window.dataTemplate;
+    delete window.actorTemplate;
     delete window.formattedInput;
     createPC = false;
     
@@ -882,13 +1005,13 @@ async function initializeSBC() {
     dataInputHasEcology = false;
     
     if (createPC === false) {
-        dataTemplate = await JSON.parse(JSON.stringify(templateActor));
+        actorTemplate = await JSON.parse(JSON.stringify(templateActor));
     } else {
-        dataTemplate = await JSON.parse(JSON.stringify(templateActorPC));
+        actorTemplate = await JSON.parse(JSON.stringify(templateActorPC));
     }
     
     formattedInput = await JSON.parse( await JSON.stringify(templateData));
-    dataOutput = await JSON.parse(JSON.stringify(dataTemplate));
+    dataOutput = await JSON.parse(JSON.stringify(actorTemplate));
     
 }
 
@@ -896,7 +1019,7 @@ async function initializeSBC() {
 /* sbc-pf1 | StatBlock Converter    	*/
 /* ------------------------------------ */
 
-async function convertStatBlock(input, statblockType) {
+async function convertStatBlock(input, statblockType, isPreview) {
     
     const errorArea = $('.sbc-container #sbcError');
     
@@ -910,7 +1033,9 @@ async function convertStatBlock(input, statblockType) {
     await initializeSBC();
         
     // Initial Clean-up of input
-    dataInput = input.value.replace(/^\s*[\r\n]/gm,"")
+    // dataInput = input.value.replace(/^\s*[\r\n]/gm,"")
+    dataInput = input.replace(/^\s*[\r\n]/gm,"")
+    
     // Replace different dash-glyphs with the minus-glyph
     dataInput = dataInput.replace(/–|—/gm,"-");
     // Remove weird multiplication signs
@@ -950,11 +1075,12 @@ async function convertStatBlock(input, statblockType) {
     if(dataInput.search(/(^\bSpeed\b)|(^\bSpd\b)/mi) !== -1) { foundOffenseData = true; }
     if(dataInput.search(/(\n\bSTR\b)/gmi) !== -1) { foundStatisticsData = true; }
     // Check for optional Datablocks marked by keywords for now
-    if(dataInput.search(/\nTACTICS\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; }
-    if(dataInput.search(/\n\bSPECIAL ABILITIES\b\n/gmi) !== -1) { foundSpecialAbilitiesData = true; dataInputHasSpecialAbilities = true; }
-    if(dataInput.search(/\nECOLOGY\n/gmi) !== -1) { foundEcologyData = true; dataInputHasEcology = true; }
+    if(dataInput.search(/\nTACTICS\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; formattedInput.hasTactics = true; }
+    if(dataInput.search(/\n\bSPECIAL ABILITIES\b\n/gmi) !== -1) { foundSpecialAbilitiesData = true; dataInputHasSpecialAbilities = true; formattedInput.hasSpecialAbilities = true; }
+    if(dataInput.search(/\nECOLOGY\n/gmi) !== -1) { foundEcologyData = true; dataInputHasEcology = true; formattedInput.hasEcology = true;}
     
     // 
+    /*
     if( (foundDefenseData == false) || (foundOffenseData == false) || (foundStatisticsData == false) ) {
         ui.notifications.info("Something went wrong! Please check the console (F12)");
         console.log("Defense Data found: " + foundDefenseData);
@@ -963,6 +1089,7 @@ async function convertStatBlock(input, statblockType) {
         console.log("Check the Input for any datablock that returns false, e.g. if offense data returns false, the error will probably be somewhere between the land speed and any special attacks the input has.");
         return;
     }
+    */
     
     let tempInputRest = "";
 
@@ -1062,7 +1189,7 @@ async function convertStatBlock(input, statblockType) {
     /*
      * Extract Values from the Blocks
      * and save that in a Object for formattedInput
-     * to be mapped onto the dataTemplate later
+     * to be mapped onto the actorTemplate later
      */
     
     // Take General Data and extract Name, CR, XP and Stuff
@@ -1097,33 +1224,42 @@ async function convertStatBlock(input, statblockType) {
         await splitDescriptionData(stringDescriptionData);
     }
     
-    // Map SchemaData to TemplateData
-    await mapInputToTemplateFoundryVTT(formattedInput);
+    if (!isPreview) {
+        
+        // Map SchemaData to TemplateData
+        await mapInputToTemplateFoundryVTT(formattedInput);
 
-    // CREATE NEW ACTOR
-    let newActor = await createNewActor();
-    if(window.auto_csv_flag){
-        return dataOutput;
+        // CREATE NEW ACTOR
+        let newActor = await createNewActor();
+        
+        if(window.auto_csv_flag){
+            return dataOutput;
+        }
+
+        if(DEBUG==true) { 
+            console.log("sbc-pf1 | CHECK HERE FOR DIFFERENCES BETWEEN RAW INPUT, PARSED AND SAVED DATA");
+            console.log("==============================================================================================");
+            console.log("sbc-pf1 | RAW INPUT AFTER MINOR CLEANUP");
+            console.log(dataInput);
+            console.log("sbc-pf1 | PARSED AND FORMATTED DATA IN NEUTRAL TEMPLATE");
+            console.log(formattedInput);
+            console.log("==============================================================================================");
+            console.log("sbc-pf1 | DATA CONVERTED INTO A PF1 ACTOR");
+            console.log(await game.actors.get(newActor.id));
+            console.log("==============================================================================================");
+        };
+
+        await resetSBC();
+        await initializeSBC();
+        
+    } else {
+        
+        // Return the formattedInput for the Preview
+        return formattedInput;
+        
     }
     
-    if(DEBUG==true) { 
-        console.log("sbc-pf1 | CHECK HERE FOR DIFFERENCES BETWEEN RAW INPUT, PARSED AND SAVED DATA");
-        console.log("==============================================================================================");
-        console.log("sbc-pf1 | RAW INPUT AFTER MINOR CLEANUP");
-        console.log(dataInput);
-        console.log("sbc-pf1 | PARSED AND FORMATTED DATA IN NEUTRAL TEMPLATE");
-        console.log(formattedInput);
-        console.log("==============================================================================================");
-        console.log("sbc-pf1 | DATA CONVERTED INTO A PF1 ACTOR");
-        console.log(await game.actors.get(newActor.id));
-        console.log("==============================================================================================");
-    };
-    
-    await resetSBC();
-    await initializeSBC();
 }
-
-
 
 /* ------------------------------------ */
 /* MAP INPUT TO NEUTRAL TEMPLATE    	*/
@@ -1139,7 +1275,7 @@ function splitGeneralData(stringGeneralData) {
     
     let splitGeneralData = stringGeneralData.replace(/defense$|defenses$/i,"");
     
-    let splitName = splitGeneralData.match(/^.*/)[0].replace(/\bCR (\d+\/*\d*|-)/, "");
+    let splitName = splitGeneralData.match(/^.*/)[0].replace(/CR\b (\d+\/*\d*|-)/, "");
     let splitCR = 0;
     let splitMR = 0;
     let splitXP = 0;
@@ -1150,10 +1286,10 @@ function splitGeneralData(stringGeneralData) {
         formattedInput.notes.source = splitSource;
     }
 
-    if (splitGeneralData.search(/\bCR/) !== -1) {
+    if (splitGeneralData.search(/CR\b/) !== -1) {
         
         
-        splitCR = splitGeneralData.match(/\bCR (\d+\/*\d*|-)(?!MR)/)[1];
+        splitCR = splitGeneralData.match(/CR\b (\d+\/*\d*|-)(?!MR)/)[1];
         
         // Get Mythic Ranks
         if (splitGeneralData.search(/MR\s*\d+/) !== -1) {
@@ -1187,7 +1323,7 @@ function splitGeneralData(stringGeneralData) {
     }
     
     if (splitGeneralData.search(/\bXP\s*/) !== -1){
-        splitXP = splitGeneralData.match(/(?:XP\s*)([\d,.]+)/)[1].replace(/([\D]|[,?]|[\.?])/g,"");
+        splitXP = splitGeneralData.match(/(?:\bXP[\s:]*)([\d,.]+)/i)[1].replace(/([\D]|[,?]|[\.?])/g,"");
         formattedInput.xp = splitXP;
     }
 
@@ -1473,7 +1609,7 @@ function splitDefenseData(stringDefenseData) {
     // Extract Number and Size of Hit Dies as well as HP
     // Hit dice
         
-    let splitHPTotal = splitDefenseData[1].split(/(?:hp\s*)([\d]*)/)[1];
+    let splitHPTotal = splitDefenseData[1].split(/(?:hp[\s:]*)([\d]*)/i)[1];
     formattedInput.hp.total = splitHPTotal;
     
     
@@ -1862,6 +1998,9 @@ function splitOffenseData(stringOffenseData) {
         splitOffenseAttacks = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gm)[0];
         let tempSplitOffenseSpells = splitOffenseData.split(/^(?=.*\bSpells\b|.*\bSpell\b)/gm);
         
+        // set flag
+        formattedInput.hasSpellcasting = true;
+        
         // Push everything apart from the attacks into splitOffenseSpells as separate objects
         for (let i=1; i < tempSplitOffenseSpells.length; i++) {
             splitOffenseSpells.push(tempSplitOffenseSpells[i]);
@@ -2148,7 +2287,7 @@ function splitStatisticsData(stringStatisticsData) {
     // Skills (String from "Skills" to next linebreak)
     if (stringStatisticsData.search(/(?:Skills )/) !== -1) {
         let splitSkills = stringStatisticsData.match(/(?:Skills\s*)(.*)(?:[0-9)]+?)/gim)[0];
-        splitSkills = splitSkills.replace(/Skills\s*/i, "");
+        splitSkills = splitSkills.replace(/Skills\s*/gi, "");
         
         formattedInput.notes.skills = splitSkills;
         
@@ -2449,7 +2588,6 @@ function splitStatisticsData(stringStatisticsData) {
 // Split Special Abilities
 function splitSpecialAbilitiesData(stringSpecialAbilitiesData) {
     
-    console.log("stringSpecialAbilitiesData: " + stringSpecialAbilitiesData);
     
     // YE OLDE WAY, SPLITTING BY EX; SU OR SP
     
@@ -2556,7 +2694,12 @@ function mapGeneralData() {
         setSpecialAbilityItem (formattedInput.mr + " Ranks", "class", "Mythic")
     }
     
-    dataOutput.data.details.alignment = formattedInput.alignment.toLowerCase();
+    if (formattedInput.alignment.search(/\bN\b/i) !== -1) {
+        dataOutput.data.details.alignment = "tn";
+    } else {
+        dataOutput.data.details.alignment = formattedInput.alignment.toLowerCase();
+    }
+    
     
     // Changes for Undead Creatures
     let tempHPTotal = 0;
@@ -2569,8 +2712,9 @@ function mapGeneralData() {
     // Attributes
     //dataOutput.data.attributes.init.value = formattedInput.initiative - getModifier(formattedInput.dex.total);
     dataOutput.data.attributes.init.total = +formattedInput.initiative;
-    dataOutput.data.attributes.hd.total = formattedInput.hit_dice.total;
     
+    dataOutput.data.attributes.hd.total = formattedInput.hit_dice.hd.total;
+        
     // Size and Size-Related Stuff
     switch(formattedInput.size) {
         case "Fine": dataOutput.data.traits.size = "fine"; break;
@@ -3178,19 +3322,16 @@ async function mapSpecialQualitiesData () {
         setSpecialAbilityItem(sq, featType, "SQ");
     }
     
-    
 }
 
 // Map Special Ability Data
 function mapSpecialAbilitiesData () {
     
     for (let i=0; i<formattedInput.special_abilities.length; i++) {
+        
         // SET THE FEATTYPE
         let featType = "misc";
         let specialAbility = formattedInput.special_abilities[i];
-        
-        console.log("specialAbility in mapping");
-        console.log(specialAbility);
         
         setSpecialAbilityItem(specialAbility, featType, "Special Ability");
     }
@@ -3248,13 +3389,10 @@ async function setAttackItem (attackGroups, attackType) {
             let mwkWeapon = false;
             let numberOfIterativeAttacks = 0;
             let attackNotes = "";
-            
-            console.log("attack: " + attack);
-            
+                        
             // Search for Touch or Ranged Touch
             if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
                 let attackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
-                console.log("attackType: " + attackType);
                 attackNotes += attackType + "\n";
                 attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
             }
@@ -3786,6 +3924,7 @@ async function mapSpellbooks (actorID) {
     
     // Suppose we are working with a particular pack named "dnd5e.spells"
     const spellPack = game.packs.get("pf1.spells");
+    
     // We can load the index of the pack which contains all entity IDs, names, and image icons
     const spellPackIndex = await spellPack.getIndex().then(index => {
         index = index.name;
@@ -3908,8 +4047,6 @@ async function mapSpellbooks (actorID) {
                 /* ------------------------------------ */
                 /* Variables at Spellbook Level     	*/
                 /* ------------------------------------ */
-
-
 
                 // Get Spell Level if available
                 let spellLevel = 0;
@@ -4048,7 +4185,6 @@ async function mapSpellbooks (actorID) {
                         spellEffectNotes += domainSpell;
                     }
 
-
                     // Search for Name
                     spellName = spell.match(/^([^(D\n]*)/)[0].replace(/^ | $/g, "");
                     spellName = spellName.replace(/\[|\]/g,"");
@@ -4121,8 +4257,6 @@ async function mapSpellbooks (actorID) {
                 await setSpellsItem(spellArray, actorID, spellBook, spellPack, spellPackIndex);
             }            
             
-            
-            
             if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + j + " - SPELLROW"); }
             
         };
@@ -4136,7 +4270,6 @@ async function mapSpellbooks (actorID) {
     if (DEBUG == true) { console.log("sbc | FINISH MAPPING SPELLBOOKS"); }
 
 }
-
 
 // Set Spell Item
 // THIS IS A FOUNDRY ONLY FUNCTION AND WILL NOT WORK IN A STAND ALONE VERSION AS THE REST CURRENTLY WOULD
@@ -4160,7 +4293,10 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             let formattedSpellName = spellName.toLowerCase();
             
             // Format "Mass" and "Greater" Version
-            let correctedSpellName = formattedSpellName.replace(/^(greater |lesser |mass |major )(.*)/, "$2, $1");   
+            let correctedSpellName = formattedSpellName.replace(/^(greater |lesser |mass |major )(.*)/, "$2, $1");
+            
+            // Remove Additional Spell Level Information from the SpellName, e.g. bestow curse "4th"
+            correctedSpellName = correctedSpellName.replace(/\s*(9th|8th|7th|6th|5th|4th|3rd|2nd|1st)/g,"");
             
             let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
             let tempCorrectedSpellName = correctedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
@@ -4177,22 +4313,9 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
                 entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
             }
             
-            /*
-            try {
-                // Remove Metamagic Attributes and check if a spell can be found
-                let metamagicRegEx = new RegExp (enumMetamagic.join("\\b|\\b"), "gi");
-                let tempFormattedSpellName = formattedSpellName.replace(metamagicRegEx, "").replace(/\s+/g," ").replace(/^ | $|/g, "");
-                entry = spellPack.index.find(e => e.name.toLowerCase() === tempFormattedSpellName);
-            } catch (e) {
-                console.log("Failed to finde de-metamagicked spell");
-                // If not, try to find the spell without removing anything
-                entry = spellPack.index.find(e => e.name.toLowerCase() === formattedSpellName);
-            }
-            */
-            
             // Given the entity ID of "Acid Splash" we can load the full Entity from the compendium
             let spell = await spellPack.getEntity(entry._id);
-
+            
             spell.data.name = spellInput.constant + capitalize(spellName);
             spell.data.data.spellbook = spellBook;
             if (spellInput.level) {
@@ -4206,6 +4329,11 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             //spell.data.data.save.dc = spellInput.saveDC.toString();
             spell.data.data.effectNotes = spellInput.effectNotes;
             spell.data.data.atWill = spellInput.atWill;
+            
+            spell.data.data.links = {
+                "children": []
+            };
+            
 
             spellOutputArray.push(spell);
             dataOutput.items.push(spell.data);
@@ -4223,7 +4351,6 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
                 spell.name = "sbc | Placeholder | " + spellInput.name;
             }
             
-            
             spell.data.spellbook = spellBook;
             if (spellInput.level) {
                 spell.data.level = spellInput.level;
@@ -4236,7 +4363,6 @@ async function setSpellsItem (spellArray, actorID, spellBook, spellPack, spellPa
             spell.data.effectNotes = spellInput.effectNotes;
             spell.data.atWill = spellInput.atWill;
             
-
             dataOutput.items.push(spell);
 
             if (DEBUG == true) { console.log("sbc | FINISH SETTING PLACEHOLDER SPELL"); }
@@ -4277,8 +4403,8 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
     */
     
     // NEW WAY TO SET NAME AND CONTENT
-    console.log("SPECIAL ABILITY");
-    console.log(specialAbility);
+    //console.log("SPECIAL ABILITY");
+    //console.log(specialAbility);
     
     // Set featType
     let tempFeatType = "";
@@ -4313,8 +4439,8 @@ function setSpecialAbilityItem (specialAbility, featType, abilityType) {
         specialAbilityName = specialAbility.match(/([^.\n]*?)(\s)((\b[A-Z][a-z]*\b|\+\d+) \b[a-z]+?\b)/)[1];
         specialAbilityDescription = specialAbility.replace(specialAbilityName, "");
 
-        console.log("specialAbilityName: " + specialAbilityName);
-        console.log("specialAbilityDescription: " + specialAbilityDescription);
+        //console.log("specialAbilityName: " + specialAbilityName);
+        //console.log("specialAbilityDescription: " + specialAbilityDescription);
 
         // Check if there already is an item with the same name
         let itemKeys = Object.keys(dataOutput.items);
@@ -4908,11 +5034,7 @@ function mapNotesData() {
                     ${formattedInput.description ? formattedInput.description + "<br/>" : ""}
                 </div>
                 <hr style="margin-left: 0; margin-bottom: -3px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
-            </div>
-
-
-            
-            
+            </div>   
         `;
     
     // WRITE EVERYTHING TO THE NOTES
@@ -4929,7 +5051,7 @@ function tagSpecialAbilities(string, ...expressions) {
         for (let i=0; i<formattedInput.special_abilities.length; i++) {
             let item = formattedInput.special_abilities[i];
             
-            console.log("item: " + item);
+            //console.log("item: " + item);
             
             let name = "";
             let content = "";
@@ -5025,6 +5147,7 @@ async function createNewActor () {
     // Create Actor
     
     let newActor = await Actor.create(dataOutput);
+    
     if(DEBUG==true) { console.log("sbc-pf1 | Creating a new Actor with id=" + newActor.id) };
     
     if(DEBUG==true) { console.log("sbc-pf1 | Updating the Actor to include conversion changes") };
@@ -5035,13 +5158,23 @@ async function createNewActor () {
     
     await mapSpellbooks(newActor.id);
     
+    //let tempActor = await game.actors.get(newActor.id);
     
-    let tempActor = await game.actors.get(newActor.id).update(dataOutput);
+    
+    //let tempActor = await Actor.create(game.actors.get(newActor.id));
+    
+    //await tempActor.render(true);
+    //await newActor.delete();
+    
+    //return tempActor;
+    
+    
     //await game.actors.get(newActor.id).update(tempActor);
-        
-    await newActor.render(true);
     
+    await newActor.update({});
+    await newActor.render(true);
     return newActor;
+
     
 }
 

@@ -30,7 +30,8 @@ export default {
           "value": 0,
           "max": 0,
           "per": "",
-          "autoDeductCharges": false
+          "autoDeductCharges": false,
+          "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
           "type": "",

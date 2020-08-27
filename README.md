@@ -8,13 +8,13 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json
 ```
 # Compatibility
-GameSystem: [PF1 0.73.2](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-FoundryVTT: 0.6.5
+GameSystem: [PF1 0.73.7](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+FoundryVTT: 0.6.6
 
 # How to Use
 1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).
 2.  In the Actor Directory tab of foundry, click on "Import Statblock"
-3.  Paste the Statblock into the textarea and confirm with enter
+3.  Paste the Statblock into the textarea, check the preview for any errors and import via button as NPC or PC actor
 
 # Disclaimer
 SBC is currently in development, so not all data will be parsed or may be parsed/calculated incorrectly.
@@ -23,33 +23,30 @@ If you find any errors or have a statblock that can't be converted at all, feel 
 # What gets converted
 Currently, the tool parses the following data and generates equivalent Foundry Data and Items:
 
-*  **General Data**: Name, CR, XP, Gender, Race<sup>1</sup>, Class(es)<sup>1</sup>, Alignment, Size<sup>3</sup>, Type (Subtype)<sup>1</sup>, Init, Senses<sup>3</sup>, Aura (but there is no field for that in the character sheet)
-*  **Defensive Data:** AC, Touch and Flat-Footed)<sup>2</sup>, HP<sup>2</sup>, Hit Dice<sup>2</sup>, Saves<sup>2</sup>, Defensive Abilities<sup>1</sup>, Immunities, Resistances, Weaknesses, Damage and Spell Resistance
-*  **Tactics:** Before &amp; During Combat, Morale (Buggy)
-*  **Statistics Data:** Attributes (Str, Dex, Con, Int, Wis, Cha), BAB, CMD and CMB, Feats<sup>4</sup>, Skills<sup>2</sup>, Languages, Special Qualities
+*  **General Data**: Name, CR, XP, Gender, Race, Class(es), Alignment, Size, Type (Subtype), Init, Senses, Aura (but there is no field for that in the character sheet)
+*  **Defensive Data:** AC, Touch and Flat-Footed), HP, Hit Dice, Saves, Defensive Abilities, Immunities, Resistances, Weaknesses, Damage and Spell Resistance
+*  **Tactics:** Before &amp; During Combat, Morale
+*  **Statistics Data:** Attributes (Str, Dex, Con, Int, Wis, Cha), BAB, CMD and CMB, Feats, Skills, Languages, Special Qualities
 *  **Offense Data:** Speed(s), Melee Attacks (Weapon, Natural, Swarm), Ranged Attacks, Damage Types, Special Attacks, Spells, Spell-Like Abilities
-*  **Special Abilities**
+*  **Special Abilities** (fuzzy, because *very* diverse formatting depending on the source of the statblock)
 *  **Descriptions**
 
-[1]: A new Item is created for these Values including the needed calculations for Hit Dice, HP, etc.  
-[2]: Including the needed calculations  
-[3]: Including changes to the token (e.g. size and vision)  
-[4]: Creates empty Items for now
-
 # Known Bugs
+*  Special Abilities and Spells do not appear in the preview currently
 *  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the console (F12).
 *  See Issues. If you find anythings thats not noted there, please include it
-
 
 # To Do
 *  **Bug Fixing**
 *  Parse Ecology, Gear & Treasure
-*  Give usable Feedback or implement a debug mode (for now some comments are visible in the console)
 
 # Contact
 Primer#2220 | FoundryVTT Discord
 
 # Change Log
+
+2020_08_27
+*  Release of v2.0.0 which includes the first iteration of an import preview which should help identify problematic areas of the input before importing
 
 2020_08_12
 *  Added Hotfix for Issue #286

@@ -32,7 +32,8 @@ export default {
             "value": 0,
             "max": 0,
             "per": null,
-            "autoDeductCharges": true
+            "autoDeductCharges": true,
+            "autoDeductChargesCost": "1"
         },
         "measureTemplate": {
             "type": "",
@@ -47,7 +48,8 @@ export default {
         "critConfirmBonus": "",
         "damage": {
             "parts": [],
-            "critParts": []
+            "critParts": [],
+            "nonCritParts": []
         },
         "attackParts": [],
         "formula": "",
@@ -65,6 +67,7 @@ export default {
         },
         "effectNotes": "",
         "attackNotes": "",
+        "soundEffect": "",
         "changes": [],
         "changeFlags": {
             "loseDexToAC": false,
@@ -78,7 +81,6 @@ export default {
             "heavyArmorFullSpeed": false
         },
         "contextNotes": [],
-        "soundEffect": "",
         "links": {
             "children": [],
             "charges": []
@@ -92,8 +94,7 @@ export default {
         "crOffset": 0,
         "attack": {
             "parts": []
-        },
-        "identifiedName": ""
+        }
     },
     "sort": 1000000,
     "img": "systems/pf1/icons/skills/yellow_36.jpg",
