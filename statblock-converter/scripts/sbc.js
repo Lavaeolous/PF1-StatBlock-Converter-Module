@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.0
+ * Version:             2.0.1
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.0";
+const sbcVersion = "v2.0.1";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -527,7 +527,7 @@ window.addEventListener('keydown',function(e) {
 /* FLAGS    							*/
 /* ------------------------------------ */
 
-var DEBUG = false;
+var DEBUG = true;
 var createPC = false;
 var isPreview = false;
 
@@ -1354,9 +1354,15 @@ function splitGeneralData(stringGeneralData) {
     
     // Split Classes, if available
     // Special Case: (Medium)(?: \d+?) 
-    let regExClassesAndLevel = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")(?:\\s*\\d+)"), "gi");
+    let regExClassesAndLevel = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")(?:[^\\d\\n]*\\d+)"), "gi");
     let regExClasses = new RegExp("(\\b".concat(enumClasses.join("\\b|\\b")).concat(")"), "gi");
+    
+    console.log("regExClasses: " + regExClasses);
+    console.log("splitGeneralData: " + splitGeneralData);
+    
     let splitClasses = splitGeneralData.match(regExClassesAndLevel);
+    
+    console.log("splitClasses: " + splitClasses);
     
     formattedInput.notes.classes = splitClasses;
     
@@ -1374,6 +1380,8 @@ function splitGeneralData(stringGeneralData) {
         for (let i=0; i<splitClasses.length; i++) {
             
             let item = splitClasses[i];
+            
+            console.log("item: " + item);
             
             if ( item !== undefined ) {
                                 
@@ -1424,13 +1432,15 @@ function splitGeneralData(stringGeneralData) {
         }
         
         // Get Gender and Race if available
-        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:\\s+\\d+)", "ig");        
+        let regExGenderAndRace = new RegExp("(?:[0-9]*?)([^0-9]*)(?:" + enumClasses.join("|") + ")(?:[^\\d\\n]*\\d+)", "ig");        
         let stringGenderAndRace = "";
         
         // Search if there is info before the class to evaluate
         if (splitGeneralData.split(regExGenderAndRace)[1]) {
         
             stringGenderAndRace = splitGeneralData.split(regExGenderAndRace)[1];
+            
+            console.log("stringGenderAndRace: " + stringGenderAndRace);
                         
             // Get Gender
             let regExGender = new RegExp("(" + enumGender.join("|") + ")", "i");
@@ -2692,6 +2702,11 @@ function mapGeneralData() {
     // Mythic Ranks
     if (formattedInput.mr !== 0) {
         setSpecialAbilityItem (formattedInput.mr + " Ranks", "class", "Mythic")
+    }
+    
+    // Gender
+    if (formattedInput.gender) {
+        dataOutput.data.details.gender = formattedInput.gender;
     }
     
     if (formattedInput.alignment.search(/\bN\b/i) !== -1) {
@@ -4118,7 +4133,7 @@ async function mapSpellbooks (actorID) {
 
                 // Set Spell Level if available
                 if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
-                    spells.spellLevel = spellLevel;
+                    spells.spellLevel = +spellLevel;
                 }
 
                 // set atWill variable
@@ -4246,7 +4261,7 @@ async function mapSpellbooks (actorID) {
 
                     // Set Spell Level if available
                     if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/i) !== -1) {
-                        spellInput.level = spells.spellLevel;
+                        spellInput.level = +spells.spellLevel;
                     }
 
                     if (DEBUG == true) { console.log("sbc | FINISH MAPPING - " + k + " - SPELL"); }

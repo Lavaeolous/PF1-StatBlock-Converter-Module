@@ -45,6 +45,9 @@ Primer#2220 | FoundryVTT Discord
 
 # Change Log
 
+2020_08_28
+*  Fix for wrongly calculated spell DCs
+
 2020_08_27
 *  Release of v2.0.0 which includes the first iteration of an import preview which should help identify problematic areas of the input before importing
 
