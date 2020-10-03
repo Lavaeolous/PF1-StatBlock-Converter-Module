@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.1
+ * Version:             2.0.2
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.1";
+const sbcVersion = "v2.0.2";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -710,6 +710,7 @@ export class sbcModal extends Application {
                     
                     if (errorArea.val().toString() !== error.toString()) {
                         errorArea.append(error.toString() + "; ");
+                        throw(error);
                     }
                 }
             }
@@ -1037,7 +1038,7 @@ async function convertStatBlock(input, statblockType, isPreview) {
     dataInput = input.replace(/^\s*[\r\n]/gm,"")
     
     // Replace different dash-glyphs with the minus-glyph
-    dataInput = dataInput.replace(/–|—/gm,"-");
+    dataInput = dataInput.replace(/–|—|−/gm,"-");
     // Remove weird multiplication signs
     dataInput = dataInput.replace(/×/, "x");
         
@@ -1166,7 +1167,7 @@ async function convertStatBlock(input, statblockType, isPreview) {
         //splitInput = "";
     }
     
-    if(dataInput.search(/\bDescription\b/i) !== -1) {
+    if(dataInput.search(/^\bDescription\b/i) !== -1) {
         foundDescriptionData = true;
         stringDescriptionData = dataInput.match(/(?:^Description)([\s\S]*)/im)[1];
     }
@@ -1411,7 +1412,7 @@ function splitGeneralData(stringGeneralData) {
                     className = className[0].concat("Npc");
                 }
                 
-                // If it'S a wizard that goes by his schools name, change the class to wizard and add the rest in parenthesis
+                // If it's a wizard that goes by his schools name, change the class to wizard and add the rest in parenthesis
                 if (className[0].search(/necromancer|diviner|evoker|illusionist|transmuter|abjurer|conjurer|enchanter/i) === -1) {
                     formattedInput.classes[className] = {
                         "name" : className[0],
@@ -1715,6 +1716,8 @@ function splitDefenseData(stringDefenseData) {
         let numberOfClasses = Object.keys(formattedInput.classes).length;
         let numberOfMatchedHD = Object.keys(hitDicePool).length;
         
+        console.log("number of matched hd:" + numberOfMatchedHD);
+        
         
         let counterOfMatchedHD = 0;
         let counterOfMatchedClasses = 0;
@@ -1723,10 +1726,10 @@ function splitDefenseData(stringDefenseData) {
 
             // Loop over the classKeys
             classKeys.forEach( function (classKey, classKeyIndex) {
-                                
+                                                
                 // Loop over the hitDicePool searching for matches
                 hitDicePool.forEach ( function (hitDiceItem, hitDiceIndex) {
-                                        
+                                                            
                     let tempNumberOfHD = +hitDiceItem.match(/(\d+)(?:d\d+)/i)[1];
                     let tempHDSize = +hitDiceItem.match(/(?:d)(\d+)/i)[1];
                     let tempClassLevel = formattedInput.classes[classKey].level;
@@ -1916,13 +1919,14 @@ function splitOffenseData(stringOffenseData) {
     // Check for other Speeds
     if (splitSpeed.search(/,/g) !== -1) {
         let splitSpeeds = splitSpeed.replace(/, /g, ",")
-        splitSpeeds = splitSpeeds.replace(/(;.*)/, "");
-        splitSpeeds = splitSpeeds.replace(/^\d+\s*ft\..*,/, "");
-        splitSpeeds = splitSpeeds.split(/,/g);
         
-                
+        splitSpeeds = splitSpeeds.replace(/(;.*)/, "");
+        splitSpeeds = splitSpeeds.replace(/^([^,]*,)/, "");
+        // OLD splitSpeeds = splitSpeeds.replace(/^\d+\s*ft\..*,/, "");
+        splitSpeeds = splitSpeeds.split(/,/g);
+                        
         splitSpeeds.forEach ( function (item, index) {
-            
+                        
             let tempSpeedType = item.replace(/\s*\(([^)]+)\)/g, "").replace(/^ | $/g, "");
             let speedType = tempSpeedType.match(/\b\w*\b/)[0];
             let speedBase = tempSpeedType.match(/\d+/)[0];
@@ -1949,15 +1953,16 @@ function splitOffenseData(stringOffenseData) {
                 
             }
       
+            let regexSpeedTypes = new RegExp("fly|climb|burrow|swim", "i");
             
-            
-            if (speedType !== "" && speedBase !== null) {
+            if (speedType !== "" && speedBase !== null && speedType.search(regexSpeedTypes) !== -1) {
                 // If its a movementType with speed (e.g. land, fly, climb or burrow)
                 formattedInput.speed[speedType].base = +speedBase;
                 formattedInput.speed[speedType].total = +speedTotal;
             } else {
                 // If it's not one of the normal movementTypes the probability is high, that it's a special ability
-                formattedInput.special_abilities[item] = { "name": item };
+                let tempItem = capitalize(item.replace(/^ | $/, ""));
+                setSpecialAbilityItem(tempItem, "Misc", "Speed: ");
             }
             
             
@@ -3347,7 +3352,7 @@ function mapSpecialAbilitiesData () {
         // SET THE FEATTYPE
         let featType = "misc";
         let specialAbility = formattedInput.special_abilities[i];
-        
+                
         setSpecialAbilityItem(specialAbility, featType, "Special Ability");
     }
 }
