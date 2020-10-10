@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.2
+ * Version:             2.0.3
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.2";
+const sbcVersion = "v2.0.3";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -728,6 +728,7 @@ export class sbcModal extends Application {
                     }
                     errorArea.empty();
                     errorArea.append(error.toString() + "; ");
+                    throw(error);
                 }
             } else {
                 errorArea.empty();
@@ -746,6 +747,7 @@ export class sbcModal extends Application {
                     }
                     errorArea.empty();
                     errorArea.append(error.toString() + "; ");
+                    throw(error);
                 }
             }
         })
@@ -3163,6 +3165,16 @@ function setFeatItem (featInput) {
     // For now, just set the name of the Feat
     itemEntry.name = featInput;
     
+    
+    // v2.0.3 add support for feats from compendia
+    
+    
+    
+    
+    // feats from compendia
+    
+    
+    
     dataOutput.items.push(itemEntry);
 }
 
@@ -4070,8 +4082,8 @@ async function mapSpellbooks (actorID) {
 
                 // Get Spell Level if available
                 let spellLevel = 0;
-                if (tempSpellRow.search(/(0|\d+(?=st|nd|rd|th))/) !== -1) {
-                    spellLevel = tempSpellRow.match(/(0|\d+(?=st|nd|rd|th))/)[0];
+                if (tempSpellRow.search(/(0|\D[0-9]{1}(?=st|nd|rd|th))/) !== -1) {
+                    spellLevel = tempSpellRow.match(/(0|\D[0-9]{1}(?=st|nd|rd|th))/)[0];
                 }
                 let spellLevelString = "spell" + spellLevel;
 

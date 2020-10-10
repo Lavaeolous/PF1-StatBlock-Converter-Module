@@ -20,7 +20,7 @@ export default {
             "oneCha": false,
             "noEncumbrance": false,
             "mediumArmorFullSpeed": false,
-        "heavyArmorFullSpeed": false
+            "heavyArmorFullSpeed": false
         },
         "contextNotes": [],
         "links": {
@@ -28,7 +28,15 @@ export default {
         },
         "buffType": "perm",
         "active": true,
-        "level": 0
+        "level": "",
+        "hideFromToken": true,
+        "damage": {
+          "parts": [],
+          "critParts": [],
+          "nonCritParts": []
+        },
+        "attackParts": [],
+        "identifiedName": "sbc | Conversion Changes"
     },
     "sort": 100000,
     "img": "systems/pf1/icons/skills/yellow_36.jpg",

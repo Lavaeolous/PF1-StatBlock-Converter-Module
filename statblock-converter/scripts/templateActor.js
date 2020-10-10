@@ -1015,19 +1015,19 @@ export default {
       "cp": 0
     }
   },
-  "sort": 100001,
+  "sort": 100000,
   "flags": {
     "exportSource": {
-      "world": "pf1-test",
+      "world": "",
       "system": "pf1",
-      "coreVersion": "0.6.5",
-      "systemVersion": "0.73.7"
+      "coreVersion": "",
+      "systemVersion": ""
     }
   },
   "token": {
     "flags": {},
-    "name": "rfds",
-    "displayName": 0,
+    "name": "",
+    "displayName": 20,
     "img": "icons/svg/mystery-man.svg",
     "tint": null,
     "width": 1,
@@ -1035,22 +1035,29 @@ export default {
     "scale": 1,
     "lockRotation": false,
     "rotation": 0,
-    "vision": false,
+    "vision": true,
     "dimSight": 0,
-    "brightSight": 0,
+    "brightSight": 60,
     "dimLight": 0,
     "brightLight": 0,
     "sightAngle": 360,
     "lightAngle": 360,
     "lightAlpha": 1,
-    "actorId": "XyOMiUuRjvOQ2KsG",
+    "actorId": "",
     "actorLink": false,
     "actorData": {},
     "disposition": -1,
-    "displayBars": 0,
-    "bar1": {},
-    "bar2": {},
-    "randomImg": false
+    "displayBars": 20,
+    "bar1": {
+        "attribute": "attributes.hp"
+    },
+    "bar2": {
+        "attribute": ""
+    },
+    "randomImg": false,
+    "lightColor": "",
+    "mirrorX": false,
+    "mirrorY": false
   },
   "items": [],
   "_id": "XyOMiUuRjvOQ2KsG",
