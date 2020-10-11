@@ -8,7 +8,7 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json
 ```
 # Compatibility
-GameSystem: [PF1 0.73.7](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+GameSystem: Latest Check on [PF1 0.74.8](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 FoundryVTT: 0.6.6
 
 # How to Use
@@ -21,20 +21,12 @@ SBC is currently in development, so not all data will be parsed or may be parsed
 If you find any errors or have a statblock that can't be converted at all, feel free to open an issue here or let me know on the FoundryVTT Discord.
 
 # What gets converted
-Currently, the tool parses the following data and generates equivalent Foundry Data and Items:
-
-*  **General Data**: Name, CR, XP, Gender, Race, Class(es), Alignment, Size, Type (Subtype), Init, Senses, Aura (but there is no field for that in the character sheet)
-*  **Defensive Data:** AC, Touch and Flat-Footed), HP, Hit Dice, Saves, Defensive Abilities, Immunities, Resistances, Weaknesses, Damage and Spell Resistance
-*  **Tactics:** Before &amp; During Combat, Morale
-*  **Statistics Data:** Attributes (Str, Dex, Con, Int, Wis, Cha), BAB, CMD and CMB, Feats, Skills, Languages, Special Qualities
-*  **Offense Data:** Speed(s), Melee Attacks (Weapon, Natural, Swarm), Ranged Attacks, Damage Types, Special Attacks, Spells, Spell-Like Abilities
-*  **Special Abilities** (fuzzy, because *very* diverse formatting depending on the source of the statblock)
-*  **Descriptions**
+SBC creates a mostly complete Actor (PC or NPC) with embedded entities for feats, spells and stuff like that. Most of the time the conversion will not be complete, as for example items and gear as well as other smaller sections won't get imported or may be imported incorrect. For most actors this will be fine, for critical and important NPCs, Bosses and PCs i strongly advise you to use sbc for the bulk, but check for errors carefully!
 
 # Known Bugs
 *  Special Abilities and Spells do not appear in the preview currently
-*  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the console (F12).
-*  See Issues. If you find anythings thats not noted there, please include it
+*  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the preview area or console.
+*  See Issues. If you find anythings thats not noted there, please let me know.
 
 # To Do
 *  **Bug Fixing**
@@ -44,6 +36,12 @@ Currently, the tool parses the following data and generates equivalent Foundry D
 Primer#2220 | FoundryVTT Discord
 
 # Change Log
+
+2020_10_11
+*  sbc now grabs feats from the compendium instead of generating placeholders
+
+2020_10_08
+*  Minor Bug-Fixes
 
 2020_08_28
 *  Fix for wrongly calculated spell DCs

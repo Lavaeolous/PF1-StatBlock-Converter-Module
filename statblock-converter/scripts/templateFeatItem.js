@@ -5,7 +5,7 @@ export default {
       "type": "feat",
       "data": {
         "description": {
-          "value": "",
+          "value": "sbc | This is a Placeholder, as the correct Feat could not be found in any compendia",
           "chat": "",
           "unidentified": ""
         },
@@ -35,7 +35,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -95,7 +95,7 @@ export default {
         }
       },
       "sort": 100000,
-      "img": "icons/svg/mystery-man.svg",
+      "img": "systems/pf1/icons/skills/yellow_36.jpg",
       "labels": {
         "featType": "Feat",
         "activation": "",
