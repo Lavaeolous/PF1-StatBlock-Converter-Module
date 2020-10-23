@@ -614,6 +614,133 @@ export default {
       "isCharged": false,
       "empty": false
     },
+    "assassin": {
+      "_id": "031Efa5D097eCAd9",
+      "flags": {},
+      "name": "Assassin",
+      "type": "prestige class",
+      "img": "systems/pf1/icons/items/potions/unique-7.jpg",
+      "data": {
+        "description": {
+          "value":"<p>A mercenary undertaking his task with cold, professional detachment, the assassin is equally adept at espionage, bounty hunting, and terrorism. At his core, an assassin is an artisan, and his medium is death. Trained in a variety of killing techniques, assassins are among the most feared classes.</p>\n<p>While nearly any class is capable of becoming an assassin, rogues suit the part more than any other, from both an ability viewpoint and an ideological one. Though they make excellent allies during combat, assassins excel in more clandestine situations, and the best assassins are the ones the victims never knew existed.</p>\n<p><strong>Role</strong>: Assassins tend to be loners by nature, seeing companions as liabilities at best. Sometimes an assassin’s missions put him in the company of adventurers for long stretches at a time, but few people are comfortable trusting a professional assassin to watch their backs in a fight, and are more likely to let the emotionless killer scout ahead or help prepare ambushes.</p>\n<p><strong>Alignment</strong>: Due to its necessary selfishness and callous indifference toward taking lives, the assassin class attracts those with evil alignments more than any others. Because the profession requires a degree of self-discipline, chaotic characters are ill suited to becoming these shadowy killers. Neutral characters sometimes become assassins, frequently thinking of themselves as simple professionals performing a job, yet the nature of their duties inevitably pushes them toward an evil alignment.</p>\n<p><strong>Hit Die</strong>: d8</p>\n<p><strong>Requirements</strong>: To qualify to become an assassin, a character must fulfill all the following criteria.</p>\n<p><strong>Alignment</strong>: Any evil.</p>\n<p><strong>Skills</strong>: Disguise 2 ranks, Stealth 5 ranks*.</p>\n<p><strong>Special</strong>: The character must kill someone for no other reason than to become an assassin.</p>\n<h3><strong><span id=\"Class_Skills\">Class Skills</span></strong></h3>\n<p>The assassin’s class skills are <a href=\"https://www.d20pfsrd.com/skills/acrobatics\">Acrobatics</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Dexterity-Dex-\">Dex</a>), <a href=\"https://www.d20pfsrd.com/skills/bluff\">Bluff</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Charisma-Cha-\">Cha</a>), <a href=\"https://www.d20pfsrd.com/skills/climb\">Climb</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Strength-Str-\">Str</a>), <a href=\"https://www.d20pfsrd.com/skills/diplomacy\">Diplomacy</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Charisma-Cha-\">Cha</a>), <a href=\"https://www.d20pfsrd.com/skills/disable-device\">Disable Device</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Dexterity-Dex-\">Dex</a>), <a href=\"https://www.d20pfsrd.com/skills/disguise\">Disguise</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Charisma-Cha-\">Cha</a>), <a href=\"https://www.d20pfsrd.com/skills/escape-artist\">Escape Artist</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Dexterity-Dex-\">Dex</a>), <a href=\"https://www.d20pfsrd.com/skills/intimidate\">Intimidate</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Charisma-Cha-\">Cha</a>), <a href=\"https://www.d20pfsrd.com/skills/linguistics\">Linguistics</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Intelligence-Int-\">Int</a>), <a href=\"https://www.d20pfsrd.com/skills/perception\">Perception</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Wisdom-Wis-\">Wis</a>), <a href=\"https://www.d20pfsrd.com/skills/sense-motive\">Sense Motive</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Wisdom-Wis-\">Wis</a>), <a href=\"https://www.d20pfsrd.com/skills/sleight-of-hand\">Sleight of Hand</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Dexterity-Dex-\">Dex</a>), <a href=\"https://www.d20pfsrd.com/skills/stealth\">Stealth</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Dexterity-Dex-\">Dex</a>), <a href=\"https://www.d20pfsrd.com/skills/swim\">Swim</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Strength-Str-\">Str</a>), and <a href=\"https://www.d20pfsrd.com/skills/use-magic-device\">Use Magic Device</a>&nbsp;(<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Charisma-Cha-\">Cha</a>).</p>\n<p><strong>Skill Ranks per Level</strong>: 4 +&nbsp;<a href=\"https://www.d20pfsrd.com/basics-ability-scores/ability-scores#TOC-Intelligence-Int-\">Int</a>&nbsp;modifier.</p>",
+          "chat": "",
+          "unidentified": ""
+        },
+        "tags":[],
+        "changes": [],
+        "changeFlags": {
+          "loseDexToAC": false,
+          "noStr": false,
+          "noDex": false,
+          "oneInt": false,
+          "oneWis": false,
+          "oneCha": false,
+          "noEncumbrance": false,
+          "mediumArmorFullSpeed": false,
+          "heavyArmorFullSpeed": false
+        },
+        "classType": "prestige",
+        "levels": {
+          "value": 0,
+          "_deprecated": true
+        },
+        "level": 1,
+        "hd": 8,
+        "hp": 8,
+        "bab": "med",
+        "skillsPerLevel": 4,
+        "savingThrows": {
+          "fort": {
+            "value": "low"
+          },
+          "ref": {
+            "value": "med"
+          },
+          "will": {
+            "value": "low"
+          }
+        },
+        "fc": { 
+          "hp": {
+            "value": 0
+          },
+          "skill": {
+            "value": 0
+          },
+          "alt": {
+            "value": 0
+          }
+        },
+        "classSkills":{
+          "acr":true,
+          "apr":false,
+          "art":false,
+          "blf":true,
+          "clm":true,
+          "crf":false,
+          "dip":true,
+          "dev":false,
+          "dis":true,
+          "esc":true,
+          "fly":false,
+          "han":false,
+          "hea":false,
+          "int":true,
+          "kar":false,
+          "kdu":false,
+          "ken":false,
+          "kge":false,
+          "khi":false,
+          "klo":false,
+          "kna":false,
+          "kno":false,
+          "kpl":false,
+          "kre":false,
+          "lin":true,
+          "lor":false,
+          "per":true,
+          "prf":false,
+          "pro":false,
+          "rid":false,
+          "sen":true,
+          "slt":true,
+          "spl":false,
+          "ste":true,
+          "sur":false,
+          "swm":true,
+          "umd":true
+        },
+        "links": { "children": [] },
+        "extraDescription": {
+          "value": "<h2>Weapon and Armor Proficiency</h2>\n<p>Rogues are proficient with all&nbsp;Assassins are proficient with the crossbow (hand, light, or heavy), dagger (any type), dart, rapier, sap, shortbow (normal and composite), and short sword. Assassins are proficient with light armor but not with shields.</p>\n<h2>Sneak Attack</h2>\n<p>This is exactly like the rogue ability of the same name. The extra damage dealt increases by +1d6 every other level (1st, 3rd, 5th, 7th, and 9th). If an assassin gets a sneak attack bonus from another source, the bonuses on damage stack.</p>\n<h2>Death Attack (Ex)</h2>\n          <p>If an assassin studies his victim for 3 rounds and then makes a sneak attack with a melee weapon that successfully deals damage, the sneak attack has the additional effect of possibly either paralyzing or killing the target (assassin's choice). Studying the victim is a standard action. The death attack fails if the target detects the assassin or recognizes the assassin as an enemy (although the attack might still be a sneak attack if the target is denied his Dexterity bonus to his Armor Class or is flanked). If the victim of such a death attack fails a Fortitude save (DC 10 + the assassin's class level + the assassin's Int modifier) against the kill effect, she dies. If the saving throw fails against the paralysis effect, the victim is rendered helpless and unable to act for 1d6 rounds plus 1 round per level of the assassin. If the victim's saving throw succeeds, the attack is just a normal sneak attack. Once the assassin has completed the 3 rounds of study, he must make the death attack within the next 3 rounds.</p>\n<p>If a death attack is attempted and fails (the victim makes her save) or if the assassin does not launch the attack within 3 rounds of completing the study, 3 new rounds of study are required before he can attempt another death attack.</p>\n<h2>Poison Use</h2>\n<p>Assassins are trained in the use of poison and cannot accidentally poison themselves when applying poison to a blade (see Poison).</p>\n<h2>Save Bonus against Poison</h2>\n<p>At 2nd level, the assassin gains a +1 saving throw bonus against poisons. This bonus increase by +1 every two levels.</p>\n<h2>Uncanny Dodge (Ex)</h2>\n<p>At 2nd level, an assassin cannot be caught flat-footed, even if the attacker is invisible. He still loses his Dexterity bonus to AC if immobilized. An assassin with this ability can still lose his Dexterity bonus to AC if an opponent successfully uses the feint action against him.</p>\n<p>If an assassin already has uncanny dodge from a different class, he automatically gains improved uncanny dodge instead.</p>\n<h2>Hidden Weapons (Ex)</h2>\n<p>At 4th level, an assassin becomes a master at hiding weapons on his body. He adds his assassin level to all Sleight of Hand skill checks made to prevent others from noticing them.</p>\n<h2>True Death (Su)</h2>\n<p>Starting at 4th level, anyone slain by an assassin's death attack becomes more difficult to bring back from the dead. Spellcasters attempting to bring a creature back from the dead using raise dead or similar magic must make a caster level check with a DC equal to 15 + the assassin's level or the spell fails and the material component is wasted. Casting remove curse the round before attempting to bring the creature back from the dead negates this chance. The DC of the remove curse is 10 + the assassin's level.<p>\n<h2>Improved Uncanny Dodge (Ex)</h2>\n<p>At 5th level and higher, an assassin can no longer be flanked. This defense denies a rogue the ability to sneak attack the assassin by flanking him, unless the attacker has at least four more rogue levels than the target has assassin levels.</p>\n<p>If a character already has uncanny dodge from another class, the levels from the classes that grant uncanny dodge stack to determine the minimum rogue level required to flank the character.</p>\n<h2>Quiet Death (Ex)</h2>\n<p>At 6th level, whenever an assassin kills a creature using his death attack during a surprise round, he can also make a Stealth check, opposed by Perception checks of those in the vicinity to prevent them from identifying him as the assailant. If successful, those nearby might not even notice that the target is dead for a few moments, allowing the assassin to avoid detection.</p>\n<h2>Hide in Plain Sight (Su)</h2>\n<p>At 8th level, an assassin can use the Stealth skill even while being observed. As long as he is within 10 feet of some sort of shadow, an assassin can hide himself from view in the open without having anything to actually hide behind. He cannot, however, hide in his own shadow.</p>\n<h2>Swift Death (Ex)</h2>\n<p>At 9th level, once per day, an assassin can make a death attack against a foe without studying the foe beforehand. He must still sneak attack his foe using a melee weapon that deals damage.</p>\n<h2>Angel of Death (Su)</h2>\n<p>At 10th level, the assassin becomes a master of death. Once per day, when the assassin makes a successful death attack, he can cause the target's body to crumble to dust. This prevents raise dead and resurrection (although true resurrection works as normal). The assassin must declare the use of this ability before the attack is made. If the attack misses or the target successfully saves against the death attack, this ability is wasted with no effect.</p>",
+          "chat": "",
+          "unidentified": ""
+        },
+        "damage": {
+          "parts": [],
+          "critParts": [],
+          "nonCritParts": []
+        },
+        "preparation": {
+          "maxAmount": 0
+        },
+        "weaponData": {
+          "critRange": 20,
+          "critMult": 2
+        },
+        "tag": "assassin"
+      },
+      "sort": 100001,
+      "labels": {},
+      "hasAttack": false,
+      "hasMultiAttack": false,
+      "hasDamage": false,
+      "hasAction": false,
+      "showUnidentifiedData": false,
+      "isStack": false,
+      "isCharged": false,
+      "empty": false
+    },
     "barbarian": {
       "_id": "",
       "flags": {},
