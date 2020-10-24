@@ -59,12 +59,13 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.4";
+const sbcVersion = "v2.0.5";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
 /* ------------------------------------ */
 
+var rawInput;
 var dataInput;
 var dataInputHasClasses = false;
 var inputHDTotal = 0;
@@ -666,7 +667,10 @@ export class sbcModal extends Application {
             previewArea.empty()
             errorArea.empty()
             //const currentMonsterString = $('.sbc-container .sbcInput').val().toString();
+            rawInput = $('.sbc-container .sbcInput').val();
+                //.replace(/\n/g, "<br\>");
             inputString = $('.sbc-container .sbcInput').val().toString();
+            console.log("inputString: " + inputString);
                         
             if (inputString !== "") {
                 try {     
@@ -795,7 +799,8 @@ async function convertStatBlock(input, statblockType, isPreview) {
     }
     
     await initializeSBC();
-        
+    
+    
     // Initial Clean-up of input
     // dataInput = input.value.replace(/^\s*[\r\n]/gm,"")
     dataInput = input.replace(/^\s*[\r\n]/gm,"")
@@ -4798,10 +4803,10 @@ function mapNotesData() {
         
     let styledNotes =
         `
-            <div style="margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
+            <div style=" margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
                 <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
                 <div style="padding: 5px;">
-                    <h1 style="border: none; text-transform: uppercase; color: #7a0800;">${formattedInput.name} ${formattedInput.notes.cr ? "CR " + formattedInput.notes.cr : ""}${formattedInput.notes.mr ? "/MR " + formattedInput.notes.mr : ""}</h1>
+                    <h1 style="border: none; font-family: 'Nodesto', 'Signika', 'Palatino Linotype', serif; color: #7a0800;">${formattedInput.name} ${formattedInput.notes.cr ? "CR " + formattedInput.notes.cr : ""}${formattedInput.notes.mr ? "/MR " + formattedInput.notes.mr : ""}</h1>
                     ${formattedInput.shortDescription ? "<div><em>" + formattedInput.shortDescription + "</em></div>": ""}
                     
                     <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
@@ -4870,11 +4875,23 @@ function mapNotesData() {
                     ${formattedInput.description ? formattedInput.description + "<br/>" : ""}
                 </div>
                 <hr style="margin-left: 0; margin-bottom: -3px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
-            </div>   
+            </div>
+        </div>
         `;
     
+    let rawNotes = `
+        <hr>
+        <div class="rawInputContainer" style="margin-top: 15px">
+            <h2 style="text-align:middle; border: none; text-transform: uppercase; color: #000;">Raw Input</h2>
+            <hr>
+            <textarea style="height: 150px; resize: vertical;" readonly>
+                ${rawInput}
+            </textarea>
+        </div>
+    `;
+    
     // WRITE EVERYTHING TO THE NOTES
-    dataOutput.data.details.notes.value = styledNotes;
+    dataOutput.data.details.notes.value = styledNotes + rawNotes;
     
 }
 
@@ -4980,8 +4997,25 @@ function tagSpellcasting(string, ...expressions) {
 /* ------------------------------------ */
 
 async function createNewActor () {
-    // Create Actor
     
+    let sbcFolder;
+    
+    let searchForFolder = await game.folders.find(entry => entry.data.name === "sbc | Imported Creatures");
+    
+    
+    console.log("searchForFolder: ");
+    console.log(searchForFolder);
+    
+    if(searchForFolder === null) {
+        sbcFolder = await Folder.create({name:"sbc | Imported Creatures", type:"Actor", color: "#e76f51", parent:null});
+        console.log("sbcFolder: " + sbcFolder);
+        console.log(sbcFolder);
+    } else {
+        sbcFolder = searchForFolder; 
+    }
+       
+    // Create Actor
+    dataOutput.folder = sbcFolder._id;
     let newActor = await Actor.create(dataOutput);
     
     if(DEBUG==true) { console.log("sbc-pf1 | Created a new actor with id=" + newActor.id) };

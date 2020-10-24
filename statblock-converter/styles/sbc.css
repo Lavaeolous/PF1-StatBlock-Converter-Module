@@ -66,14 +66,13 @@
 .sbcImportButton:hover {
     box-shadow: 0 0 5px red;
 }
-sbcImportButton:focus {
+.sbcImportButton:focus {
     outline: none;
 }
-sbcImportButton:disabled {
+.sbcImportButton:disabled {
     color: #4b4a44;
     box-shadow: none;
 }
-sbcImportButton > i {
+.sbcImportButton > i {
     margin-right: 3px;
 }
-
