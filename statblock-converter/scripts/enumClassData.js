@@ -84,6 +84,23 @@ export default {
           "alt": 0
         }
       },
+      "assassin": {
+        "level": 1,
+        "name": "Assassin",
+        "hd": 8,
+        "bab": "med",
+        "hp": false,
+        "savingThrows": {
+          "fort": 0,
+          "ref": 2,
+          "will": 0
+        },
+        "fc": {
+          "hp": 0,
+          "skill": 0,
+          "alt": 0
+        }
+      },
       "barbarian": {
         "level": 1,
         "name": "Barbarian",
