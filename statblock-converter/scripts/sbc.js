@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.4
+ * Version:             2.0.6
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.5";
+const sbcVersion = "v2.0.6";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -2745,6 +2745,7 @@ async function setConversionItem (actorID) {
         let tempHPDifference = +formattedInput.hp.total - +calculatedHPTotal;
         
         let hpChange = {
+            "_id": "",
             "formula": tempHPDifference.toString(),
             "operator": "add",
             "target": "misc",
@@ -2763,6 +2764,7 @@ async function setConversionItem (actorID) {
         let tempInitDifference = +formattedInput.initiative - +calculatedInitTotal;
         
         let initChange = {
+            "_id": "",
             "formula": tempInitDifference.toString(),
             "operator": "add",
             "target": "misc",
@@ -2786,6 +2788,7 @@ async function setConversionItem (actorID) {
             let speedDifference  = totalSpeed - baseSpeed;
             
             let speedChange = {
+                "_id": "",
                 "formula": speedDifference.toString(),
                 "operator": "add",
                 "target": "speed",
@@ -2804,6 +2807,7 @@ async function setConversionItem (actorID) {
         if ( (key.toLowerCase() !== "dex") && (key.toLowerCase() !== "size") && (key.toLowerCase() !== "natural") ) {
             
             let acChange = {
+                "_id": "",
                 "formula": "",
                 "operator": "add",
                 "target": "",
@@ -2846,6 +2850,7 @@ async function setConversionItem (actorID) {
         let item = enumSaves[i];
         
         let saveChange = {
+            "_id": "",
             "formula": "",
             "operator": "+",
             "target": "",
