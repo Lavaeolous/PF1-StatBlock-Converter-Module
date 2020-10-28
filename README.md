@@ -1,7 +1,7 @@
 # SBC | StatBlock-Converter for Pathfinder 1E
 FoundryVTT Module to create new PC and NPC Actors from a text-based Statblock (as found for example on [Archives of Nethys](https://www.aonprd.com/))
 
-<a href="https://www.buymeacoffee.com/Lavaeolous" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" width="100" ></a>
+<a href="https://www.buymeacoffee.com/Lavaeolous" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" width="150" ></a>
 
 # Installation
 Install the SBC Module via the Add-On Module Tab in FoundryVTT using the following link to the manifest
@@ -9,13 +9,13 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json
 ```
 # Compatibility
-GameSystem: Latest Check on [PF1 0.74.8](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-FoundryVTT: 0.6.6
+GameSystem: Latest Check on [PF1 0.75.6](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+FoundryVTT: 0.7.5
 
 # How to Use
 1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).
 2.  In the Actor Directory tab of foundry, click on "Import Statblock"
-3.  Paste the Statblock into the textarea, check the preview for any errors and import via button as NPC or PC actor
+3.  Paste the Statblock into the textarea, check the preview for any errors and import via button as NPC or PC
 
 # Disclaimer
 SBC is currently in development, so not all data will be parsed or may be parsed/calculated incorrectly.
@@ -37,6 +37,9 @@ SBC creates a mostly complete Actor (PC or NPC) with embedded entities for feats
 Primer#2220 | FoundryVTT Discord
 
 # Change Log
+
+2020_10_27
+*  Fix for incompatibility to PF-System Version 0.75.6
 
 2020_10_11
 *  sbc now grabs feats from the compendium instead of generating placeholders
