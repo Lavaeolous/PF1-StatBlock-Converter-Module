@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.6
+ * Version:             2.0.7
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.6";
+const sbcVersion = "v2.0.7";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -808,7 +808,9 @@ async function convertStatBlock(input, statblockType, isPreview) {
     // Replace different dash-glyphs with the minus-glyph
     dataInput = dataInput.replace(/–|—|−/gm,"-");
     // Remove weird multiplication signs
-    dataInput = dataInput.replace(/×/, "x");
+    dataInput = dataInput.replace(/×/gm, "x");
+    // Remove double commas
+    dataInput = dataInput.replace(/,,/gm, ",");
         
     /*
      * SPLIT INPUT INTO MANAGEABLE CHUNKS OF DATA
@@ -1030,7 +1032,7 @@ function splitGeneralData(stringGeneralData) {
     
     let splitGeneralData = stringGeneralData.replace(/defense$|defenses$/i,"");
     
-    let splitName = splitGeneralData.match(/^.*/)[0].replace(/CR\b (\d+\/*\d*|-)/, "");
+    let splitName = splitGeneralData.match(/^.*/)[0].replace(/\(?CR\b (\d+\/*\d*|-)\)?/, "");
     let splitCR = 0;
     let splitMR = 0;
     let splitXP = 0;
@@ -1042,7 +1044,6 @@ function splitGeneralData(stringGeneralData) {
     }
 
     if (splitGeneralData.search(/CR\b/) !== -1) {
-        
         
         splitCR = splitGeneralData.match(/CR\b (\d+\/*\d*|-)(?!MR)/)[1];
         
@@ -1056,7 +1057,6 @@ function splitGeneralData(stringGeneralData) {
         
         formattedInput.notes.cr = splitCR;
         formattedInput.notes.mr = splitMR;
-        
         
         // Save the Challenge Rating as a number
         if (splitCR.search(/\/\d+/) !== -1) {
@@ -1082,6 +1082,10 @@ function splitGeneralData(stringGeneralData) {
         formattedInput.xp = splitXP;
     }
 
+    // Remove the name from splitGeneralData so that Names that include Races don't lead to errors further down the line
+    // e.g. "Dwarf Caiman" would be recognized as a dwarf instead of an animal
+    splitGeneralData = splitGeneralData.replace(splitName, "");
+    
         
     //Alignment
     let splitAlignment = "";
@@ -1090,7 +1094,7 @@ function splitGeneralData(stringGeneralData) {
     }
     
     // Size, Space and Reach
-    let splitSize = splitGeneralData.match(new RegExp(enumSizes.join("|"), "i"))[0].replace(/\s+?/,"");
+    let splitSize = splitGeneralData.match(new RegExp(enumSizes.join("\\b|\\b"), "i"))[0].replace(/\s+?/,"");
     let splitSpace = "";
     let splitReach = "";
 
@@ -1643,7 +1647,7 @@ function splitOffenseData(stringOffenseData) {
         formattedInput.speed.land.total = landSpeedBase;
     }
     
-    // Check for Speed Special Abilities
+    // Check for Speed Special Abilities noted by semicolon
     if (splitSpeed.search(/;/) !== -1) {
         let speedSpecialAbilities = splitSpeed.match(/(?:;)(.*)/)[1];
         
@@ -1651,7 +1655,7 @@ function splitOffenseData(stringOffenseData) {
                 
         splitSpeedAbilities.forEach ( async function (item) {
             let tempItem = capitalize(item.replace(/^ | $/, ""));
-            setSpecialAbilityItem(tempItem, "Misc", "Speed Ability");
+            setSpecialAbilityItem(tempItem, "Misc", "Speed");
         })
         
     }
@@ -1669,40 +1673,48 @@ function splitOffenseData(stringOffenseData) {
                         
             let tempSpeedType = item.replace(/\s*\(([^)]+)\)/g, "").replace(/^ | $/g, "");
             let speedType = tempSpeedType.match(/\b\w*\b/)[0];
-            let speedBase = tempSpeedType.match(/\d+/)[0];
+            let speedBase = 0;
+            if (tempSpeedType.search(/\d+/) !== -1) {
+                speedBase = tempSpeedType.match(/\d+/)[0];
+            }
+            
             let speedTotal = speedBase;
             
             let speedContext = "";
             
+            // non-fly speed with context info
             if (item.search(/fly/) === -1 && item.search(/\(([^)]+)\)/g) !== -1) {
                 speedContext = item.match(/\(([^)]+)\)/g)[0];
                 speedTotal = speedContext.match(/\d+/)[0];
             } else if (item.search(/fly/) !== -1 && item.search(/\(([^)]+)\)/g) !== -1) {
+                // fly speed
                 let flyManeuverability = item.match(/\(([^)]+)\)/)[1];
-                
+                // with context info
                 if (item.match(/\(([^)]+)\)/g)[2] !== undefined) {
                     speedContext = item.match(/\(([^)]+)\)/g)[2];
                     speedTotal = speedContext.match(/\d+/)[0];
                 } else {
+                    // without context info
                     speedContext = item.match(/\(([^)]+)\)/g)[1];
                     
                 }
                 
                 formattedInput.speed.fly.maneuverability = flyManeuverability;
+                
             } else {
                 
             }
       
             let regexSpeedTypes = new RegExp("fly|climb|burrow|swim", "i");
             
-            if (speedType !== "" && speedBase !== null && speedType.search(regexSpeedTypes) !== -1) {
+            if (speedType !== "" && speedBase !== 0 && speedType.search(regexSpeedTypes) !== -1) {
                 // If its a movementType with speed (e.g. land, fly, climb or burrow)
                 formattedInput.speed[speedType].base = +speedBase;
                 formattedInput.speed[speedType].total = +speedTotal;
             } else {
                 // If it's not one of the normal movementTypes the probability is high, that it's a special ability
                 let tempItem = capitalize(item.replace(/^ | $/, ""));
-                setSpecialAbilityItem(tempItem, "Misc", "Speed: ");
+                setSpecialAbilityItem(tempItem, "Misc", "Speed");
             }
             
             
@@ -2033,8 +2045,8 @@ function splitStatisticsData(stringStatisticsData) {
     }
     
     // Skills (String from "Skills" to next linebreak)
-    if (stringStatisticsData.search(/(?:Skills )/) !== -1) {
-        let splitSkills = stringStatisticsData.match(/(?:Skills\s*)(.*)(?:[0-9)]+?)/gim)[0];
+    if (stringStatisticsData.search(/^Skills(?! -)/) !== -1) {
+        let splitSkills = stringStatisticsData.match(/(?:Skills\s*)(.*)(?:[0-9)]?)/gim)[0];
         splitSkills = splitSkills.replace(/Skills\s*/gi, "");
         
         formattedInput.notes.skills = splitSkills;
@@ -2492,9 +2504,12 @@ function mapGeneralData() {
         dataOutput.data.attributes.vision.darkvision = rangeDarkvision;
     }
     
+    // Set token vision
     dataOutput.token.vision = true;
+    // Set 5E Vision to 0
     dataOutput.token.dimSight = 0;
-    dataOutput.token.brightSight = 0;
+    // Set PF1 Vision to rangeDarkvision
+    dataOutput.token.brightSight = dataOutput.data.attributes.vision.darkvision;
     
     // Aura
     if (formattedInput.aura !== "") {
@@ -3213,7 +3228,8 @@ async function setAttackItem (attackGroups, attackType) {
         // Clean-up the input to replace "and" with a ","
         attacks = attacks.replace(/\band\b (?![^(]*\)|\()/g,",");
         // Split the attacks into single attacks
-        attacks = attacks.split(/,/g);
+        // attacks = attacks.split(/,/g);
+        attacks = attacks.split(/(?:[^0-9]),(?:[^0-9])/g);
         let attackKeys = Object.keys(attacks);
         
         // Loop over all attacks in the attackGroup
@@ -3860,7 +3876,7 @@ async function mapSpellbooks (actorID) {
                     let tempMysteries = tempSpellRow.match(/(?:Mystery |Mysteries )(.*)/)[1];
                     let mysteries = tempMysteries.split(/,/);
 
-                    domains.forEach ( async function (item) {
+                    mysteries.forEach ( async function (item) {
                         let mystery = "Mystery (" + item.replace(/^ | $/g, "") + ")";
 
                         await setSpecialAbilityItem(mystery, "class", "Mystery");
@@ -5005,7 +5021,7 @@ async function createNewActor () {
     
     let sbcFolder;
     
-    let searchForFolder = await game.folders.find(entry => entry.data.name === "sbc | Imported Creatures");
+    let searchForFolder = await game.folders.find(entry => entry.data.name === "sbc | Imported Creatures" && entry.data.type === "Actor");
     
     
     console.log("searchForFolder: ");
