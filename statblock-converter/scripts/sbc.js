@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.7
+ * Version:             2.0.8
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.7";
+const sbcVersion = "v2.0.8";
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -528,7 +528,7 @@ window.addEventListener('keydown',function(e) {
 /* FLAGS    							*/
 /* ------------------------------------ */
 
-var DEBUG = false;
+var DEBUG = true;
 var createPC = false;
 var isPreview = false;
 
@@ -670,7 +670,6 @@ export class sbcModal extends Application {
             rawInput = $('.sbc-container .sbcInput').val();
                 //.replace(/\n/g, "<br\>");
             inputString = $('.sbc-container .sbcInput').val().toString();
-            console.log("inputString: " + inputString);
                         
             if (inputString !== "") {
                 try {     
@@ -2906,8 +2905,10 @@ async function setConversionItem (actorID) {
        
     //itemEntry.data.active = false;
     
-    //dataOutput.items.push(itemEntry);
+    dataOutput.items.push(itemEntry);
     await actor.createEmbeddedEntity("OwnedItem", itemEntry);
+    console.log("adding conversion item");
+    console.log(actor);
 }
 
 // Create Items for Feats
@@ -3826,6 +3827,11 @@ async function mapSpellbooks (actorID) {
         if (DEBUG == true) { console.log("sbc | START MAPPING - " + i + " - SPELLBOOK"); }
         
         let spellBook = spellbookKeys[i];
+        console.log("Spellbook: "  + spellBook);
+        
+        dataOutput.data.attributes.spells.usedSpellbooks.push(spellBook);
+        
+        console.log(dataOutput);
                 
         dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type;
                 
@@ -3841,7 +3847,6 @@ async function mapSpellbooks (actorID) {
         } else {
             dataOutput.data.attributes.spells.spellbooks[spellBook].concentration = formattedInput.spellcasting[spellBook].concentration - (+getModifier(formattedInput.cha.total) + tempCL);
         }
-        
         
         dataOutput.data.attributes.spells.spellbooks[spellBook].spontaneous = formattedInput.spellcasting[spellBook].spontaneous;
         
@@ -5023,14 +5028,8 @@ async function createNewActor () {
     
     let searchForFolder = await game.folders.find(entry => entry.data.name === "sbc | Imported Creatures" && entry.data.type === "Actor");
     
-    
-    console.log("searchForFolder: ");
-    console.log(searchForFolder);
-    
     if(searchForFolder === null) {
         sbcFolder = await Folder.create({name:"sbc | Imported Creatures", type:"Actor", color: "#e76f51", parent:null});
-        console.log("sbcFolder: " + sbcFolder);
-        console.log(sbcFolder);
     } else {
         sbcFolder = searchForFolder; 
     }
@@ -5038,6 +5037,9 @@ async function createNewActor () {
     // Create Actor
     dataOutput.folder = sbcFolder._id;
     let newActor = await Actor.create(dataOutput);
+    
+    console.log("after creation");
+    console.log(newActor);
     
     if(DEBUG==true) { console.log("sbc-pf1 | Created a new actor with id=" + newActor.id) };
 
@@ -5047,9 +5049,19 @@ async function createNewActor () {
     await mapFeats(formattedInput.feats, newActor.id);
     await setConversionItem(newActor.id);
     
+    console.log("pre update");
+    console.log(newActor);
+    
     if(DEBUG==true) { console.log("sbc-pf1 | Updating the actor to include conversion changes") };
     
-    await newActor.update({});
+    
+    
+    // await newActor.update({});
+    await newActor.update(dataOutput);
+    
+    console.log("post update");
+    console.log(newActor);
+    
     await newActor.render(true);
     return newActor;
     

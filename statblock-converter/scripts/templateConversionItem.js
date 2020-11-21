@@ -35,20 +35,13 @@ export default {
           "critParts": [],
           "nonCritParts": []
         },
-        "attackParts": [],
-        "identifiedName": "sbc | Conversion Changes"
+        "uses": {
+            "value": 0,
+            "max": 0
+          }
     },
     "sort": 100000,
-    "img": "systems/pf1/icons/skills/yellow_36.jpg",
-    "labels": {
-        "buffType": "Permanent"
-    },
-    "hasAttack": false,
-    "hasMultiAttack": false,
-    "hasDamage": false,
-    "hasAction": false,
-    "showUnidentifiedData": false,
-    "isStack": false,
-    "isCharged": false,
-    "empty": false
+    "flags": {},
+    "effects": [],
+    "img": "systems/pf1/icons/skills/yellow_36.jpg"
 }

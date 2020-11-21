@@ -231,7 +231,9 @@ export default {
         }
       },
       "conditions": {
+        "bleed": false,
         "blind": false,
+        "confused": false,
         "dazzled": false,
         "deaf": false,
         "entangled": false,
@@ -239,10 +241,14 @@ export default {
         "exhausted": false,
         "grappled": false,
         "helpless": false,
+        "incorporeal": false,
+        "invisible": false,
         "paralyzed": false,
         "pinned": false,
+        "prone": false,
         "fear": false,
         "sickened": false,
+        "staggered": false,
         "stunned": false
       },
       "spells": {
@@ -250,6 +256,7 @@ export default {
           "bonus": 0,
           "context": ""
         },
+        "usedSpellbooks": [],
         "spellbooks": {
           "primary": {
             "name": "Primary",
@@ -273,7 +280,8 @@ export default {
               "useSystem": false,
               "value": 0,
               "max": 0,
-              "maxFormula": ""
+              "maxFormula": "",
+              "restoreFormula": ""
             },
             "spells": {
               "spell0": {
@@ -340,7 +348,8 @@ export default {
               "useSystem": false,
               "value": 0,
               "max": 0,
-              "maxFormula": ""
+              "maxFormula": "",
+              "restoreFormula": ""
             },
             "spells": {
               "spell0": {
@@ -407,7 +416,8 @@ export default {
               "useSystem": false,
               "value": 0,
               "max": 0,
-              "maxFormula": ""
+              "maxFormula": "",
+              "restoreFormula": ""
             },
             "spells": {
               "spell0": {
@@ -474,7 +484,8 @@ export default {
               "useSystem": false,
               "value": 0,
               "max": 0,
-              "maxFormula": ""
+              "maxFormula": "",
+              "restoreFormula": ""
             },
             "spells": {
               "spell0": {
@@ -557,7 +568,12 @@ export default {
       },
       "xp": {
         "value": 400
-      }
+      },
+      "gender": "",
+      "deity": "",
+      "age": "",
+      "height": "",
+      "weight": ""
     },
     "skills": {
       "acr": {
