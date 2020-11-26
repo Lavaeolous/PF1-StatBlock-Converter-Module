@@ -1,6 +1,6 @@
 {
     "name": "statblockimporter",
-    "title": "Stackblock Importer Old",
+    "title": "Stackblock Importer",
     "description": "A module to convert raw PF 1 Statblocks to Actors",
     "version": "2.0.9",
     "author": "Lavaeolous",
