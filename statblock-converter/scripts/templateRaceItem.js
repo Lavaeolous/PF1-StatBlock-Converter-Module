@@ -28,7 +28,11 @@ export default {
           "children": []
         },
         "creatureType": "",
-        "subTypes": []
+        "subTypes": [],
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100000,
       "img": "systems/pf1/icons/skills/yellow_36.jpg",

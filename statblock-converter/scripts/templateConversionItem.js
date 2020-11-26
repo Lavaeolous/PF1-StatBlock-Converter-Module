@@ -38,7 +38,10 @@ export default {
         "uses": {
             "value": 0,
             "max": 0
-          }
+        },
+        "attackParts": [],
+        "conditionals": [],
+        "identifiedName": "sbc | Conversion Changes"
     },
     "sort": 100000,
     "flags": {},

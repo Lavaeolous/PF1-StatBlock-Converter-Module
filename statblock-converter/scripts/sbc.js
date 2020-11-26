@@ -111,66 +111,7 @@ var enumGender = [
 ];
 
 var enumRaceSubtype = [
-    "Adlet",
-    "Aeon",
-    "Agathion",
-    "Angel",
-    "Archon",
-    "Asura",
-    "Automaton",
-    "Azata",
-    "Behemoth",
-    "Catfolk",
-    "Clockwork",
-    "Colossus",
-    "Daemon",
-    "Dark Folk",
-    "Deep One",
-    "Demodand",
-    "Demon",
-    "Devil",
-    "Div",
-    "Dwarf",
-    "Elemental",
-    "Elf",
-    "Giant",
-    "Gnome",
-    "Goblinoid",
-    "Godspawn",
-    "Great Old One",
-    "Halfling",
-    "Herald",
-    "Hive",
-    "Human",
-    "Inevitable",
-    "Kaiju",
-    "Kami",
-    "Kasatha",
-    "Kitsune",
-    "Kyton",
-    "Leshy",
-    "Mortic",
-    "Nightshade",
-    "Oni",
-    "Orc",
-    "Protean",
-    "Psychopomp",
-    "Qlippoth",
-    "Rakshasa",
-    "Ratfolk",
-    "Reptilian",
-    "Robot",
-    "Samsaran",
-    "Sasquatch",
-    "Shapechanger",
-    "Swarm",
-    "Troop",
-    "Udaeus",
-    "Unbreathing",
-    "Vanara",
-    "Vishkanya",
-    "Wayang",
-    "Wild Hunt"
+    
 ];
 
 var carrySizeModificators = {
@@ -2495,20 +2436,24 @@ function mapGeneralData() {
     
     // Senses and Vision
     if (formattedInput.senses.search(/low-light/i) !== -1) {
-        dataOutput.data.attributes.vision.lowLight = true;
+        //dataOutput.data.attributes.vision.lowLight = true;
+        dataOutput.token.flags.pf1.lowLightVision = true;
     }
     
     if (formattedInput.senses.search(/darkvision/i) !== -1) {
         let rangeDarkvision = formattedInput.senses.match(/(?:darkvision\s?)(\d+)/i)[1];
-        dataOutput.data.attributes.vision.darkvision = rangeDarkvision;
+        //dataOutput.data.attributes.vision.darkvision = rangeDarkvision;
+        // Set PF1 Vision to rangeDarkvision
+        dataOutput.token.brightSight = rangeDarkvision
+        dataOutput.token.flags.pf1.darkVision = true;
     }
     
     // Set token vision
     dataOutput.token.vision = true;
+    
     // Set 5E Vision to 0
     dataOutput.token.dimSight = 0;
-    // Set PF1 Vision to rangeDarkvision
-    dataOutput.token.brightSight = dataOutput.data.attributes.vision.darkvision;
+    ;
     
     // Aura
     if (formattedInput.aura !== "") {
@@ -2698,6 +2643,7 @@ function setRacialHDItem () {
     
     itemEntry.data.level = +formattedInput.hit_dice.hd.racial;
     itemEntry.data.hp = +formattedInput.hp.racial;
+    itemEntry.data.tag = formattedInput.creature_type;
 
     // Update the name to include Subtypes
     if (formattedInput.creature_subtype !== "") {
@@ -2765,7 +2711,8 @@ async function setConversionItem (actorID) {
             "target": "misc",
             "subTarget": "mhp",
             "modifier": "untyped",
-            "priority": 1
+            "priority": 1,
+            "value": tempHPDifference
         };
                 
         itemEntry.data.changes.push(hpChange);
@@ -2784,7 +2731,8 @@ async function setConversionItem (actorID) {
             "target": "misc",
             "subTarget": "init",
             "modifier": "untyped",
-            "priority": 1
+            "priority": 1,
+            "value": tempInitDifference
         };
         
         itemEntry.data.changes.push(initChange);
@@ -2986,6 +2934,7 @@ async function mapFeats (featArray, actorID) {
                 
                 let placeholderFeat = JSON.parse(JSON.stringify(templateFeatItem));
                 placeholderFeat.name = "sbc | " + featArray[i];
+                placeholderFeat.data.identifiedName = "sbc | " + featArray[i];
                 outputArray.push(placeholderFeat);
             }
             

@@ -97,16 +97,8 @@ export default {
         },
         "carriedWeight": 0
       },
-      "vision": {
-        "lowLight": false,
-        "darkvision": 0
-      },
       "hpAbility": "con",
       "hd": {
-        "base": {
-          "_deprecated": true,
-          "value": 0
-        },
         "total": 0,
         "max": {
           "_deprecated": true,
@@ -142,7 +134,7 @@ export default {
         "total": 0
       },
       "sr": {
-        "formula": "",
+        "formula": 0,
         "total": 0
       },
       "cmbNotes": "",
@@ -185,7 +177,6 @@ export default {
       "hp": {
         "value": 0,
         "min": -100,
-        "base": 0,
         "max": 0,
         "temp": null,
         "nonlethal": null
@@ -541,7 +532,8 @@ export default {
       "spellLevel": 0,
       "mods": {
         "skills": {}
-      }
+      },
+      "creatureType": ""
     },
     "details": {
       "level": {
@@ -1041,7 +1033,9 @@ export default {
     }
   },
   "token": {
-    "flags": {},
+    "flags": {
+      "pf1": {}
+    },
     "name": "",
     "displayName": 20,
     "img": "icons/svg/mystery-man.svg",

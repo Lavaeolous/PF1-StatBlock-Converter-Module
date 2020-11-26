@@ -1,6 +1,5 @@
 export default {
       "_id": "",
-      "flags": {},
       "name": "templateFeat",
       "type": "feat",
       "data": {
@@ -13,6 +12,12 @@ export default {
         "activation": {
           "cost": 1,
           "type": ""
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": ""
+          }
         },
         "duration": {
           "value": null,
@@ -41,7 +46,7 @@ export default {
           "overrideTexture": false,
           "customTexture": ""
         },
-        "actionType": null,
+        "actionType": "",
         "attackBonus": "",
         "critConfirmBonus": "",
         "damage": {
@@ -92,29 +97,12 @@ export default {
         "crOffset": "",
         "attack": {
           "parts": []
-        }
+        },
+        "conditionals": [],
+        "identifiedName": "New Feat"
       },
       "sort": 100000,
       "img": "systems/pf1/icons/skills/yellow_36.jpg",
-      "labels": {
-        "featType": "Feat",
-        "activation": "",
-        "target": "",
-        "range": "",
-        "duration": "",
-        "damage": "",
-        "damageTypes": ""
-      },
-      "hasAttack": false,
-      "hasMultiAttack": false,
-      "hasDamage": false,
-      "hasEffect": "",
-      "hasAction": false,
-      "showUnidentifiedData": false,
-      "isStack": false,
-      "hasUses": false,
-      "isCharged": false,
-      "empty": false,
-      "abilityType": "",
-      "abilityTypeShort": ""
+      "flags": {},
+      "effects": []
     }

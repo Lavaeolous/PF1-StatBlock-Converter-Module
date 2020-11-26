@@ -100,6 +100,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
