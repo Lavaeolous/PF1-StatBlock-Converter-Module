@@ -1,4 +1,5 @@
 export default {
+  "id": "",
   "name": "Template NPC",
   "type": "npc",
   "data": {
@@ -78,13 +79,7 @@ export default {
         "baseMod": 0
       }
     },
-    "resources": {
-      "ablativeBarrier": {
-        "value": 0,
-        "max": 0,
-        "_id": "OE6QLL6S8cwjF6pN"
-      }
-    },
+    "resources": {},
     "attributes": {
       "encumbrance": {
         "level": 0,
@@ -97,8 +92,17 @@ export default {
         },
         "carriedWeight": 0
       },
+      "vision": {
+        "lowLight": false,
+        "darkvision": 0
+      },
       "hpAbility": "con",
+      "cmbAbility": "str",
       "hd": {
+        "base": {
+          "_deprecated": true,
+          "value": 0
+        },
         "total": 0,
         "max": {
           "_deprecated": true,
@@ -134,10 +138,9 @@ export default {
         "total": 0
       },
       "sr": {
-        "formula": 0,
+        "formula": "",
         "total": 0
       },
-      "cmbNotes": "",
       "saveNotes": "",
       "acNotes": "",
       "cmdNotes": "",
@@ -153,10 +156,16 @@ export default {
         "spell": 0
       },
       "maxDexBonus": null,
+      "mDex": {
+        "armorBonus": 0,
+        "shieldBonus": 0
+      },
       "acp": {
         "gear": 0,
         "encumbrance": 0,
-        "total": 0
+        "total": 0,
+        "armorBonus": 0,
+        "shieldBonus": 0
       },
       "energyDrain": 0,
       "quadruped": false,
@@ -177,13 +186,14 @@ export default {
       "hp": {
         "value": 0,
         "min": -100,
+        "base": 0,
         "max": 0,
-        "temp": null,
-        "nonlethal": null
+        "temp": 0,
+        "nonlethal": 0
       },
       "wounds": {
         "min": 0,
-        "value": 20,
+        "value": 0,
         "max": 20
       },
       "vigor": {
@@ -243,10 +253,6 @@ export default {
         "stunned": false
       },
       "spells": {
-        "concentration": {
-          "bonus": 0,
-          "context": ""
-        },
         "usedSpellbooks": [],
         "spellbooks": {
           "primary": {
@@ -274,6 +280,8 @@ export default {
               "maxFormula": "",
               "restoreFormula": ""
             },
+            "spellSlotAbilityBonusFormula": "",
+            "domainSlotValue": 1,
             "spells": {
               "spell0": {
                 "base": null,
@@ -342,6 +350,8 @@ export default {
               "maxFormula": "",
               "restoreFormula": ""
             },
+            "spellSlotAbilityBonusFormula": "",
+            "domainSlotValue": 1,
             "spells": {
               "spell0": {
                 "base": null,
@@ -410,6 +420,8 @@ export default {
               "maxFormula": "",
               "restoreFormula": ""
             },
+            "spellSlotAbilityBonusFormula": "",
+            "domainSlotValue": 1,
             "spells": {
               "spell0": {
                 "base": null,
@@ -478,6 +490,8 @@ export default {
               "maxFormula": "",
               "restoreFormula": ""
             },
+            "spellSlotAbilityBonusFormula": "",
+            "domainSlotValue": 1,
             "spells": {
               "spell0": {
                 "base": null,
@@ -529,11 +543,7 @@ export default {
       "spelldc": {
         "_deprecated": true
       },
-      "spellLevel": 0,
-      "mods": {
-        "skills": {}
-      },
-      "creatureType": ""
+      "spellLevel": 0
     },
     "details": {
       "level": {
@@ -559,13 +569,8 @@ export default {
         "total": 1
       },
       "xp": {
-        "value": 400
-      },
-      "gender": "",
-      "deity": "",
-      "age": "",
-      "height": "",
-      "weight": ""
+        "value": 0
+      }
     },
     "skills": {
       "acr": {
@@ -574,7 +579,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -585,7 +589,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -596,10 +599,8 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {},
         "cs": false
       },
       "blf": {
@@ -608,7 +609,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -619,7 +619,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -630,10 +629,8 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {},
         "cs": false
       },
       "dip": {
@@ -642,7 +639,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -653,7 +649,6 @@ export default {
         "rt": true,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -664,7 +659,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -675,7 +669,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -686,7 +679,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -697,7 +689,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -708,7 +699,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -719,7 +709,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -730,7 +719,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -741,7 +729,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -752,7 +739,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -763,7 +749,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -774,7 +759,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -785,7 +769,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -796,7 +779,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -807,7 +789,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -818,7 +799,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -829,7 +809,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -840,7 +819,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -851,10 +829,8 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {},
         "cs": false
       },
       "per": {
@@ -863,7 +839,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -874,10 +849,8 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {},
         "cs": false
       },
       "pro": {
@@ -886,10 +859,8 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
-        "subSkills": {},
         "cs": false
       },
       "rid": {
@@ -898,7 +869,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -909,7 +879,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -920,7 +889,6 @@ export default {
         "rt": true,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": true,
         "cs": false
@@ -931,7 +899,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -942,7 +909,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -953,7 +919,6 @@ export default {
         "rt": false,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -964,7 +929,6 @@ export default {
         "rt": false,
         "acp": true,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -975,7 +939,6 @@ export default {
         "rt": true,
         "acp": false,
         "rank": 0,
-        "notes": "",
         "mod": 0,
         "background": false,
         "cs": false
@@ -1034,12 +997,16 @@ export default {
   },
   "token": {
     "flags": {
-      "pf1": {}
+      "pf1": {
+        "staticSize": false,
+        "lowLightVision": true,
+        "disableLowLight": false
+      }
     },
     "name": "",
     "displayName": 20,
     "img": "icons/svg/mystery-man.svg",
-    "tint": null,
+    "tint": "",
     "width": 1,
     "height": 1,
     "scale": 1,
@@ -1047,29 +1014,30 @@ export default {
     "rotation": 0,
     "vision": true,
     "dimSight": 0,
-    "brightSight": 60,
+    "brightSight": 0,
     "dimLight": 0,
     "brightLight": 0,
     "sightAngle": 360,
     "lightAngle": 360,
     "lightAlpha": 1,
+    "lightAnimation": {
+      "speed": 5,
+      "intensity": 5,
+      "type": ""
+    },
     "actorId": "",
     "actorLink": false,
-    "actorData": {},
     "disposition": -1,
     "displayBars": 20,
     "bar1": {
         "attribute": "attributes.hp"
     },
-    "bar2": {
-        "attribute": ""
-    },
+    "bar2": {},
     "randomImg": false,
-    "lightColor": "",
     "mirrorX": false,
-    "mirrorY": false
+    "mirrorY": false,
+    "lightColor": ""
   },
   "items": [],
-  "_id": "XyOMiUuRjvOQ2KsG",
-  "img": "icons/svg/mystery-man.svg"
+  "effects": []
 }

@@ -35,7 +35,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": "",
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -77,7 +77,18 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
-        }
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 2,
+            "type": "action"
+          }
+        },
+        "broken": false,
+        "held": "normal",
+        "conditionals": [],
+        "contextNotes": [],
+        "identifiedName": ""
       },
       "sort": 100000,
       "img": "icons/svg/mystery-man.svg",

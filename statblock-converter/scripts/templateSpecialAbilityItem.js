@@ -37,7 +37,7 @@ export default {
         },
         "measureTemplate": {
             "type": "",
-            "size": 0,
+            "size": "0",
             "overrideColor": false,
             "customColor": "",
             "overrideTexture": false,
@@ -94,7 +94,13 @@ export default {
         "crOffset": 0,
         "attack": {
             "parts": []
-        }
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 2,
+            "type": "action"
+          }
+        },
     },
     "sort": 1000000,
     "img": "systems/pf1/icons/skills/yellow_36.jpg",

@@ -101,7 +101,7 @@ export default {
         "damage": {
           "parts": []
         },
-        "tag": "",
+        "tag": "aberration",
         "uses": {
           "value": 0,
           "max": 0
@@ -219,6 +219,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "animal",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -346,6 +351,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "construct",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -460,6 +470,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "dragon",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -574,6 +589,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "fey",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -688,6 +708,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "humanoid",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -802,6 +827,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "magicalBeast",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -916,6 +946,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "monstrousHumanoid",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -1030,6 +1065,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "ooze",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -1144,6 +1184,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "outsider",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -1258,6 +1303,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "plant",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -1372,6 +1422,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "undead",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,
@@ -1486,6 +1541,11 @@ export default {
         },
         "damage": {
           "parts": []
+        },
+        "tag": "vermin",
+        "uses": {
+          "value": 0,
+          "max": 0
         }
       },
       "sort": 100000,

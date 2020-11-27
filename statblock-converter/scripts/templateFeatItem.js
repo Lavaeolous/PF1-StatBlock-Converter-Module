@@ -46,7 +46,7 @@ export default {
           "overrideTexture": false,
           "customTexture": ""
         },
-        "actionType": "",
+        "actionType": null,
         "attackBonus": "",
         "critConfirmBonus": "",
         "damage": {
@@ -97,9 +97,7 @@ export default {
         "crOffset": "",
         "attack": {
           "parts": []
-        },
-        "conditionals": [],
-        "identifiedName": "New Feat"
+        }
       },
       "sort": 100000,
       "img": "systems/pf1/icons/skills/yellow_36.jpg",

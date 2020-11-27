@@ -37,7 +37,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -79,6 +79,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 100000,
@@ -139,7 +145,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -181,6 +187,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 200000,
@@ -241,7 +253,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -283,6 +295,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 300000,
@@ -343,7 +361,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -385,6 +403,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 400000,
@@ -445,7 +469,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -487,6 +511,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 400000,
@@ -547,7 +577,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -589,6 +619,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 400000,
@@ -649,7 +685,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -691,6 +727,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 500000,
@@ -751,7 +793,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -793,6 +835,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 500000,
@@ -853,7 +901,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -895,6 +943,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 600000,
@@ -955,7 +1009,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -997,6 +1051,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 700000,
@@ -1057,7 +1117,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -1099,6 +1159,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 800000,
@@ -1159,7 +1225,7 @@ export default {
         },
         "measureTemplate": {
           "type": "",
-          "size": 0,
+          "size": "0",
           "overrideColor": false,
           "customColor": "",
           "overrideTexture": false,
@@ -1201,6 +1267,12 @@ export default {
         "showInQuickbar": true,
         "attack": {
           "parts": []
+        },
+        "unchainedAction": {
+          "activation": {
+            "cost": 1,
+            "type": "action"
+          }
         }
       },
       "sort": 100000,

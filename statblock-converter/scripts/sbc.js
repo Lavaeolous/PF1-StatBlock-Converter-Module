@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.8
+ * Version:             2.0.9
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,8 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.8";
+const sbcVersion = "v2.0.9";
+console.log("SBC VERSION " + sbcVersion)
 
 /* ------------------------------------ */
 /* Global Variables 					*/
@@ -751,6 +752,14 @@ async function convertStatBlock(input, statblockType, isPreview) {
     dataInput = dataInput.replace(/×/gm, "x");
     // Remove double commas
     dataInput = dataInput.replace(/,,/gm, ",");
+    // Replace real fractions with readable characters
+    // ½ ⅓ ¼ ⅕ ⅙ ⅛
+    dataInput = dataInput.replace(/½/gm, "1/2");
+    dataInput = dataInput.replace(/⅓/gm, "1/3");
+    dataInput = dataInput.replace(/¼/gm, "1/4");
+    dataInput = dataInput.replace(/⅕/gm, "1/5");
+    dataInput = dataInput.replace(/⅙/gm, "1/6");
+    dataInput = dataInput.replace(/⅛/gm, "1/8");
         
     /*
      * SPLIT INPUT INTO MANAGEABLE CHUNKS OF DATA
@@ -2643,7 +2652,7 @@ function setRacialHDItem () {
     
     itemEntry.data.level = +formattedInput.hit_dice.hd.racial;
     itemEntry.data.hp = +formattedInput.hp.racial;
-    itemEntry.data.tag = formattedInput.creature_type;
+    //itemEntry.data.tag = formattedInput.creature_type;
 
     // Update the name to include Subtypes
     if (formattedInput.creature_subtype !== "") {
@@ -2756,7 +2765,8 @@ async function setConversionItem (actorID) {
                 "target": "speed",
                 "subTarget": speedKeys[i] + "Speed",
                 "modifier": "untyped",
-                "priority": 1
+                "priority": 1,
+                "value": speedDifference
             };
             
             itemEntry.data.changes.push(speedChange);
@@ -2775,7 +2785,8 @@ async function setConversionItem (actorID) {
                 "target": "",
                 "subTarget": "",
                 "modifier": "",
-                "priority": 1
+                "priority": 1,
+                "value": 0
             };
             
             // Special Treatment for Armor and Shield Boni
@@ -2789,6 +2800,7 @@ async function setConversionItem (actorID) {
                 }
                 let formula = +formattedInput.ac_bonus_types[key] - +getSumOfChangeModifiers(formattedInput.featChanges.ac[acChange.subTarget]);
                 acChange.formula = formula.toString();
+                acChange.value = formula
                 acChange.modifier = "untyped";
             } else {
                 let formula = +formattedInput.ac_bonus_types[key] - +getSumOfChangeModifiers(formattedInput.featChanges.ac.ac);
@@ -2796,6 +2808,7 @@ async function setConversionItem (actorID) {
                 acChange.target = "ac";
                 acChange.subTarget = "ac";
                 acChange.modifier = key;
+                acChange.value = formula
             }
 
             itemEntry.data.changes.push(acChange);  
@@ -2818,7 +2831,8 @@ async function setConversionItem (actorID) {
             "target": "",
             "subTarget": "",
             "modifier": "",
-            "priority": 1
+            "priority": 1,
+            "value": 0
         };
         
         let tempSaveString = item + "_save";
@@ -2847,6 +2861,7 @@ async function setConversionItem (actorID) {
         saveChange.target = "savingThrows";
         saveChange.subTarget = item;
         saveChange.modifier = "untyped";
+        saveChange.value = tempSaveChange
 
         itemEntry.data.changes.push(saveChange);
     }
@@ -3091,7 +3106,7 @@ function mapDefenseData () {
     }    
     
     // Reset Max Dex Bonus for now
-    dataOutput.data.attributes.maxDexBonus = 0;
+    dataOutput.data.attributes.maxDexBonus = null;
 }
 
 // Map Offense Data
