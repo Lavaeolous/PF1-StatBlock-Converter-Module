@@ -2714,7 +2714,7 @@ async function setConversionItem (actorID) {
         let tempHPDifference = +formattedInput.hp.total - +calculatedHPTotal;
         
         let hpChange = {
-            "_id": "",
+            "_id": randomID(8),
             "formula": tempHPDifference.toString(),
             "operator": "add",
             "target": "misc",
@@ -2734,7 +2734,7 @@ async function setConversionItem (actorID) {
         let tempInitDifference = +formattedInput.initiative - +calculatedInitTotal;
         
         let initChange = {
-            "_id": "",
+            "_id": randomID(8),
             "formula": tempInitDifference.toString(),
             "operator": "add",
             "target": "misc",
@@ -2759,7 +2759,7 @@ async function setConversionItem (actorID) {
             let speedDifference  = totalSpeed - baseSpeed;
             
             let speedChange = {
-                "_id": "",
+                "_id": randomID(8),
                 "formula": speedDifference.toString(),
                 "operator": "add",
                 "target": "speed",
@@ -2779,7 +2779,7 @@ async function setConversionItem (actorID) {
         if ( (key.toLowerCase() !== "dex") && (key.toLowerCase() !== "size") && (key.toLowerCase() !== "natural") ) {
             
             let acChange = {
-                "_id": "",
+                "_id": randomID(8),
                 "formula": "",
                 "operator": "add",
                 "target": "",
@@ -2828,7 +2828,7 @@ async function setConversionItem (actorID) {
         let item = enumSaves[i];
         
         let saveChange = {
-            "_id": "",
+            "_id": randomID(8),
             "formula": "",
             "operator": "add",
             "target": "",
