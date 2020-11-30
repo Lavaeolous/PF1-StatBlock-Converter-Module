@@ -2807,7 +2807,10 @@ async function setConversionItem (actorID) {
                 acChange.formula = formula.toString();
                 acChange.target = "ac";
                 acChange.subTarget = "ac";
-                acChange.modifier = key;
+				if (CONFIG.PF1.bonusModifiers[key])
+					acChange.modifier = key;
+				else
+					acChange.modifier = "untyped";
                 acChange.value = formula
             }
 
