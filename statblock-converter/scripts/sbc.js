@@ -2830,7 +2830,7 @@ async function setConversionItem (actorID) {
         let saveChange = {
             "_id": "",
             "formula": "",
-            "operator": "+",
+            "operator": "add",
             "target": "",
             "subTarget": "",
             "modifier": "",
