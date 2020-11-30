@@ -106,7 +106,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "adeptNpc"
+        "tag": "adeptNpc",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -231,7 +235,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "alchemist"
+        "tag": "alchemist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -356,7 +364,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "antipaladin"
+        "tag": "antipaladin",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -481,7 +493,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "arcanist"
+        "tag": "arcanist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -601,7 +617,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "aristocratNpc"
+        "tag": "aristocratNpc",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -728,7 +748,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "assassin"
+        "tag": "assassin",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -853,7 +877,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "barbarian"
+        "tag": "barbarian",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 0,
       "labels": {},
@@ -978,7 +1006,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "barbarianUnchained"
+        "tag": "barbarianUnchained",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 200001,
       "labels": {},
@@ -1019,6 +1051,10 @@ export default {
         "links": { "children": [] },
         "classType": "base",
         "tag": "bard",
+        "uses": {
+          "value": 0,
+          "max": 0
+        },
         "levels": {
             "value": 0,
             "_deprecated": true
@@ -1228,7 +1264,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "bloodrager"
+        "tag": "bloodrager",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 200001,
       "labels": {},
@@ -1353,7 +1393,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "brawler"
+        "tag": "brawler",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 300001,
       "labels": {},
@@ -1478,7 +1522,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "cavalier"
+        "tag": "cavalier",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 200001,
       "labels": {},
@@ -1603,7 +1651,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "cleric"
+        "tag": "cleric",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -1723,7 +1775,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "commonerNpc"
+        "tag": "commonerNpc",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 200001,
       "labels": {},
@@ -1848,7 +1904,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "druid"
+        "tag": "druid",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 87500,
       "labels": {},
@@ -1968,7 +2028,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "expertNpc"
+        "tag": "expertNpc",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -2093,7 +2157,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "fighter"
+        "tag": "fighter",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -2218,7 +2286,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "gunslinger"
+        "tag": "gunslinger",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 300001,
       "labels": {},
@@ -2343,7 +2415,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "hunter"
+        "tag": "hunter",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100000,
       "labels": {},
@@ -2468,7 +2544,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "inquisitor"
+        "tag": "inquisitor",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 400001,
       "labels": {},
@@ -2593,7 +2673,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "investigator"
+        "tag": "investigator",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 500001,
       "labels": {},
@@ -2713,7 +2797,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "kineticist"
+        "tag": "kineticist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -2838,7 +2926,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "magus"
+        "tag": "magus",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 500001,
       "labels": {},
@@ -2958,7 +3050,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "medium"
+        "tag": "medium",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -3078,7 +3174,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "mesmerist"
+        "tag": "mesmerist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -3203,7 +3303,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "monk"
+        "tag": "monk",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 125000,
       "labels": {},
@@ -3328,7 +3432,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "monkUnchained"
+        "tag": "monkUnchained",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 600001,
       "labels": {},
@@ -3448,7 +3556,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "ninja"
+        "tag": "ninja",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -3568,7 +3680,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "occultist"
+        "tag": "occultist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -3681,7 +3797,11 @@ export default {
         "damage": {
           "parts": []
         },
-        "tag": "omdura"
+        "tag": "omdura",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 700001,
       "labels": {},
@@ -3806,7 +3926,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "oracle"
+        "tag": "oracle",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 600001,
       "labels": {},
@@ -3931,7 +4055,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "paladin"
+        "tag": "paladin",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 137500,
       "labels": {},
@@ -4051,7 +4179,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "psychic"
+        "tag": "psychic",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -4176,7 +4308,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "ranger"
+        "tag": "ranger",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 143750,
       "labels": {},
@@ -4301,7 +4437,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "rogue"
+        "tag": "rogue",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 300000,
       "labels": {},
@@ -4426,7 +4566,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "rogueUnchained"
+        "tag": "rogueUnchained",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 800001,
       "labels": {},
@@ -4546,7 +4690,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "samurai"
+        "tag": "samurai",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -4671,7 +4819,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "shaman"
+        "tag": "shaman",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 600001,
       "labels": {},
@@ -4796,7 +4948,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "shifter"
+        "tag": "shifter",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 700001,
       "labels": {},
@@ -4921,7 +5077,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "skald"
+        "tag": "skald",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 700001,
       "labels": {},
@@ -5046,7 +5206,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "slayer"
+        "tag": "slayer",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 800001,
       "labels": {},
@@ -5171,7 +5335,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "sorcerer"
+        "tag": "sorcerer",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 175000,
       "labels": {},
@@ -5291,7 +5459,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "spiritualist"
+        "tag": "spiritualist",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -5416,7 +5588,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "summoner"
+        "tag": "summoner",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 800001,
       "labels": {},
@@ -5541,7 +5717,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "summonerUnchained"
+        "tag": "summonerUnchained",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 900001,
       "labels": {},
@@ -5666,7 +5846,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "swashbuckler"
+        "tag": "swashbuckler",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 900001,
       "labels": {},
@@ -5791,7 +5975,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "vampireHunter"
+        "tag": "vampireHunter",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 1100001,
       "labels": {},
@@ -5916,7 +6104,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "vigilante"
+        "tag": "vigilante",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 900001,
       "labels": {},
@@ -6041,7 +6233,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "warpriest"
+        "tag": "warpriest",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 1000001,
       "labels": {},
@@ -6163,7 +6359,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "warriorNpc"
+        "tag": "warriorNpc",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 100001,
       "labels": {},
@@ -6288,7 +6488,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "witch"
+        "tag": "witch",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 1000001,
       "labels": {},
@@ -6413,7 +6617,11 @@ export default {
           "critRange": 20,
           "critMult": 2
         },
-        "tag": "wizard"
+        "tag": "wizard",
+        "uses": {
+          "value": 0,
+          "max": 0
+        }
       },
       "sort": 200000,
       "labels": {},
