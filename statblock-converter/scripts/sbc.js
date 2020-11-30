@@ -2571,7 +2571,7 @@ function setClassItem (classInput) {
 
         itemEntry.data.level = classInput[classKey[i]].level;
                 
-        itemEntry.data.hp = +formattedInput.hp.class[i];
+        itemEntry.data.hp = +formattedInput.hp.class[tempClassName] ?? 0;
         
         // "low"-progression: floor(@level / 3)
         // "high"-progression: 2 + floor(@level / 2)
