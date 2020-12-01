@@ -1,10 +1,13 @@
 # Change Log
 
+2020_12_01
+*  Hotfix for v0.76.6 of Pathfinder 1E (Thanks Noon#3951 !)
+
 2020_11_27
-*  Hotfix for v.0.76.5 of Pathfinder 1E
+*  Hotfix for v0.76.5 of Pathfinder 1E
 
 2020_11_26
-*  Hotfix for v.0.76.5 of Pathfinder 1E
+*  Hotfix for v..76.5 of Pathfinder 1E
 
 2020_11_21
 *  Hotfix for Spell Settings
