@@ -103,10 +103,6 @@ export default {
       },
       "hpAbility": "con",
       "hd": {
-        "base": {
-          "_deprecated": true,
-          "value": 0
-        },
         "total": 0,
         "max": {
           "_deprecated": true,
@@ -185,7 +181,6 @@ export default {
       "hp": {
         "value": 0,
         "min": -100,
-        "base": 0,
         "max": 0,
         "temp": null,
         "nonlethal": null
