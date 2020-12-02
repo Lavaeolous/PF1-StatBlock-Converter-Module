@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.9
+ * Version:             2.0.12
  *
  * Software License:    MIT License
  *
@@ -1416,6 +1416,8 @@ function splitDefenseData(stringDefenseData) {
         let counterOfMatchedHD = 0;
         let counterOfMatchedClasses = 0;
         
+        let numberOfTries = 0
+        
         while (counterOfMatchedHD < numberOfMatchedHD) {
 
             // Loop over the classKeys
@@ -1466,6 +1468,13 @@ function splitDefenseData(stringDefenseData) {
                 
             }); // End of Loop over the hitDicePool
             
+            numberOfTries++
+
+            console.log(numberOfTries)
+            if (numberOfTries > 50) {
+                ui.notifications.error("sbc | There was an error in the HD and/or HP calculation. Please check the values!")
+                break
+            } 
             
         }
         
