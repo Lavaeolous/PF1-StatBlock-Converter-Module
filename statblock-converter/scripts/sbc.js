@@ -3909,7 +3909,7 @@ async function mapSpellbooks (actorID) {
                 // Get Spell Level if available
                 let spellLevel = 0;
                 if (tempSpellRow.search(/(0|\D[0-9]{1}(?=st|nd|rd|th))/) !== -1) {
-                    spellLevel = tempSpellRow.match(/(0|\D[0-9]{1}(?=st|nd|rd|th))/)[0];
+                    spellLevel = tempSpellRow.match(/(0|\D[0-9]{1}(?=st|nd|rd|th))/)[0].trim();
                 }
                 let spellLevelString = "spell" + spellLevel;
 
@@ -4143,6 +4143,8 @@ async function setSpellItems (spellArray, actorID, spellBook, spellPack, spellPa
             // Search for the spell in the compendium
             let entry;
             let spellName = spellInput.name;
+            
+
             let formattedSpellName = spellName.toLowerCase();
             
             // Format "Mass" and "Greater" Version

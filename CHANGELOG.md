@@ -1,5 +1,8 @@
 # Change Log
 
+2020_12_04
+*  Hotfix for spellRows with leading spaces
+
 2020_12_01
 *  Hotfix for v0.76.6 of Pathfinder 1E (Thanks Noon#3951 !)
 
