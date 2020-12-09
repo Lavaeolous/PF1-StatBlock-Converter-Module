@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.12
+ * Version:             2.0.14
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.9";
+const sbcVersion = "v2.0.14";
 console.log("SBC VERSION " + sbcVersion)
 
 /* ------------------------------------ */
@@ -1387,7 +1387,7 @@ function splitDefenseData(stringDefenseData) {
                 
                 let classLevel = formattedInput.classes[classKeys[j]].level;
                 
-                
+                let classKey = classKeys[j]
                 
                 // THIS IS NOT WORKING WHEN BOTH DICE POOLS HAVE THE SAME NUMBER OF DICE, e.g. 1d6 + 1d8
                 
@@ -1396,8 +1396,8 @@ function splitDefenseData(stringDefenseData) {
                 
                 if (tempNumberOfHD == classLevel) {        
                     // Set HP, HD.Racial and HD.Total
-                    formattedInput.hp.class[j] = Math.floor(+classLevel * +getDiceAverage(tempHDSize));
-                    formattedInput.hit_dice.hd.class[j] = +tempNumberOfHD;
+                    formattedInput.hp.class[classKey] = Math.floor(+classLevel * +getDiceAverage(tempHDSize));
+                    formattedInput.hit_dice.hd.class[classKey] = +tempNumberOfHD;
                     formattedInput.hit_dice.hd.total += +tempNumberOfHD;
                     
                 }
@@ -1422,7 +1422,9 @@ function splitDefenseData(stringDefenseData) {
 
             // Loop over the classKeys
             classKeys.forEach( function (classKey, classKeyIndex) {
-                                                
+
+                console.log("classKEY: " + classKey)
+
                 // Loop over the hitDicePool searching for matches
                 hitDicePool.forEach ( function (hitDiceItem, hitDiceIndex) {
                                                             
@@ -2579,7 +2581,9 @@ function setClassItem (classInput) {
         }
 
         itemEntry.data.level = classInput[classKey[i]].level;
-                
+         
+        console.log("tempClassName: " + tempClassName)
+        console.log("formattedInput.hp.class[tempClassName]: " + formattedInput.hp.class[tempClassName])
         itemEntry.data.hp = +formattedInput.hp.class[tempClassName] ?? 0;
         
         // "low"-progression: floor(@level / 3)
@@ -3811,7 +3815,8 @@ async function mapSpellbooks (actorID) {
                 
         dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type;
                 
-        dataOutput.data.attributes.spells.spellbooks[spellBook].cl.base = +formattedInput.spellcasting[spellBook].CL;
+        //dataOutput.data.attributes.spells.spellbooks[spellBook].cl.base = +formattedInput.spellcasting[spellBook].CL;
+        dataOutput.data.attributes.spells.spellbooks[spellBook].cl.base = 0;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.value = +formattedInput.spellcasting[spellBook].CL;
         dataOutput.data.attributes.spells.spellbooks[spellBook].cl.total = +formattedInput.spellcasting[spellBook].CL;
         
