@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.14
+ * Version:             2.0.15
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.14";
+const sbcVersion = "v2.0.15";
 console.log("SBC VERSION " + sbcVersion)
 
 /* ------------------------------------ */

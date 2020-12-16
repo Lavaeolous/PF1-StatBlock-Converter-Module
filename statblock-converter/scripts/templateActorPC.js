@@ -241,10 +241,10 @@ export default {
         "stunned": false
       },
       "spells": {
-        "concentration": {
-          "bonus": 0,
-          "context": ""
-        },
+        "usedSpellbooks": [
+          "secondary",
+          "primary"
+        ],
         "spellbooks": {
           "primary": {
             "name": "Primary",
@@ -521,9 +521,6 @@ export default {
       },
       "spelldc": {
         "_deprecated": true
-      },
-      "mods": {
-        "skills": {}
       }
     },
     "details": {
