@@ -1,6 +1,7 @@
 # Change Log
 
 2020_12_18
+*  Hotfix for missing subskills section in profession, art and craft skill
 *  Fixed broken Skills Parsing. Now it's parsing skills again, but not all values may be correct for now.
 
 2020_12_09

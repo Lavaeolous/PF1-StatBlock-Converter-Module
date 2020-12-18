@@ -596,7 +596,8 @@ export default {
         "rank": 0,
         "mod": 0,
         "background": true,
-        "cs": false
+        "cs": false,
+        "subSkills": {}
       },
       "blf": {
         "value": 0,
@@ -827,7 +828,8 @@ export default {
         "rank": 0,
         "mod": 0,
         "background": true,
-        "cs": false
+        "cs": false,
+        "subSkills": {}
       },
       "per": {
         "value": 0,
@@ -847,7 +849,8 @@ export default {
         "rank": 0,
         "mod": 0,
         "background": true,
-        "cs": false
+        "cs": false,
+        "subSkills": {}
       },
       "pro": {
         "value": 0,
@@ -857,7 +860,8 @@ export default {
         "rank": 0,
         "mod": 0,
         "background": true,
-        "cs": false
+        "cs": false,
+        "subSkills": {}
       },
       "rid": {
         "value": 0,
