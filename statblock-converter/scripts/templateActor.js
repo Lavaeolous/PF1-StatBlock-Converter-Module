@@ -626,7 +626,8 @@ export default {
         "rank": 0,
         "mod": 0,
         "background": true,
-        "cs": false
+        "cs": false,
+        "subSkills": {}
       },
       "dip": {
         "value": 0,

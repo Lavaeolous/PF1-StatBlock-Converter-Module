@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.15
+ * Version:             2.0.16
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.15";
+const sbcVersion = "v2.0.16";
 console.log("SBC VERSION " + sbcVersion)
 
 /* ------------------------------------ */
@@ -1423,8 +1423,6 @@ function splitDefenseData(stringDefenseData) {
             // Loop over the classKeys
             classKeys.forEach( function (classKey, classKeyIndex) {
 
-                console.log("classKEY: " + classKey)
-
                 // Loop over the hitDicePool searching for matches
                 hitDicePool.forEach ( function (hitDiceItem, hitDiceIndex) {
                                                             
@@ -1472,7 +1470,6 @@ function splitDefenseData(stringDefenseData) {
             
             numberOfTries++
 
-            console.log(numberOfTries)
             if (numberOfTries > 50) {
                 ui.notifications.error("sbc | There was an error in the HD and/or HP calculation. Please check the values!")
                 break
@@ -2005,7 +2002,7 @@ function splitStatisticsData(stringStatisticsData) {
     }
     
     // Skills (String from "Skills" to next linebreak)
-    if (stringStatisticsData.search(/^Skills(?! -)/) !== -1) {
+    if (stringStatisticsData.search(/^Skills/gim) !== -1) {
         let splitSkills = stringStatisticsData.match(/(?:Skills\s*)(.*)(?:[0-9)]?)/gim)[0];
         splitSkills = splitSkills.replace(/Skills\s*/gi, "");
         
@@ -2581,9 +2578,7 @@ function setClassItem (classInput) {
         }
 
         itemEntry.data.level = classInput[classKey[i]].level;
-         
-        console.log("tempClassName: " + tempClassName)
-        console.log("formattedInput.hp.class[tempClassName]: " + formattedInput.hp.class[tempClassName])
+
         itemEntry.data.hp = +formattedInput.hp.class[tempClassName] ?? 0;
         
         // "low"-progression: floor(@level / 3)
@@ -2886,8 +2881,6 @@ async function setConversionItem (actorID) {
     
     dataOutput.items.push(itemEntry);
     await actor.createEmbeddedEntity("OwnedItem", itemEntry);
-    console.log("adding conversion item");
-    console.log(actor);
 }
 
 // Create Items for Feats
@@ -3778,7 +3771,6 @@ async function setSpecialAttackItem (specialAttacks) {
 
 // Map Spellbooks
 async function mapSpellbooks (actorID) {
-    if (DEBUG == true) { console.log("sbc | Map Spellbooks"); }
     
     // Suppose we are working with a particular pack named "dnd5e.spells"
     const spellPack = game.packs.get("pf1.spells");
@@ -3804,14 +3796,11 @@ async function mapSpellbooks (actorID) {
     
     let spellbookKeys = Object.keys(formattedInput.spellcasting);
     for (let i=0; i<spellbookKeys.length; i++) {
-        if (DEBUG == true) { console.log("sbc | START MAPPING - " + i + " - SPELLBOOK"); }
         
         let spellBook = spellbookKeys[i];
-        console.log("Spellbook: "  + spellBook);
         
         dataOutput.data.attributes.spells.usedSpellbooks.push(spellBook);
         
-        console.log(dataOutput);
                 
         dataOutput.data.attributes.spells.spellbooks[spellBook].class = formattedInput.spellcasting[spellBook].type;
                 
@@ -3837,7 +3826,6 @@ async function mapSpellbooks (actorID) {
         
         let spellRows = Object.keys(formattedInput.spellcasting[spellBook].spells);
         for (let j=0; j<spellRows.length; j++) {
-            if (DEBUG == true) { console.log("sbc | START MAPPING - " + j + " - SPELLROW"); }
             
             // Get the complete Row
             let tempSpellRow = formattedInput.spellcasting[spellBook].spells[spellRows[j]];
@@ -4033,7 +4021,6 @@ async function mapSpellbooks (actorID) {
 
                 let spellKeys = Object.keys(spells.spellList);
                 for (let k=0; k<spellKeys.length; k++) {
-                    if (DEBUG == true) { console.log("sbc | START MAPPING - " + k + " - SPELL"); }
                     let spell = spells.spellList[spellKeys[k]].replace(/^ | $/g, "");
                     let spellName = "";
                     let domainSpell = "";
@@ -4133,7 +4120,6 @@ async function mapSpellbooks (actorID) {
 
 // Set Spell Item
 async function setSpellItems (spellArray, actorID, spellBook, spellPack, spellPackIndex) {
-    if (DEBUG == true) { console.log("sbc-pf1 | START SETTING SPELL"); }
     
     const actor = await game.actors.get(actorID);
 
@@ -4149,7 +4135,6 @@ async function setSpellItems (spellArray, actorID, spellBook, spellPack, spellPa
             let entry;
             let spellName = spellInput.name;
             
-
             let formattedSpellName = spellName.toLowerCase();
             
             // Format "Mass" and "Greater" Version
@@ -5020,9 +5005,7 @@ async function createNewActor () {
     // Create Actor
     dataOutput.folder = sbcFolder._id;
     let newActor = await Actor.create(dataOutput);
-    
-    console.log("after creation");
-    console.log(newActor);
+
     
     if(DEBUG==true) { console.log("sbc-pf1 | Created a new actor with id=" + newActor.id) };
 
@@ -5032,18 +5015,11 @@ async function createNewActor () {
     await mapFeats(formattedInput.feats, newActor.id);
     await setConversionItem(newActor.id);
     
-    console.log("pre update");
-    console.log(newActor);
-    
     if(DEBUG==true) { console.log("sbc-pf1 | Updating the actor to include conversion changes") };
-    
-    
     
     // await newActor.update({});
     await newActor.update(dataOutput);
-    
-    console.log("post update");
-    console.log(newActor);
+
     
     await newActor.render(true);
     return newActor;

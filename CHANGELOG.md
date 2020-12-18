@@ -1,5 +1,8 @@
 # Change Log
 
+2020_12_18
+*  Fixed broken Skills Parsing. Now it's parsing skills again, but not all values may be correct for now.
+
 2020_12_09
 *  Hotfix for missing HP for Actors with classHD (but no racialHD) #342
 *  Fix for wrongly set base value of spellbook cl ( now just setting that to value and total)
