@@ -1,5 +1,8 @@
 # Change Log
 
+2020_12_20
+*  Fix for error in splitting tactics data from offense data
+
 2020_12_18
 *  Hotfix for missing subskills section in profession, art and craft skill
 *  Fixed broken Skills Parsing. Now it's parsing skills again, but not all values may be correct for now.

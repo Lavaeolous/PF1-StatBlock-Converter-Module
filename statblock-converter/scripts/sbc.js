@@ -3,7 +3,7 @@
  *
  * Author:              Lavaeolous
  *
- * Version:             2.0.16
+ * Version:             2.0.15
  *
  * Software License:    MIT License
  *
@@ -59,7 +59,7 @@ import enumLanguages from "./enumLanguages.js"
 /* Version    							*/
 /* ------------------------------------ */
 
-const sbcVersion = "v2.0.16";
+const sbcVersion = "v2.0.15";
 console.log("SBC VERSION " + sbcVersion)
 
 /* ------------------------------------ */
@@ -790,14 +790,17 @@ async function convertStatBlock(input, statblockType, isPreview) {
     let foundEcologyData = false;
     let foundDescriptionData = false;
     
+    console.log("dataInput")
+    console.log(dataInput)
+
     // Check if enough Data to start conversion is available
     if(dataInput.search(/(\n\bAC\b(?:[\s\S]*)\nhp)/gmi) !== -1) { foundDefenseData = true; }
     if(dataInput.search(/(^\bSpeed\b)|(^\bSpd\b)/mi) !== -1) { foundOffenseData = true; }
     if(dataInput.search(/(\n\bSTR\b)/gmi) !== -1) { foundStatisticsData = true; }
     // Check for optional Datablocks marked by keywords for now
-    if(dataInput.search(/\nTACTICS\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; formattedInput.hasTactics = true; }
+    if(dataInput.search(/\nTACTICS\s*\n/gmi) !== -1) { foundTacticsData = true; dataInputHasTactics = true; formattedInput.hasTactics = true; }
     if(dataInput.search(/\n\bSPECIAL ABILITIES\b\n/gmi) !== -1) { foundSpecialAbilitiesData = true; dataInputHasSpecialAbilities = true; formattedInput.hasSpecialAbilities = true; }
-    if(dataInput.search(/\nECOLOGY\n/gmi) !== -1) { foundEcologyData = true; dataInputHasEcology = true; formattedInput.hasEcology = true;}
+    if(dataInput.search(/\nECOLOGY\s*\n/gmi) !== -1) { foundEcologyData = true; dataInputHasEcology = true; formattedInput.hasEcology = true;}
     
     let tempInputRest = "";
 
@@ -816,9 +819,10 @@ async function convertStatBlock(input, statblockType, isPreview) {
     // Split stringOffenseData, everything between Speed and Tactics or Statistics
     // If there is a tactics block, split there, parse Offense and tactics next
     if(foundOffenseData && foundTacticsData == true)  {
-        splitInput = tempInputRest.split(/\nTACTICS\n/gmi);
+        splitInput = tempInputRest.split(/\nTACTICS\s*\n/gmi);
+        console.log("splitINput: " + splitInput)
         tempInputRest = splitInput[1];
-        stringOffenseData = splitInput[0].replace(/\nTACTICS\n/gmi,"");
+        stringOffenseData = splitInput[0].replace(/\nTACTICS\s*\n/gmi,"");
         splitInput = "";
     }  
     // If there is no tactics block, split and parse Offense and Statistics next 
@@ -1580,6 +1584,7 @@ function splitDefenseData(stringDefenseData) {
 
 // NEW FUNCTION FOR THE OFFENSE BLOCK
 function splitOffenseData(stringOffenseData) {
+    console.log("stringOffenseData: " + stringOffenseData)
     if(DEBUG==true) { console.log("sbc-pf1 | Parsing offense data") };
     
     let splitOffenseData = stringOffenseData.replace(/^ | $|^\n*/,"");
