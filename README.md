@@ -1,5 +1,5 @@
-![Downloads](https://img.shields.io/github/downloads/Lavaeolous/PF1-StatBlock-Converter-Module/statblock-converter/releases/total?style=flat-square)
-![Issues](https://img.shields.io/github/issues/Lavaeolous/PF1-StatBlock-Converter-Module?style=flat-square)
+<!--![Downloads](https://img.shields.io/github/downloads/Lavaeolous/PF1-StatBlock-Converter-Module/statblock-converter/releases/total?style=flat-square)
+![Issues](https://img.shields.io/github/issues/Lavaeolous/PF1-StatBlock-Converter-Module?style=flat-square)-->
 
 # SBC | StatBlock-Converter for Pathfinder 1E
 FoundryVTT Module to create new PC and NPC Actors from a text-based Statblock (as found for example on [Archives of Nethys](https://www.aonprd.com/))
