@@ -1,4 +1,4 @@
-![Downloads](https://img.shields.io/github/downloads/Lavaeolous/PF1-StatBlock-Converter-Module/total?style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/Lavaeolous/PF1-StatBlock-Converter-Module/statblock-converter/releases/total?style=flat-square)
 ![Issues](https://img.shields.io/github/issues/Lavaeolous/PF1-StatBlock-Converter-Module?style=flat-square)
 
 # SBC | StatBlock-Converter for Pathfinder 1E
