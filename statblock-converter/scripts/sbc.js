@@ -60,8 +60,7 @@ export class sbcApp {
         let customFolderName = game.settings.get(sbcConfig.modData.mod, "importFolder")
         let searchForExistingFolder = await game.folders.find(entry => entry.data.name === customFolderName && entry.data.type === "Actor")
         
-        
-
+    
         // Check, if a custom input folder still exists, as it could have been deleted after changing the module settings
         if(searchForExistingFolder === null) {
             let newFolder = await Folder.create({name: customFolderName, type:"Actor", color: "#e76f51", parent:null});
