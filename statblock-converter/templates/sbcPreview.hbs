@@ -1,109 +1,110 @@
-<div style="margin-top: 5px; width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
+<div style="width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
     <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
     <div style="padding: 5px;">
-        <h1 style="border: none; font-family: 'Nodesto', 'Signika', 'Palatino Linotype', serif; color: #7a0800;">{{formattedInput.name}} {{#if formattedInput.notes.cr}}CR {{formattedInput.notes.cr}}{{/if}} {{#if formattedInput.notes.mr}}/MR {{formattedInput.notes.mr}}{{/if}}</h1>
-        {{#if formattedInput.shortDescription}}<div><em>formattedInput.shortDescription</em></div>{{/if}}
-        <!-- GENERAL DATA -->
+        <h1 style="border: none; font-family: 'Nodesto', 'Signika', 'Palatino Linotype', serif; color: #7a0800;">{{data.name}} {{#if notes.base.cr}}CR {{notes.base.cr}}{{/if}} {{#if notes.base.mr}}/MR {{notes.base.mr}}{{/if}}</h1>
+        {{#if notes.base.shortDescription}}<div><em>{{notes.base.shortDescription}}</em></div>{{/if}}
+        <!-- BASE -->
         <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
         <div style="break-inside: avoid;">
-            {{#if formattedInput.notes.source}}<strong>Source: </strong>{{formattedInput.notes.source}}<br/>{{/if}}
-            {{#if formattedInput.xp}}<strong>XP {{formattedInput.xp}}</strong><br/>{{/if}}
-            {{#if formattedInput.gender}}{{formattedInput.gender}} {{/if}}
-            {{#if formattedInput.template}}{{formattedInput.template}} {{/if}}
-            {{#if formattedInput.race}}{{formattedInput.race}} {{/if}}
-            {{#if formattedInput.notes.classes}}{{formattedInput.notes.classes}}<br/>{{/if}}
-            {{#if formattedInput.alignment}}{{formattedInput.alignment}} {{/if}}
-            {{#if formattedInput.size}}{{formattedInput.size}} {{/if}}
-            {{#if formattedInput.creature_type}}{{formattedInput.creature_type}} {{/if}}
-            {{#if formattedInput.creature_subtype}}({{formattedInput.creature_subtype}}){{/if}}<br/>
-            {{#if formattedInput.initiative}}<strong>Init</strong> {{formattedInput.initiative}}; {{/if}}
-            {{#if formattedInput.senses}}<strong>Senses</strong> {{formattedInput.senses}}; {{/if}}
-            {{#if formattedInput.aura}}<strong>Aura</strong> {{formattedInput.aura}}{{/if}}
+            {{#if notes.base.source}}<strong>Source: </strong>{{notes.base.source}}<br/>{{/if}}
+            {{#if notes.base.xp}}<strong>XP {{notes.base.xp}}</strong><br/>{{/if}}
+            
+            {{#if data.data.details.gender}}{{data.data.details.gender}} {{/if}}
+            {{#if notes.base.template}}{{notes.base.template}} {{/if}}
+            {{#if notes.base.race}}{{notes.base.race}} {{/if}}
+            {{#if notes.base.classes}}{{notes.base.classes}}{{/if}}{{#if notes.base.race}}<br/>{{/if}}
+            {{#if notes.base.alignment}}{{notes.base.alignment}} {{/if}}
+            {{#if notes.base.size}}{{notes.base.size}} {{/if}}
+            {{#if notes.creatureType}}{{notes.creatureType}} {{/if}}<br/>
+            <strong>Init</strong> {{data.data.attributes.init.total}};
+            {{#if data.data.traits.senses}}<strong>Senses</strong> {{data.data.traits.senses}}; {{/if}}
+            {{#if notes.aura}}<strong>Aura</strong> {{notes.aura}}{{/if}}
         </div>
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>AC</strong> {{formattedInput.ac}}, <strong>Touch</strong> {{formattedInput.touch}}, <strong>Flat-Footed</strong> {{formattedInput.flat_footed}} {{formattedInput.notes.acBonus}}<br/>
-            <strong>Hit Points</strong> {{formattedInput.hp.total}} ({{formattedInput.hit_dice.hd.total}} HD; {{formattedInput.notes.hpDice}})<br/>
-            <strong>Fort</strong> {{formattedInput.fort_save.total}}, <strong>Ref</strong> {{formattedInput.ref_save.total}}, <strong>Will</strong> {{formattedInput.will_save.total}}; {{formattedInput.save_notes}}
-            {{#if formattedInput.defensive_abilities}}<br/><strong>Defensive Abilities</strong> {{formattedInput.defensive_abilities}}; {{/if}}
-            {{#if formattedInput.damage_reduction.dr_value}}<strong>DR</strong> {{formattedInput.damage_reduction.dr_value}}/{{formattedInput.damage_reduction.dr_type}}{{/if}}
-            {{#if formattedInput.immunities}}<strong>Immune</strong> {{formattedInput.immunities}}; {{/if}}
-            {{#if formattedInput.resistances}}<strong>Resist</strong> {{formattedInput.resistances}}; {{/if}}
-            {{#if formattedInput.spell_resistance.total}}<strong>SR</strong> {{formattedInput.spell_resistance.total}}{{/if}}
-            {{#if formattedInput.spell_resistance.context}} ({{formattedInput.spell_resistance.context}}){{/if}}
-            {{#if formattedInput.weaknesses}}<br/><strong>Weaknesses</strong> {{formattedInput.weaknesses}}{{/if}}
+            <strong>AC</strong> {{data.data.attributes.ac.normal.total}}, <strong>Touch</strong> {{data.data.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{data.data.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
+            <strong>Hit Points</strong> {{notes.defense.hpTotal}} ({{notes.defense.hdTotal}} HD; {{notes.defense.hdPool}}){{#if notes.defense.hdAbilities}}; {{notes.defense.hdAbilities}}{{/if}}<br/>
+            <strong>Fort</strong> {{notes.defense.fortSave}}, <strong>Ref</strong> {{notes.defense.refSave}}, <strong>Will</strong> {{notes.defense.willSave}}{{#if data.data.attributes.saveNotes}}; {{data.data.attributes.saveNotes}}{{/if}}
+            {{#if notes.defense.defensiveAbilities}}<br/><strong>Defensive Abilities</strong> {{notes.defense.defensiveAbilities}}; {{/if}}
+            {{#if data.data.traits.dr}}<strong>DR</strong> {{data.data.traits.dr}}{{/if}}
+            {{#if notes.defense.immune}}<strong>Immune</strong> {{notes.defense.immune}}; {{/if}}
+            {{#if notes.defense.resist}}<strong>Resist</strong> {{notes.defense.resist}}; {{/if}}
+            {{#if data.data.attributes.sr.total}}<strong>SR</strong> {{data.data.attributes.sr.total}}{{/if}}
+            {{#if data.data.attributes.srNotes}} ({{data.data.attributes.srNotes}}){{/if}}
+            {{#if notes.defense.weakness}}<br/><strong>Weaknesses</strong> {{otes.defense.weakness}}{{/if}}
         </div>
         <div>
             <div style="break-inside: avoid;">
                 <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Offense</h4>
                 <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-                <strong>Speed</strong> {{formattedInput.notes.speed}}<br/>
-                {{#if formattedInput.meleeAttacks}}<strong>Melee</strong> {{formattedInput.meleeAttacks}}<br/>{{/if}}
-                {{#if formattedInput.rangedAttacks}}<strong>Ranged</strong> {{formattedInput.rangedAttacks}}<br/>{{/if}}
-                {{#if formattedInput.space}}<strong>Space</strong> {{formattedInput.space}}; {{/if}}
-                {{#if formattedInput.reach}}<strong>Reach</strong> {{formattedInput.reach}}<br/>{{/if}}
-                {{#if formattedInput.specialAttacks}}<strong>Special Attacks</strong> {{formattedInput.specialAttacks}}<br/>{{/if}}
+                <strong>Speed</strong> {{data.notes.speed}}<br/>
+                {{#if data.meleeAttacks}}<strong>Melee</strong> {{data.meleeAttacks}}<br/>{{/if}}
+                {{#if data.rangedAttacks}}<strong>Ranged</strong> {{data.rangedAttacks}}<br/>{{/if}}
+                {{#if notes.base.size.space}}<strong>Space</strong> {{notes.base.size.space}}; {{/if}}
+                {{#if data.reach}}<strong>Reach</strong> {{data.reach}}<br/>{{/if}}
+                {{#if data.specialAttacks}}<strong>Special Attacks</strong> {{data.specialAttacks}}<br/>{{/if}}
             </div>
         </div>
         <!-- SPELLCASTING -->
-        {{#if formattedInput.hasSpellcasting}}
+        {{#if data.hasSpellcasting}}
             <div style='break-inside: avoid;'>
                 <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Spellcasting</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
             </div>
         {{/if}}
                 
         <!-- TACTICS -->
-        {{#if formattedInput.hasTactics}}
+        {{#if notes.tactics.hasTactics}}
             <div style='break-inside: avoid;'>
                 <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Tactics</h4>
                 <hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
         {{/if}}
-                {{#if formattedInput.tactics.before_combat}}<strong>Before Combat:</strong> {{formattedInput.tactics.before_combat}}<br/>{{/if}}
-                {{#if formattedInput.tactics.during_combat}}<strong>During Combat:</strong> {{formattedInput.tactics.during_combat}}<br/>{{/if}}
-                {{#if formattedInput.tactics.morale}}<strong>Morale:</strong> {{formattedInput.tactics.morale}}<br/>{{/if}}
-                {{#if formattedInput.tactics.base_statistics}}<strong>Base Statistics:</strong> {{formattedInput.tactics.base_statistics}}<br/>{{/if}}
-        {{#if formattedInput.hasTactics}}
+                {{#if notes.tactics.beforeCombat}}<strong>Before Combat:</strong> {{notes.tactics.beforeCombat}}<br/>{{/if}}
+                {{#if notes.tactics.duringCombat}}<strong>During Combat:</strong> {{notes.tactics.duringCombat}}<br/>{{/if}}
+                {{#if notes.tactics.morale}}<strong>Morale:</strong> {{notes.tactics.morale}}<br/>{{/if}}
+                {{#if notes.tactics.baseStatistics}}<strong>Base Statistics:</strong> {{notes.tactics.baseStatistics}}<br/>{{/if}}
+        {{#if notes.tactics.hasTactics}}
             </div>
         {{/if}}
         <!-- STATISTICS -->
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Statistics</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>Str</strong> {{formattedInput.str.total}}, <strong>Dex</strong> {{formattedInput.dex.total}}, <strong>Con</strong> {{formattedInput.con.total}}, <strong>Int</strong> {{formattedInput.int.total}}, <strong>Wis</strong> {{formattedInput.wis.total}}, <strong>Cha</strong> {{formattedInput.cha.total}}<br/>
-            <strong>Base Atk</strong> {{formattedInput.bab}}; <strong>CMB</strong> {{formattedInput.cmb.total}} {{#if formattedInput.cmb.context}} {{formattedInput.cmb.context}}{{/if}}; <strong>CMD</strong> {{formattedInput.cmd.total}}{{#if formattedInput.cmd.context}} {{formattedInput.cmd.context}}{{/if}}<br/>
-            <strong>Feats</strong> {{formattedInput.notes.feats}}<br/>
-            <strong>Skills</strong> {{formattedInput.notes.skills}}<br/>
-            <strong>Languages</strong> {{formattedInput.notes.languages}}<br/>
-            {{#if formattedInput.notes.sq}}<strong>SQ</strong> {{formattedInput.notes.sq}}<br/>{{/if}}
-            {{#if formattedInput.notes.combatGear}}<strong>Combat Gear</strong>  {{formattedInput.notes.combatGear}}<br/>{{/if}}
-            {{#if formattedInput.notes.otherGear}}<strong>Other Gear</strong>  {{formattedInput.notes.otherGear}}<br/>{{/if}}
-            {{#if formattedInput.notes.gear}}<strong>Gear</strong>  {{formattedInput.notes.gear}}<br/>{{/if}}
+            <strong>Str</strong> {{data.data.abilities.str.total}}, <strong>Dex</strong> {{data.data.abilities.dex.total}}, <strong>Con</strong> {{data.data.abilities.con.total}}, <strong>Int</strong> {{data.data.abilities.int.total}}, <strong>Wis</strong> {{data.data.abilities.wis.total}}, <strong>Cha</strong> {{data.data.abilities.cha.total}}<br/>
+            <strong>Base Atk</strong> +{{data.data.attributes.bab.total}}; <strong>CMB</strong> +{{data.data.attributes.cmb.total}}{{#if notes.statistics.cmbContext}}{{notes.statistics.cmbContext}}{{/if}}; <strong>CMD</strong> {{data.data.attributes.cmd.total}}{{#if notes.statistics.cmdContext}}{{notes.statistics.cmdContext}}{{/if}}<br/>
+            <strong>Feats</strong> {{notes.statistics.feats}}<br/>
+            <strong>Skills</strong> {{notes.statistics.skills}}<br/>
+            <strong>Languages</strong> {{notes.statistics.languages}}<br/>
+            {{#if notes.statistics.sq}}<strong>SQ</strong> {{notes.statistics.sq}}<br/>{{/if}}
+            {{#if notes.statistics.combatGear}}<strong>Combat Gear</strong>  {{notes.statistics.combatGear}}<br/>{{/if}}
+            {{#if notes.statistics.otherGear}}<strong>Other Gear</strong>  {{notes.statistics.otherGear}}<br/>{{/if}}
+            {{#if notes.statistics.gear}}<strong>Gear</strong>  {{notes.statistics.gear}}<br/>{{/if}}
         </div>
         <!-- ECOLOGY -->
-        {{#if formattedInput.hasEcology}}
+        {{#if notes.ecology.hasEcology}}
             <div style='break-inside: avoid;'>
                 <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Ecology</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
         {{/if}}
-                {{#if formattedInput.ecology.environment}}<strong>Environment:</strong> {{formattedInput.ecology.environment}}<br/>{{/if}}
-                {{#if formattedInput.ecology.organization}}<strong>Organization:</strong> {{formattedInput.ecology.organization}}<br/>{{/if}}
-                {{#if formattedInput.ecology.treasure}}<strong>Treasure:</strong> {{formattedInput.ecology.treasure}}<br/>{{/if}}
-        {{#if formattedInput.hasEcology}}
+                {{#if notes.ecology.environment}}<strong>Environment:</strong> {{notes.ecology.environment}}<br/>{{/if}}
+                {{#if notes.ecology.organization}}<strong>Organization:</strong> {{notes.ecology.organization}}<br/>{{/if}}
+                {{#if notes.ecology.treasure}}<strong>Treasure:</strong> {{notes.ecology.treasure}}<br/>{{/if}}
+        {{#if notes.ecology.hasEcology}}
             </div>
         {{/if}}
         <!-- SPECIAL ABILITIES -->
-        {{#if formattedInput.hasSpecialAbilities}}
+        {{#if notes.specialAbilities.hasSpecialAbilities}}
             <div style='break-inside: avoid;'>
                 <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Special Abilities</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
+                <div style='white-space: pre-wrap;'>{{notes.specialAbilities.parsedSpecialAbilities}}</div>
             </div>
         {{/if}}
         
         <!-- DESCRIPTION -->
-        {{#if formattedInput.description}}
+        {{#if notes.description.long}}
             <div style='break-inside: avoid;'>
                 <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Description</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
         {{/if}}
-        {{#if formattedInput.description}}{{formattedInput.description}}<br/>{{/if}}
+        {{#if notes.description.long}}<div style="white-space: pre-wrap">{{notes.description.long}}</div>{{/if}}
                     
     </div>
     <hr style="margin-left: 0; margin-bottom: -3px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />

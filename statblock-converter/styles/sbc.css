@@ -1,15 +1,13 @@
-
-
 .sidebar-tab .directory-footer .sbcButton {
     flex-basis: 100%;
     margin-top: 5px;
 }
 
-.sbc-container, .dialogButtons {
+.sbcContainer {
     display: flex;
 }
 
-#sbcModal, #sbcModal .dialogButtons {
+#sbcModal {
     flex: 0 1 auto;
 }
 
@@ -21,25 +19,41 @@
     margin-top: 13px;
 }
 
+
 .sbcInput {
-    /*width: 100%;*/
+    position: absolute;
     height: 500px;
+    resize: none;
+    font-size: 14px;
+    padding-right: 0;
 }
 
-.input-container, .preview-container {
+.sbcInputContainer, .sbcPreviewContainer {
     flex: 1;
     flex-flow: row nowrap;
     padding: 5px;
 }
-.error-container {
-    
-    padding: 5px;
-    color: #880000;
-    border: 1px solid red;
-    visibility: hidden;
+
+.sbcHeader {
+    height: 30px;
 }
 
-.visible {
+.sbcErrorContainer {
+    margin: 5px;
+    color: #880000;
+    border: 1px solid #880000;
+    overflow: scroll;
+    padding: 3px;
+}
+
+.sbcErrors {
+    /* disable selection for now, as selected text becomes draggable for some reason
+     * and that leads to foundry-errors when dragging
+     */
+    user-select: none;
+}
+
+.sbcVisible {
     visibility: visible;
 }
 
@@ -47,32 +61,190 @@
     color: #880000;
 }
 
-.preview-container {
-    height: 500px;
+.sbcPreview {
+    border: 1px solid black;
 }
+
 /* Buttons */
-.sbcImportButton {
+/* sbcImportButton in the actorDirectory */
+.sbcOpenModalButton {
     flex: 0 1 auto;
     width: 25%;
     margin: 0 1px;
     background: rgba(255, 255, 240, 0.8);
     border: 1px solid #b5b3a4;
-    border-radius: 3px;
     font-size: 14px;
     line-height: 28px;
     font-family: "Signika", sans-serif;
     padding-left: 10px;
 }
-.sbcImportButton:hover {
-    box-shadow: 0 0 5px red;
+.sbcOpenModalButton:hover {
+    box-shadow: 0 0 5px #880000;
 }
-.sbcImportButton:focus {
+.sbcOpenModalButton:focus {
     outline: none;
 }
-.sbcImportButton:disabled {
+.sbcOpenModalButton:disabled {
     color: #4b4a44;
     box-shadow: none;
 }
-.sbcImportButton > i {
+.sbcOpenModalButton > i {
     margin-right: 3px;
+}
+
+/* sbcButtons in the modal */
+.sbcButtons {
+    position: relative;
+}
+
+.actorTypeToggle {
+    width: 100px;
+    height: 20px;
+    text-align: center;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate3D(0,-50%,0);
+    will-change: transform;
+    z-index: 42 !important;
+    cursor: pointer;
+    -webkit-transition: .3s ease all;
+    transition: .3s ease all;
+    border: 1px solid black;
+    padding: 0;
+}
+
+.actorTypeToggle-case {
+    display: inline-block;
+    background: none;
+    width: 43%;
+    height: 100%;
+    color: black;
+    position: relative;
+    border: none;
+    -webkit-transition: .3s ease all;
+    transition: .3s ease all;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-top: 3px;
+    line-height: 1;
+}
+
+.actorTypeToggle-case:hover, .sbcImportButton-case:hover {
+    color: black;
+    cursor: pointer;
+    box-shadow: none;
+}
+.actorTypeToggle-case:focus, .sbcImportButton-case:focus {
+    outline: none;
+    box-shadow: none;
+}
+.actorTypeToggle .sbcActive {
+    color: white;
+    background-color: black;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: -1;
+    -webkit-transition: .3s ease-out all;
+    transition: .3s ease-out all;
+}
+
+.actorTypeToggle.createPC .sbcActive {
+    left: 50%;
+}
+
+.actorTypeToggle.createPC .pc {
+    color: white;
+}
+
+.actorTypeToggle .npc {
+    color: white;
+}
+
+.actorTypeToggle.createPC .npc {
+    color: black;
+}
+
+#sbcImportButton, #sbcResetButton {
+    width: 100px;
+    height: 20px;
+    text-align: center;
+    position: absolute;
+    left: 120px;
+    top: 50%;
+    transform: translate3D(0,-50%,0);
+    z-index: 42 !important;
+    cursor: pointer;
+    border: 1px solid black;
+    padding: 0;
+}
+
+#sbcResetButton {
+    left: 240px;
+}
+
+.sbcImportButton-case, .sbcResetButton-case {
+    display: inline-block;
+    background: none;
+    width: 100%;
+    height: 100%;
+    color: black;
+    position: relative;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-top: 3px;
+    line-height: 1;
+}
+
+.identicalErrorIndicator {
+    background-color: #880000;
+    color: white;
+    border-radius: 15px;
+    padding: 0 5px;
+    margin-right: 5px;
+    visibility: hidden;
+}
+
+.identicalErrorIndicator.active {
+    visibility: visible;
+}
+
+/* Error Highlights */
+.sbcInputArea {
+    position: relative;
+    height: 500px;
+}
+
+#sbcBackdrop {
+    overflow: auto;
+    position: absolute;
+    height: 488px;
+    width: 100%;
+    
+}
+
+#sbcBackdrop::-webkit-scrollbar {
+    display: none;
+}
+
+.sbcHighlights {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: transparent;
+    font-size: 14px;
+    height: 500px;
+    width: 100%;
+    padding: 5px;
+    padding-right: 10px;
+    font-family: monospace;
+}
+
+mark {
+    color: transparent;
+    background-color: rgba(255,255,0,1);
+    padding-right: 20px;
 }

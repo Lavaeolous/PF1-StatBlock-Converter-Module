@@ -1,4 +1,101 @@
-export default {
+import { sbcContent } from "./sbcContent.js"
+
+export const sbcConfig = {};
+
+/* ------------------------------------ */
+/* sbc configuration               		*/
+/* ------------------------------------ */
+
+sbcConfig.modData = {
+    "version": "3.0.0",
+    "mod": "pf1-statblock-converter",
+    "modName": "sbc | PF1 Statblock Converter"
+}
+
+sbcConfig.const = {
+    "lineheight": 20,
+    "crFractions": { "1/8" : 0.125, "1/6" : 0.1625, "1/4": 0.25, "1/3": 0.3375, "1/2": 0.5 },
+    "actorType": { 0 : "npc", 1 : "character" }
+}
+
+sbcConfig.options = {
+    "actorReady": false,
+    "debug": false,
+    "inputDelay": 1000,
+    "defaultActorType": 0,
+    "tokenSettings": {
+        "displayName": 20,
+        "vision": false,
+        "disposition": -1,
+        "displayBars": 20,
+        "bar1": {},
+        "bar2": {}
+    },
+    "flags": {
+        "noStr": false,
+        "noDex": false,
+        "noCon": false,
+        "noInt": false,
+        "noWis": false,
+        "noCha": false,
+        "isUndead": false
+        
+    }
+}
+
+sbcConfig.initializeConfig = async function () {
+
+    let raceIndex = await game.packs.get("pf1.races").getIndex()
+    for (let key in raceIndex) { if (raceIndex[key].name !== "") { sbcConfig.races.push(raceIndex[key].name) } }
+
+    let classIndex = await game.packs.get("pf1.classes").getIndex()
+    for (let key in classIndex) { if (classIndex[key].name !== "") { sbcConfig.classes.push(classIndex[key].name.replace(/[()]*/g,"")) } }
+
+    let prestigeClassIndex = Object.keys(sbcContent.prestigeClasses)
+    for (let key in prestigeClassIndex) { if (prestigeClassIndex[key].name !== "") { sbcConfig.prestigeClassNames.push(prestigeClassIndex[key]) } }
+
+    let featsIndex = await game.packs.get("pf1.feats").getIndex()
+    for (let key in featsIndex) { if (featsIndex[key].name !== "") { sbcConfig.feats.push(featsIndex[key].name) } }
+
+    let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").getIndex()
+    for (let key in weaponIndex) { if (weaponIndex[key].name !== "") { sbcConfig.weapons.push(weaponIndex[key].name) } }
+
+    let armorsIndex = await game.packs.get("pf1.armors-and-shields").getIndex()
+    for (let key in armorsIndex) { if (armorsIndex[key].name !== "") { sbcConfig.armors.push(armorsIndex[key].name) } }
+
+    let itemIndex = await game.packs.get("pf1.items").getIndex()
+    for (let key in itemIndex) { if (itemIndex[key].name !== "") { sbcConfig.items.push(itemIndex[key].name) } }
+
+    let classAbilitiesIndex = await game.packs.get("pf1.class-abilities").getIndex()
+    for (let key in classAbilitiesIndex) { if (classAbilitiesIndex[key].name !== "") { sbcConfig["class-abilities"].push(classAbilitiesIndex[key].name) } }
+
+}
+
+
+/* ------------------------------------ */
+/* Compendium-Related              		*/
+/* ------------------------------------ */
+
+sbcConfig.races = []
+sbcConfig.classes = []
+sbcConfig.prestigeClassNames = []
+sbcConfig.feats = []
+sbcConfig.weapons = []
+sbcConfig.armors = []
+sbcConfig.items = []
+sbcConfig.skills = []
+sbcConfig["class-abilities"] = []
+
+
+
+
+
+
+/* ------------------------------------ */
+/* Weapons, Attacks and Armor     		*/
+/* ------------------------------------ */
+
+sbcConfig.weaponAttacks = {
     "Claw": {"type": "B and S", "special": "-"},
     "Talon": {"type": "S", "special": "-"},
     "Sting": {"type": "P", "special": "-"},
@@ -246,5 +343,349 @@ export default {
     "Scorpion Whip": { "type": "S", "special": "disarm, performance, reach, trip" },
     "Wooden stake": { "type": "P", "special": "-" },
     "Wrist launcher": { "type": "P", "special": "-" },
-    "Heavy Wrist launcher": { "type": "P", "special": "-" },
+    "Heavy Wrist launcher": { "type": "P", "special": "-" }
 }
+
+sbcConfig.damageTypes = {
+    "b": "bludgeoning",
+    "p": "piercing",
+    "s": "slashing",
+    "c": "cold",
+    "f": "fire",
+    "e": "electricity",
+    "s": "sonic",
+    "a": "acid",
+    "force": "force",
+    "negative": "negative",
+    "positive": "positive"
+}
+
+sbcConfig.armorBonusTypes = [
+    "dex",
+    "armor",
+    "shield",
+    "natural",
+    "base",
+    "enhancement",
+    "dodge",
+    "inherent",
+    "deflection",
+    "morale",
+    "luck",
+    "sacred",
+    "insight",
+    "resistance",
+    "profane",
+    "trait",
+    "racial",
+    "size",
+    "competence",
+    "circumstance",
+    "alchemical",
+    "penalty" 
+]
+
+/* ------------------------------------ */
+/* Skills and Features             		*/
+/* ------------------------------------ */
+
+sbcConfig.skills = {
+    "acrobatics": "acr",
+    "artistry": "art",
+    "appraise": "apr",
+    "bluff": "blf",
+    "climb": "clm",
+    "craft": "crf",
+    "diplomacy": "dip",
+    "disable device": "dev",
+    "disguise": "dis",
+    "escape artist": "esc",
+    "fly": "fly",
+    "handle animal": "han",
+    "heal": "hea",
+    "intimidate": "int",
+    "knowledge": {
+        "arcana": "kar",
+        "dungeoneering": "kdu",
+        "engineering": "ken",
+        "geography": "kge",
+        "history": "khi",
+        "local": "klo",
+        "nature": "kna",
+        "nobility": "kno",
+        "planes": "kpl",
+        "religion": "kre"
+    },
+    "linguistics": "lin",
+    "lore": "lor",
+    "perception": "per",
+    "perform": "prf",
+    "profession": "pro",
+    "ride": "rid",
+    "sense motive": "sen",
+    "sleight of hand": "slt",
+    "spellcraft": "spl",
+    "stealth": "ste",
+    "survival": "sur",
+    "swim": "swm",
+    "use magic device": "umd"
+}
+
+sbcConfig.specialAbilityTypes = {
+    "ex": "Extraordinary",
+    "su": "Supernatural",
+    "sp": "Special"
+}
+
+sbcConfig.classFeatures = [
+    "arcane bond",
+    "bloodline",
+    "sneak attack",
+    "trapfinding",
+    "evasion",
+    "rogue talents",
+    "rogue talent",
+    "trap sense",
+    "favored enemy",
+    "track",
+    "wild empathy",
+    "endurance",
+    "smite evil",
+    "divine grace",
+    "lay on hands",
+    "divine bond",
+    "mercy",
+    "favored terrain",
+    "hunter's bond",
+    "quarry",
+    "flurry of blows",
+    "stunning fist",
+    "ki",
+    "bravery",
+    "weapon training",
+    "armor training",
+    "wild shape",
+    "bardic performance",
+    "bardic knowledge",
+    "inspire courage",
+    "inspire competence",
+    "lore master",
+    "versatile performance",
+    "countersong",
+    "distraction",
+    "fascinate",
+    "dirge of doom",
+    "inspire heroics",
+    "rage power",
+    "rage",
+    "damage reduction",
+    "dual identity",
+    "vigilante talent",
+    "social talent",
+    "hex",
+    "eidolon",
+    "defensive instinct",
+    "shifter",
+    "chimeric",
+    "mystery",
+    "relevation",
+    "divine might",
+    "commune",
+    "arcane pool",
+    "spellstrike",
+    "magus arcana",
+    "spell combat",
+    "knowledge pool",
+    "domain",
+    "judgement",
+    "solo tactics",
+    "bane",
+    "exploit weakness",
+    "panache",
+    "grit",
+    "nimble",
+    "gun training",
+    "deeds",
+    "phrenic",
+    "channel",
+    "challenge",
+    "bomb",
+    "poison resistance",
+    "discovery",
+    "mutagen",
+    "fervor",
+    "blessings",
+    "sacred weapon",
+    "charmed life",
+    "swashbuckler weapon training",
+    "studied target",
+    "slayer talent",
+    "inspired rage",
+    "raging song",
+    "spell kenning",
+    "alchemy",
+    "investigator talent",
+    "studied strike",
+    "animal companion",
+    "animal focus",
+    "brawler's flurry",
+    "maneuver training",
+    "martial flexibility",
+    "knockout",
+    "brawler's strike",
+    "arcane reservoir",
+    "arcanist exploit",
+    "ninja trick",
+    "uncanny dodge",
+    "no trace",
+    "smite good",
+    "calm spirit",
+    "phantom recall",
+    "bonded manifestation",
+    "discipline",
+    "psychic",
+    "focus power",
+    "implements",
+    "shift focus",
+    "outside contact",
+    "mesmerist",
+    "touch treatment",
+    "manifold tricks",
+    "spirit bonus",
+    "spirit power",
+    "spirit surge",
+    "burn",
+    "elemental overflow",
+    "infusion",
+    "internal buffer",
+    "utility wild talent",
+    "metakinesis",
+    "metakinetic"
+]
+
+sbcConfig.spellCastingClasses = [
+    "adept",
+    "alchemist",
+    "antipaladin",
+    "arcanist",
+    "bard",
+    "bloodrager",
+    "cleric",
+    "druid",
+    "hunter",
+    "inquisitor",
+    "investigator",
+    "magus",
+    "medium",
+    "mesmerist",
+    "occultist",
+    "oracle",
+    "paladin",
+    "psychic",
+    "ranger",
+    "red mantis assassin",
+    "sahir-afiyun",
+    "shaman",
+    "skald",
+    "sorcerer",
+    "spiritualist",
+    "summoner",
+    "warpriest",
+    "witch",
+    "wizard"
+]
+
+sbcConfig.metamagic = [
+    "Apocalyptic",
+    "Aquatic",
+    "Ascendant",
+    "Authoritative",
+    "Benthic",
+    "Blissful",
+    "Bouncing",
+    "Brackish",
+    "Brisk",
+    "Burning",
+    "Centered",
+    "Cherry Blossom",
+    "Coaxing",
+    "Concussive",
+    "Conditional",
+    "Consecrate",
+    "Contagious",
+    "Contingent",
+    "Crypt",
+    "Dazing",
+    "Delayed",
+    "Disruptive",
+    "Echoing",
+    "Eclipsed",
+    "Ectoplasmic",
+    "Elemental",
+    "Empower",
+    "Empowered",
+    "Encouraging",
+    "Enlarge",
+    "Enlarged",
+    "Extend",
+    "Extended",
+    "Familiar",
+    "Fearsome",
+    "Flaring",
+    "Fleeting",
+    "Focused",
+    "Furious",
+    "Heighten",
+    "Heightened",
+    "Intensified",
+    "Intuitive",
+    "Jinxed",
+    "Latent Curse",
+    "Lingering",
+    "Logical",
+    "Maximize",
+    "Maximized",
+    "Merciful",
+    "Murky",
+    "Persistent",
+    "Piercing",
+    "Quicken",
+    "Quickened",
+    "Reach",
+    "Rime",
+    "Scarring",
+    "Scouting Summons",
+    "Seeking",
+    "Selective",
+    "Shadow Grasp",
+    "Sickening",
+    "Silent",
+    "Snuffing",
+    "Solar",
+    "Solid Shadows",
+    "Stable",
+    "Steam",
+    "Still",
+    "Stilled",
+    "Studied",
+    "Stygian",
+    "Stylized",
+    "Tenacious",
+    "Tenebrous",
+    "Thanatopic",
+    "Threatening Illusion",
+    "Threnodic",
+    "Thundering",
+    "Toppling",
+    "Toxic",
+    "Traumatic",
+    "Trick",
+    "Tumultuous",
+    "Umbral",
+    "Ursurping",
+    "Vast",
+    "Verdant",
+    "Widen",
+    "Widened",
+    "Yai-Mimic"
+]
