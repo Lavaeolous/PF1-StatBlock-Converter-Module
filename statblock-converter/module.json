@@ -10,8 +10,8 @@
     "templates": ["./templates/sbcModal.html", "./templates/sbcPreview"],
     "packs": [],
     "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
-    "manifest": "https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json",
-    "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/files/5865276/3.0.0-alpha.2_statblock-converter.zip",
-    "minimumCoreVersion": "0.7.9",
+    "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/3.0.0-alpha.2/download/module.json",
+    "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/3.0.0-alpha.2/download/3.0.0-alpha.2_statblock-converter.zip",
+    "minimumCoreVersion": "0.7.8",
     "compatibleCoreVersion": "0.7.9"
 }
