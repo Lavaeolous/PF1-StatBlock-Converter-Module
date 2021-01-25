@@ -461,7 +461,7 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = "mhp"
-                        if (hpBonus !== 0) {
+                        if (hpBonus !== 0 && hpBonus !== undefined) {
                             difference = +totalInStatblock - +totalInActor - +hpBonus
                         } else {
                             difference = +totalInStatblock - +totalInActor

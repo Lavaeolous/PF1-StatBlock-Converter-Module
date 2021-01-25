@@ -158,11 +158,11 @@ export class sbcInputDialog extends Application {
     
                     let newActor = await Actor.create(sbcData.characterData.actorData.data)
                     await newActor.update({})
-                    await newActor.update({})
+                    //await newActor.update({})
 
                     // Conversion Validation
                     await sbcUtils.conversionValidation(newActor._id)
-                    await newActor.update({})
+                    //await newActor.update({})
                     await newActor.update({})
     
                     sbcInputDialog.sbcInputDialogInstance.close()
