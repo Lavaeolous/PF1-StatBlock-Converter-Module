@@ -1,5 +1,12 @@
 # Change Log
 
+2021_01_25
+*  Reduced loading times by around 50%
+*  Partial parsing of offense data (currently melee attacks)
+
+2021_01_18
+*  Initial Release of Version 3.0.0 in an alpha stadium, as currently offense data does not get parsed
+
 2020_12_20
 *  Fix for error in splitting tactics data from offense data
 
