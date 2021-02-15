@@ -9,7 +9,7 @@ FoundryVTT Module to create new PC and NPC Actors from a text-based Statblock (a
 # Installation
 Install the SBC Module via the Add-On Module Tab in FoundryVTT using the following link to the manifest
 ```
-https://raw.githubusercontent.com/Lavaeolous/PF1-StatBlock-Converter-Module/master/statblock-converter/module.json
+https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json
 ```
 # Compatibility
 GameSystem: [PF1 0.77.9](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
