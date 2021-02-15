@@ -419,8 +419,6 @@ export async function parseBase(data, startLine) {
     return true
 }
 
-
-
 // Parse Race
 class raceParser extends sbcParserBase {
     
@@ -1631,6 +1629,8 @@ export async function parseOffense(data, startLine) {
                     let parserMelee = sbcMapping.map.offense.attacks
                     let melee = lineContent.match(/^Melee\s*(.*)/i)[1].trim()
 
+                    sbcData.notes.offense.melee = melee
+
                     parsedSubCategories["melee"] = await parserMelee.parse(melee, "mwak", line+startLine)
                 }
             }
@@ -2201,19 +2201,66 @@ export async function parseStatistics(data, startLine) {
                     
                     for (let i=0; i<abilities.length; i++) {
                         let ability = abilities[i].match(/(\w+)/)[1]
-                        let value = abilities[i].match(/(\d+|-)/)[1]
+                        let valueInStatblock = abilities[i].match(/(\d+|-)/)[1]
+
+                        console.log("Ability: " + ability)
 
                         // Change the value to zero if "-" is given and set the appropriate flag in sbcConfig.options.flags
 
                         // TODO: FLAGS NEED TO BE WORKED ON AFTER PARSING IS FINISHED, CREATE A NEW FUNCTION FOR THAT
-                        if (value == "-" || value === 0 || value === "0") {
-                            value = 0
+                        if (valueInStatblock == "-" || valueInStatblock === 0 || valueInStatblock === "0") {
+                            valueInStatblock = 0
                             let flagKey = "no" + sbcUtils.capitalize(ability)
                             sbcConfig.options.flags[flagKey] = true
                         }
 
+                        // CHECK CURRENT ITEMS FOR CHANGES IN ABILITIES (MAINLY RACES)
+                        // Check the current Items for changes to ablities
+                        let currentItems = sbcData.characterData.items
+                        let currentItemsKeys = Object.keys(currentItems)
+                        console.log("currentItems:")
+                        console.log(currentItems)
+                        let abilityChangesInItems = 0
+
+                        for (let i=0; i<currentItemsKeys.length; i++) {
+                            
+                            let currentItem = currentItems[currentItemsKeys[i]]
+
+                            // Check if the item has Changes
+                            if (currentItem.data.data.changes) {
+                                let currentItemChanges = currentItem.data.data.changes
+
+                                console.log("currentItem")
+                                console.log(currentItem)
+
+                                let currentItemWithAbilityChanges = currentItemChanges.find( function (element) {
+                                    if(element.subTarget === ability.toLowerCase()) {
+                                        return element
+                                    }
+                                })
+
+                                if (currentItemWithAbilityChanges !== undefined) {
+                                    console.log("currentItemWithAbilityChanges")
+                                    console.log(currentItemWithAbilityChanges)
+                                    abilityChangesInItems += +currentItemWithAbilityChanges.formula
+                                    console.log("abilityChangesInItems ^1: " + abilityChangesInItems)
+                                }
+                            }
+                            
+                        }
+
+                        console.log("abilityChangesInItems 1: " + abilityChangesInItems)
+
+                        
+                        console.log("valueInStatblock: " + valueInStatblock)
+
+                        let correctedValue = +valueInStatblock - +abilityChangesInItems
+
+                        sbcData.characterData.conversionValidation.attributes[ability] = +valueInStatblock
+                        sbcData.notes.statistics[ability] = +valueInStatblock
+
                         let parser = sbcMapping.map.statistics[ability.toLowerCase()]
-                        await parser.parse(+value, line)
+                        await parser.parse(+correctedValue, line)
                     }
 
                     parsedSubCategories["abilities"] = true

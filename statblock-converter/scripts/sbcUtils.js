@@ -398,7 +398,11 @@ export class sbcUtils {
             let contextNotes = []
 
             // Attribute Validation
+            console.log(conversionValidation.attributes)
             let attributesToValidate = Object.keys(conversionValidation.attributes)
+
+            console.log("attributesToValidate")
+            console.log(attributesToValidate)
 
             // Get the currentItems
             let currentItems = await actor.data.items
@@ -422,22 +426,43 @@ export class sbcUtils {
 
                     // Check, if the currentItem has changes to be considered
                     if (Array.isArray(currentItemChanges) && currentItemChanges.length) {
-
-                        let currentItemChange = currentItemChanges[0]
-                        let itemValues = Object.values(currentItemChange)
                         
-                        if (itemValues.includes(attribute)) {
-                            
-                            valueInItems += +currentItemChange.formula
+                        let currentItemChange = currentItemChanges.find( function (element) {
+                            if(element.subTarget === attribute.toLowerCase()) {
+                                return element
+                            }
+                        })
 
+                        if (currentItemChange !== undefined) {
+                            valueInItems += +currentItemChange.formula
                         }
 
                     }
 
                 }
 
+                console.log("attribute: " + attribute)
+                console.log("valueInItems: " + valueInItems)
+
                 // Generate Changes for the conversionBuff
-                switch (attribute) {
+                switch (attribute.toLowerCase()) {
+                    case "str":
+                    case "dex":
+                    case "con":
+                    case "int":
+                    case "wis":
+                    case "cha":
+                        totalInActor = actor.data.data.abilities[attribute.toLowerCase()].total
+                        if (totalInActor !== totalInStatblock) {
+                            difference = +totalInStatblock - +totalInActor
+                        }
+                        modifier = "untypedPerm"
+                        target = "ability"
+                        subTarget = attribute.toLowerCase()
+
+                        console.log("totalInActor: " + totalInActor)
+                        console.log("totalInStatblock: " + totalInStatblock)
+                        break
                     case "cmd":
                     case "cmb":
                     case "init":
@@ -445,17 +470,21 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = attribute
+
+                        console.log("totalInActor: " + totalInActor)
+                        console.log("totalInStatblock: " + totalInStatblock)
+
                         if (totalInActor !== totalInStatblock) {
                             difference = +totalInStatblock - +totalInActor
                         }
                         break
-                    case "hpBonus":
+                    case "hpbonus":
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = "mhp"
                         difference = +totalInStatblock
                         break
-                    case "hpTotal":
+                    case "hptotal":
                         let hpBonus = sbcData.characterData.conversionValidation.attributes.hpBonus
                         totalInActor = actor.data.data.attributes.hp.max
                         modifier = "untypedPerm"

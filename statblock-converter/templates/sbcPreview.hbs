@@ -39,11 +39,11 @@
                 <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Offense</h4>
                 <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
                 <strong>Speed</strong> {{notes.offense.speed}}<br/>
-                {{#if data.meleeAttacks}}<strong>Melee</strong> {{data.meleeAttacks}}<br/>{{/if}}
-                {{#if data.rangedAttacks}}<strong>Ranged</strong> {{data.rangedAttacks}}<br/>{{/if}}
-                {{#if notes.base.size.space}}<strong>Space</strong> {{notes.base.size.space}}; {{/if}}
-                {{#if data.reach}}<strong>Reach</strong> {{data.reach}}<br/>{{/if}}
-                {{#if data.specialAttacks}}<strong>Special Attacks</strong> {{data.specialAttacks}}<br/>{{/if}}
+                {{#if notes.offense.melee}}<strong>Melee</strong> {{notes.offense.melee}}<br/>{{/if}}
+                {{#if notes.offense.ranged}}<strong>Ranged</strong> {{notes.offense.ranged}}<br/>{{/if}}
+                {{#if notes.offense.space}}<strong>Space</strong> {{notes.offense.space}}; {{/if}}
+                {{#if notes.offense.reach}}<strong>Reach</strong> {{notes.offense.reacg}}<br/>{{/if}}
+                {{#if notes.offense.specialAttacks}}<strong>Special Attacks</strong> {{notes.offense.specialAttacks}}<br/>{{/if}}
             </div>
         </div>
         <!-- SPELLCASTING -->
@@ -70,7 +70,7 @@
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Statistics</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>Str</strong> {{data.data.abilities.str.total}}, <strong>Dex</strong> {{data.data.abilities.dex.total}}, <strong>Con</strong> {{data.data.abilities.con.total}}, <strong>Int</strong> {{data.data.abilities.int.total}}, <strong>Wis</strong> {{data.data.abilities.wis.total}}, <strong>Cha</strong> {{data.data.abilities.cha.total}}<br/>
+            <strong>Str</strong> {{notes.statistics.str}}, <strong>Dex</strong> {{notes.statistics.dex}}, <strong>Con</strong> {{notes.statistics.con}}, <strong>Int</strong> {{notes.statistics.int}}, <strong>Wis</strong> {{notes.statistics.wis}}, <strong>Cha</strong> {{notes.statistics.cha}}<br/>
             <strong>Base Atk</strong> +{{data.data.attributes.bab.total}}; <strong>CMB</strong> +{{data.data.attributes.cmb.total}}{{#if notes.statistics.cmbContext}}{{notes.statistics.cmbContext}}{{/if}}; <strong>CMD</strong> {{data.data.attributes.cmd.total}}{{#if notes.statistics.cmdContext}}{{notes.statistics.cmdContext}}{{/if}}<br/>
             <strong>Feats</strong> {{notes.statistics.feats}}<br/>
             <strong>Skills</strong> {{notes.statistics.skills}}<br/>

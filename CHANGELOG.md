@@ -1,5 +1,11 @@
 # Change Log
 
+2021_02_15
+*  Updated compatibility to PF1 System 0.77.9
+*  Corrected Parsing of stats when there are derived values (e.g. dex for init) before the conversionValidation happens
+*  Corrected conversionValidation for Abilities to account for changes in race, class or racialHD items (or items in general)
+*  Updated the preview of meleeAttacks
+
 2021_01_25
 *  Reduced loading times by around 50%
 *  Partial parsing of offense data (currently melee attacks)
