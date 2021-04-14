@@ -7,6 +7,19 @@ export class sbcUtils {
     static closingBrackers = [')', ']', '}'];
     static matchingClosingBrackets = {'(': ')', '[' : ']', '{': '}'};
 
+    static async createTempActor () {
+        let tempActor =  await Actor.create({
+            name: "sbc | Actor Template",
+            type: sbcConfig.const.actorType[sbcData.actorType],
+            folder: sbcData.customFolderId,
+            sort: 10000,
+            data: {},
+            items: [],
+            flags: {}
+        }, {temporary: true} )
+        return tempActor
+    }
+
     /* ------------------------------------ */
     /* Resetting and Updating   			*/
     /* ------------------------------------ */
@@ -20,6 +33,42 @@ export class sbcUtils {
         sbcData.notes = {}
         sbcData.foundCategories = 0
         sbcData.parsedCategories = 1
+    }
+
+    static resetCharacterData () {
+            
+        sbcData.characterData.items = []
+        sbcData.characterData.spells = []
+        sbcData.characterData.abilityDescriptions = []
+        sbcData.characterData.characterDescriptions = []
+        sbcData.characterData.conversionValidation.context = {}
+        sbcData.characterData.conversionValidation.attributes = {}
+        sbcData.characterData.conversionValidation.skills = {}
+
+        this.resetTokenData()
+        
+    }
+
+    static resetTokenData () {
+        sbcData.characterData.actorData.data.token.displayName = sbcConfig.options.tokenSettings.displayName
+        sbcData.characterData.actorData.data.token.vision = sbcConfig.options.tokenSettings.vision
+        sbcData.characterData.actorData.data.token.disposition = sbcConfig.options.tokenSettings.disposition
+        sbcData.characterData.actorData.data.token.displayBars = sbcConfig.options.tokenSettings.displayBars
+        sbcData.characterData.actorData.data.token.bar1 = sbcConfig.options.tokenSettings.bar1
+        sbcData.characterData.actorData.data.token.bar2 = sbcConfig.options.tokenSettings.bar2
+        sbcData.characterData.actorData.data.token.brightSight = 0
+    }
+
+    static resetFlags () {
+        sbcConfig.options.flags = {
+            "noStr": false,
+            "noDex": false,
+            "noCon": false,
+            "noInt": false,
+            "noWis": false,
+            "noCha": false,
+            "isUndead": false
+        }
     }
 
     static resetErrorLog () {
@@ -64,6 +113,8 @@ export class sbcUtils {
 
     static async updateActorType() {
 
+        console.log("UPDATING ACTOR TYPE")
+
         let actorTypeToggle = $(".actorTypeToggle")
 
         if (sbcData.actorType === 0) {
@@ -74,6 +125,12 @@ export class sbcUtils {
             actorTypeToggle.removeClass("createPC")
         }
             
+        // 14.04.2021 -- NEW ACTOR TYPE UPDATE
+        sbcData.characterData.actorData.update({
+            type: sbcConfig.const.actorType[sbcData.actorType]
+        })
+
+        /*
         let tempActor = await Actor.create({
             name: sbcData.characterData.actorData.data.name,
             type: sbcConfig.const.actorType[sbcData.actorType],
@@ -97,6 +154,7 @@ export class sbcUtils {
                 "skills": {}
             }
         }
+        */
 
     }
 

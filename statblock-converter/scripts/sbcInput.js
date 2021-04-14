@@ -95,11 +95,20 @@ export class sbcInputDialog extends Application {
         let inputArea = $(".sbcContainer #sbcInput")
         inputArea.on("keyup", _debounce( async () => {
 
+            console.log("SBC CONFIG OPTIONS WHEN CHANGING INPUT")
+            console.log(sbcConfig.options)
+
+            console.log("SBC CHARACTER DATA WHEN CHANGING INPUT")
+            console.log(sbcData.characterData)
+
             sbcData.preparedInput = {}
             sbcData.parsedInput = {}
             sbcData.notes = {}
             sbcData.characterData.items = []
             sbcData.input = inputArea.val().trim()
+            sbcUtils.resetFlags()
+
+            sbcUtils.resetCharacterData()
 
             // Check, if there is an input and try to parse that
             if (sbcData.input) {
@@ -156,14 +165,15 @@ export class sbcInputDialog extends Application {
                 // If the input could be parsed correctly
                 if (sbcConfig.options.actorReady) {
     
+                    // Create a permanent actor using the data from the temporary one
                     let newActor = await Actor.create(sbcData.characterData.actorData.data)
                     await newActor.update({})
                     //await newActor.update({})
 
                     // Conversion Validation
                     await sbcUtils.conversionValidation(newActor._id)
-                    //await newActor.update({})
                     await newActor.update({})
+                    //await newActor.update({})
     
                     sbcInputDialog.sbcInputDialogInstance.close()
                     sbcApp.resetSBC()

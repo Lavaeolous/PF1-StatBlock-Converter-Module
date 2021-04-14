@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -15,7 +15,25 @@ sbcConfig.modData = {
 sbcConfig.const = {
     "lineheight": 20,
     "crFractions": { "1/8" : 0.125, "1/6" : 0.1625, "1/4": 0.25, "1/3": 0.3375, "1/2": 0.5 },
-    "actorType": { 0 : "npc", 1 : "character" }
+    "actorType": { 0 : "npc", 1 : "character" },
+    "tokenBarAttributes": [
+        "attributes.hp",
+        "spells.spellbooks.primary.spellPoints",
+        "spells.spellbooks.secondary.spellPoints",
+        "spells.spellbooks.tertiary.spellPoints",
+        "spells.spellbooks.spelllike.spellPoints",
+        "details.xp",
+        "attributes.ac.normal.total",
+        "attributes.ac.flatFooted.total",
+        "attributes.ac.touch.total",
+        "attributes.cmd.total",
+        "attributes.speed.land.total",
+        "attributes.speed.land.fly.total",
+        "attributes.speed.land.swim.total",
+        "attributes.speed.land.climb.total",
+        "attributes.speed.land.burrow.total",
+        "attributes.sr.total"  
+    ]
 }
 
 sbcConfig.options = {
@@ -85,11 +103,6 @@ sbcConfig.armors = []
 sbcConfig.items = []
 sbcConfig.skills = []
 sbcConfig["class-abilities"] = []
-
-
-
-
-
 
 /* ------------------------------------ */
 /* Weapons, Attacks and Armor     		*/

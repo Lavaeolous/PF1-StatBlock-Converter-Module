@@ -2,7 +2,7 @@
  * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
  *
  * Author: Lavaeolous
- * Version: 3.0.0-alpha.2
+ * Version: 3.0.1
  *
  */
 
@@ -26,7 +26,7 @@ export class sbcApp {
     }
 
     /* ------------------------------------ */
-    /* Reset sbc                           	*/
+    /* Reset and re-initialize sbc      	*/
     /* ------------------------------------ */
 
     static async resetSBC() {
@@ -44,6 +44,9 @@ export class sbcApp {
         // Reset preview
         sbcUtils.resetPreview()
 
+        // Reset flags
+        sbcUtils.resetFlags()
+
         // Initialize sbc again
         await this.initializeSBC()
         
@@ -59,8 +62,6 @@ export class sbcApp {
         let customFolderId = ""
         let customFolderName = game.settings.get(sbcConfig.modData.mod, "importFolder")
         let searchForExistingFolder = await game.folders.find(entry => entry.data.name === customFolderName && entry.data.type === "Actor")
-        
-        
 
         // Check, if a custom input folder still exists, as it could have been deleted after changing the module settings
         if(searchForExistingFolder === null) {
@@ -71,7 +72,10 @@ export class sbcApp {
             customFolderId = newFolder._id
         } else {
             customFolderId = searchForExistingFolder._id
-        } 
+        }
+
+        // Save the customFolderId
+        sbcData.customFolderId = customFolderId
 
         // If the default actor is PC, change the value down the line
         let defaultActorType = +game.settings.get(sbcConfig.modData.mod, "defaultActorType")
@@ -81,17 +85,8 @@ export class sbcApp {
             sbcData.actorType = 0
         }
 
-        let sbcActor = await Actor.create({
-            name: "sbc | Actor Template",
-            type: sbcConfig.const.actorType[sbcData.actorType],
-            folder: customFolderId,
-            sort: 12000,
-            data: {},
-            token: {},
-            items: [],
-            flags: {}
-        }, {temporary: true} )
-        //})
+        
+        let sbcActor = await sbcUtils.createTempActor()
 
         sbcData.characterData = {
             actorData: sbcActor,
@@ -105,6 +100,7 @@ export class sbcApp {
                 "skills": {}
             }
         }
+        
 
     }
 
@@ -150,6 +146,7 @@ Hooks.on("renderActorDirectory", (app, html, data) => {
     const startSBCButton = $("<button id='startSBCButton' class='create-entity sbcButton'><i class='fas fa-file-import'></i></i>sbc | Convert Statblock</button>");
     html.find(".directory-footer").append(startSBCButton)
     startSBCButton.click(async (ev) => {
+        console.log("SBC BUTTON CLICKED")
         await sbcApp.initializeSBC()
         sbcApp.startSBC()
     });

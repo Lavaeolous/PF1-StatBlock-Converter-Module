@@ -9,6 +9,7 @@ export class sbcData {
     static parsedInput = {}
     static characterData = {}
     static notes = {}
+    static customFolderId = ""
 
 }
 

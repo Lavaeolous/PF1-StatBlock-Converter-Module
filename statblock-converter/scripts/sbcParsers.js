@@ -13,6 +13,15 @@ sbcParsing.parseInteger = (value) => { let p = parseInt(value); return isNaN(p) 
 sbcParsing.parseSubtext = (value) => { return sbcUtils.parseSubtext(value); }
 
 sbcParsing.parseValueToPath = async (obj, path, value) => {
+
+    console.log("PARSE VALUE TO PATH")
+    console.log("OBJ")
+    console.log(obj)
+    console.log("PATH")
+    console.log(path)
+    console.log("VALUE")
+    console.log(value)
+
     var parts = path.split('.');
     var curr = obj;
     for (var i = 0; i < parts.length - 1; i++)
@@ -20,6 +29,8 @@ sbcParsing.parseValueToPath = async (obj, path, value) => {
     curr[parts[parts.length - 1]] = value;
 }
 
+
+// Base class for specialized parsers
 export class sbcParserBase {
     constructor() {
 
@@ -30,6 +41,7 @@ export class sbcParserBase {
     }
 }
 
+// parses values into a child of sbcData.notes, which gets read when creating the styled preview statblock
 class notesParser extends sbcParserBase {
     constructor(targetFields) {
         super()
@@ -52,7 +64,7 @@ class notesParser extends sbcParserBase {
     }
 }
 
-// Writes a given string into all fields defined in sbcMapping
+// Writes a given value into all fields defined in sbcMapping
 class singleValueParser extends sbcParserBase {
     constructor(targetFields, supportedTypes) {
         super()
@@ -84,7 +96,7 @@ class singleValueParser extends sbcParserBase {
     }
 }
 
-// Parse Entities of a given type
+// Parse Entities of a given type, mainly used for feats
 class entityParser extends sbcParserBase {
     
     async parse(value, line, type) {
@@ -141,22 +153,7 @@ class entityParser extends sbcParserBase {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-/* ------------------------------------ */
-/* Parse the available categories       */
-/* ------------------------------------ */
-
+// Try to find a matching parser for a given category
 export async function parseCategories(category, data, startLine) {
 
     switch (category) {
@@ -204,7 +201,6 @@ export async function parseCategories(category, data, startLine) {
 /* ------------------------------------ */
 /* Parser for base data                 */
 /* ------------------------------------ */
-//export async function parseBase(data, startLine) {
 export async function parseBase(data, startLine) {
 
     sbcConfig.options.debug && console.groupCollapsed("sbc-pf1 | " + sbcData.parsedCategories + "/" + sbcData.foundCategories + " >> PARSING BASE DATA")
@@ -788,6 +784,7 @@ class sensesParser extends sbcParserBase {
                             break
                     }
 
+                    // Create a new Item for parsed Senses
                     let sense = await Item.create({
                         "name": "Sense: " + sbcUtils.capitalize(senseFeatName),
                         "type": "feat",
@@ -1187,6 +1184,7 @@ class hpParser extends sbcParserBase {
             let splitHpAndHd = sbcUtils.parseSubtext(input[0])
 
             let hpTotalInStatblock = splitHpAndHd[0]
+
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
             let calculatedHpTotal = 0
@@ -1222,9 +1220,10 @@ class hpParser extends sbcParserBase {
                 let numberOfHitDice = currentHitDice.split("d")[0]
                 let sizeOfHitDice = currentHitDice.split("d")[1]
 
-                let tempHp = +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
+                let tempHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
 
                 calculatedHpTotal += +tempHp
+                console.log("calculatedHpTotal: " + calculatedHpTotal)
                 calculatedHdTotal += +numberOfHitDice
                 
                 // Loop through the classItems
@@ -1234,17 +1233,24 @@ class hpParser extends sbcParserBase {
 
                         let classItem = classItems[j]
 
+                        console.log("classItem")
+                        console.log(classItem)
+
                         // Check, if the sizeOfHitDice matches
                         if (+sizeOfHitDice === +classItem.hd && !classItem.isParsed) {
 
                             // Find the classItem with a matching name
                             let foundClassItem = sbcData.characterData.items.find(o => o.name === classItem.name)
+
+                            console.log("foundClassItem")
+                            console.log(foundClassItem)
+
                             let calcHp = 0
 
                             if (!hasOnlyRacialHd) {
                                 if (parsedClasses < numberOfClasses) {
                                     // Calculate the HP for the Class
-                                    calcHp = +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +classItem.level)
+                                    calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+classItem.level-1))
                                     numberOfHitDice -= +classItem.level
                                     classItems[j].isParsed = true
                                     parsedClasses++
@@ -1260,12 +1266,21 @@ class hpParser extends sbcParserBase {
                                 calcHp = +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
                                 // Set the HD for the racialHd as well
                                 foundClassItem.data.data.level = +numberOfHitDice
+                                
                                 numberOfHitDice -= +numberOfHitDice
                                 
                             }
 
                             foundClassItem.data.data.hp = +calcHp
 
+                            // PROBLEMS WITH UPDATING TEMPORARY ITEMS???
+
+
+                            
+                            /*await foundClassItem.update({
+                                "data.data.hp": +calcHp
+                            })*/
+                            
                             
 
                         } 
@@ -1275,7 +1290,7 @@ class hpParser extends sbcParserBase {
                 }
 
                 // Save Total HP and HD for the preview
-                sbcData.notes.defense["hpTotal"] = calculatedHpTotal
+                sbcData.notes.defense["hpTotal"] = hpTotalInStatblock
                 sbcData.notes.defense["hdTotal"] = calculatedHdTotal
                 sbcData.notes.defense["hdPool"] = hdInput
 
@@ -1310,6 +1325,7 @@ class hpParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as HP/HD."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
+            throw err
             return false
 
         }
@@ -3405,10 +3421,39 @@ export async function parseDescription(data, startLine) {
 // Check if some special flags were set during parsing
 export async function checkFlags() {
 
+    sbcConfig.options.debug && sbcUtils.log("Checking for flags set during the conversion process")
+
     let parsedFlags = []
+
+    sbcConfig.options.debug && sbcUtils.log("Currently set flags:")
+    sbcConfig.options.debug && console.log(sbcConfig.options.flags)
 
     for (const flag in sbcConfig.options.flags) {
 
+        // Fix for set abilities persisting even when flags are reset
+    
+        let fields = []
+        let value = ""
+        let supportedTypes = "string"
+
+        switch(flag) {
+            case "isUndead":
+                // When its an undead, use Cha for HP and Save Calculation
+                fields = ["data.attributes.hpAbility", "data.attributes.savingThrows.fort.ability"]
+                if (sbcConfig.options.flags[flag] === true) {
+                    value = "cha"
+                } else {
+                    value = "con"
+                }
+                break
+            default:
+                break
+        }
+
+        let parser = new singleValueParser(fields, supportedTypes)
+        parsedFlags[flag] = await parser.parse(value)
+
+        /*
         if (sbcConfig.options.flags[flag] === true) {
 
             let fields = []
@@ -3428,6 +3473,7 @@ export async function checkFlags() {
             let parser = new singleValueParser(fields, supportedTypes)
             parsedFlags[flag] = await parser.parse(value)
         }
+        */
     }
 
 }

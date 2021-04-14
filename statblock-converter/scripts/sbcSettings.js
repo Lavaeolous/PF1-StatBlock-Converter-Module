@@ -130,7 +130,7 @@ export class sbcSettings {
                 let attributeBar1Key = +game.settings.get(sbcConfig.modData.mod, "bar1")
                 if (attributeBar1Key !== 0) {
                     let attributeBar1 = attributeKeys[attributeBar1Key]
-                    sbcConfig.options.tokenSettings.bar1.attribute = "attributes." + attributeBar1
+                    sbcConfig.options.tokenSettings.bar1.attribute = attributeBar1
                 } else {
                     sbcConfig.options.tokenSettings.bar1 = {}
                 }
@@ -140,7 +140,7 @@ export class sbcSettings {
                 let attributeBar2Key = +game.settings.get(sbcConfig.modData.mod, "bar2")
                 if (attributeBar2Key !== 0) {
                     let attributeBar2 = attributeKeys[attributeBar2Key]
-                    sbcConfig.options.tokenSettings.bar2.attribute = "attributes." + attributeBar2
+                    sbcConfig.options.tokenSettings.bar2.attribute = attributeBar2
                 } else {
                     sbcConfig.options.tokenSettings.bar2 = {}
                 }
@@ -159,7 +159,7 @@ export class sbcSettings {
 export const registerSettings = function () {
 
     // setup array for tokenBar attributes
-    let attributeKeys = Object.keys(game.system.model.Actor.npc.attributes)
+    let attributeKeys = sbcConfig.const.tokenBarAttributes
     attributeKeys.unshift("NONE")
     
     game.settings.register(sbcConfig.modData.mod, "debug", {
@@ -284,7 +284,10 @@ export const registerSettings = function () {
 export const initializeSettings = async function () {
 
     // setup array for tokenBar attributes
-    let attributeKeys = Object.keys(game.system.model.Actor.npc.attributes)
+    //let attributeKeys = Object.keys(game.system.model.Actor.npc.attributes)
+
+    let attributeKeys = sbcConfig.const.tokenBarAttributes
+
     attributeKeys.unshift("NONE")
 
     sbcConfig.options.actorReady = false
