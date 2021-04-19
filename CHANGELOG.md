@@ -1,5 +1,17 @@
 # Change Log
 
+2021_04_19
+*  Hotfix for #362
+*  Fix for missing abilities in statblock preview (#370)
+*  Fix for missed identification of rage as a valid armor modificator type (#369). Rage is not supported as a valid change in the pf1 system, but statblocks including rage armor modificators in the ac-line will no longer break sbc
+*  Reworked the hp calculation and fixed giant errors in the validation of the hp calculation via conversion buff (#368)
+
+2021_04_14
+*  Updated compatibility to PF1 System 0.77.20
+*  Fixed broken token settings which led to missing configuration for prototype tokens
+*  Added additional resets for intermediary data, e.g. objects that store data in temporary actors (which up until now never got removed when the input changed)
+*  In the same vein: Added a reset for data set via flags, e.g. when CHA was used for HP and Fort for undead creatures.
+
 2021_02_15
 *  Updated compatibility to PF1 System 0.77.9
 *  Corrected Parsing of stats when there are derived values (e.g. dex for init) before the conversionValidation happens

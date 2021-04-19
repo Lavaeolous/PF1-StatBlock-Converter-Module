@@ -100,7 +100,6 @@ export class sbcUtils {
     }
 
     static async updatePreview() {
-        console.log(sbcData.characterData.actorData)
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
         let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.data, notes: sbcData.notes })
@@ -112,8 +111,6 @@ export class sbcUtils {
     }
 
     static async updateActorType() {
-
-        console.log("UPDATING ACTOR TYPE")
 
         let actorTypeToggle = $(".actorTypeToggle")
 
@@ -456,11 +453,10 @@ export class sbcUtils {
             let contextNotes = []
 
             // Attribute Validation
-            console.log(conversionValidation.attributes)
             let attributesToValidate = Object.keys(conversionValidation.attributes)
 
-            console.log("attributesToValidate")
-            console.log(attributesToValidate)
+            sbcConfig.options.debug && console.log("attributesToValidate:")
+            sbcConfig.options.debug && console.log(attributesToValidate)
 
             // Get the currentItems
             let currentItems = await actor.data.items
@@ -486,21 +482,19 @@ export class sbcUtils {
                     if (Array.isArray(currentItemChanges) && currentItemChanges.length) {
                         
                         let currentItemChange = currentItemChanges.find( function (element) {
+
                             if(element.subTarget === attribute.toLowerCase()) {
                                 return element
                             }
                         })
 
                         if (currentItemChange !== undefined) {
-                            valueInItems += +currentItemChange.formula
+                            valueInItems += +currentItemChange.formula                            
                         }
 
                     }
 
                 }
-
-                console.log("attribute: " + attribute)
-                console.log("valueInItems: " + valueInItems)
 
                 // Generate Changes for the conversionBuff
                 switch (attribute.toLowerCase()) {
@@ -517,9 +511,6 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "ability"
                         subTarget = attribute.toLowerCase()
-
-                        console.log("totalInActor: " + totalInActor)
-                        console.log("totalInStatblock: " + totalInStatblock)
                         break
                     case "cmd":
                     case "cmb":
@@ -528,10 +519,6 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = attribute
-
-                        console.log("totalInActor: " + totalInActor)
-                        console.log("totalInStatblock: " + totalInStatblock)
-
                         if (totalInActor !== totalInStatblock) {
                             difference = +totalInStatblock - +totalInActor
                         }
@@ -543,36 +530,55 @@ export class sbcUtils {
                         difference = +totalInStatblock
                         break
                     case "hptotal":
-                        let hpBonus = sbcData.characterData.conversionValidation.attributes.hpBonus
+                        //let hpBonus = sbcData.characterData.conversionValidation.attributes.hpBonus
                         totalInActor = actor.data.data.attributes.hp.max
+
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = "mhp"
-                        if (hpBonus !== 0 && hpBonus !== undefined) {
-                            difference = +totalInStatblock - +totalInActor - +hpBonus
-                        } else {
-                            difference = +totalInStatblock - +totalInActor
-                        }
+                        
+                        difference = +totalInStatblock - +totalInActor
+
+                        await actor.update({
+                                "data": {
+                                    "attributes": {
+                                        "hp": {
+                                            "value": +actor.data.data.attributes.hp.value - +difference
+                                        }
+                                    }
+                                }
+                        })
+                        
                         break
+                    /*
                     case "armor":
                         // Armor and Shield have no specific place in the sheet apart from the items granting these boni,
                         // but for the conversionValidation we need to separate them, as they use separate subTargets ("sac", "aac")
+                        totalInActor = actor.data.data.attributes.ac.normal.total
                         modifier = "untypedPerm"
                         target = "ac"
                         subTarget = "aac"
-                        difference = +totalInStatblock - +valueInItems
+                        difference = +totalInActor - +acNormalTotalInActor - +totalInStatblock - +valueInItems
                         break
                     case "shield":
                         // Armor and Shield have no specific place in the sheet apart from the items granting these boni,
-                        // but for the conversionValidation we need to separate them, as they use separate subTargets ("sac", "aac")
+                        // but for the conversionValidation we need to separate them, as they use separate subTargets ("sac", "aac") 
                         modifier = "untypedPerm"
                         target = "ac"
                         subTarget = "sac"
-                        difference = +totalInStatblock - +valueInItems
+                        difference = +acNormalTotalInActor - +totalInStatblock - +valueInItems
+                        break
+                    */
+                    case "acnormal":
+                        totalInActor = actor.data.data.attributes.ac.normal.total
+                        modifier = "untypedPerm"
+                        target = "ac"
+                        subTarget = "aac"
+                        difference = +totalInStatblock - +totalInActor 
                         break
                     case "base":
                     case "enhancement":
-                    case "dodge":
+                    //case "dodge":
                     case "inherent":
                     case "deflection":
                     case "morale":
@@ -591,6 +597,12 @@ export class sbcUtils {
                         target = "ac"
                         subTarget = "ac"
                         difference = +totalInStatblock - +valueInItems
+                        break
+                    case "rage":
+                        modifier = "untypedPerm"
+                        target = "ac"
+                        subTarget = "ac"
+                        difference = +totalInStatblock
                         break
                     case "fort":
                     case "ref":
@@ -618,6 +630,7 @@ export class sbcUtils {
                         "value": +difference,
                         "_id": randomID(8)
                     }
+
                     changes.push(attributeChange)
                 }
 

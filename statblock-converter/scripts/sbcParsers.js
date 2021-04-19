@@ -14,14 +14,6 @@ sbcParsing.parseSubtext = (value) => { return sbcUtils.parseSubtext(value); }
 
 sbcParsing.parseValueToPath = async (obj, path, value) => {
 
-    console.log("PARSE VALUE TO PATH")
-    console.log("OBJ")
-    console.log(obj)
-    console.log("PATH")
-    console.log(path)
-    console.log("VALUE")
-    console.log(value)
-
     var parts = path.split('.');
     var curr = obj;
     for (var i = 0; i < parts.length - 1; i++)
@@ -1070,7 +1062,7 @@ export async function parseDefense(data, startLine) {
 class acTypesParser extends sbcParserBase {
 
     async parse(value, line) {
-        sbcConfig.options.debug && sbcUtils.log("Trying to parse " + value + " as SQ")
+        sbcConfig.options.debug && sbcUtils.log("Trying to parse " + value + " as Armor Class")
 
         try {
 
@@ -1085,7 +1077,7 @@ class acTypesParser extends sbcParserBase {
                 let foundAcType = foundAc.match(patternAcTypes)[0]
                 let foundAcTypeValue = foundAc.replace(foundAcType, "").trim()
 
-                switch (foundAcType) {
+                switch (foundAcType.toLowerCase()) {
                     case "natural":
                         sbcData.characterData.actorData.data.data.attributes.naturalAC = foundAcTypeValue
                         break
@@ -1093,6 +1085,7 @@ class acTypesParser extends sbcParserBase {
                     case "dex":
                         // Ignore these cases, as they are handled by foundry
                         break
+                    // Armor and Shield need to be validated against the ac changes in equipment
                     case "armor":
                     case "shield":
                     case "base":
@@ -1112,6 +1105,7 @@ class acTypesParser extends sbcParserBase {
                     case "circumstance":
                     case "alchemical":
                     case "penalty":
+                    case "rage":
                         sbcData.characterData.conversionValidation.attributes[foundAcType] = foundAcTypeValue
                         break
                     default:
@@ -1187,6 +1181,9 @@ class hpParser extends sbcParserBase {
 
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
+            // Set the current value of the actor hp
+            sbcData.characterData.actorData.data.data.attributes.hp.value = +hpTotalInStatblock
+
             let calculatedHpTotal = 0
             let calculatedHdTotal = 0
 
@@ -1205,9 +1202,13 @@ class hpParser extends sbcParserBase {
 
             }
             
+            // Put the bonus hp into the conversion validation
+            // Maybe not needed, see 3.0.1
+            /*
             if (hpBonus > 0) {
                 sbcData.characterData.conversionValidation.attributes["hpBonus"] = +hpBonus
             }
+            */
             
             calculatedHpTotal += +hpBonus
 
@@ -1223,7 +1224,6 @@ class hpParser extends sbcParserBase {
                 let tempHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
 
                 calculatedHpTotal += +tempHp
-                console.log("calculatedHpTotal: " + calculatedHpTotal)
                 calculatedHdTotal += +numberOfHitDice
                 
                 // Loop through the classItems
@@ -1233,17 +1233,11 @@ class hpParser extends sbcParserBase {
 
                         let classItem = classItems[j]
 
-                        console.log("classItem")
-                        console.log(classItem)
-
                         // Check, if the sizeOfHitDice matches
                         if (+sizeOfHitDice === +classItem.hd && !classItem.isParsed) {
 
                             // Find the classItem with a matching name
                             let foundClassItem = sbcData.characterData.items.find(o => o.name === classItem.name)
-
-                            console.log("foundClassItem")
-                            console.log(foundClassItem)
 
                             let calcHp = 0
 
@@ -1272,16 +1266,6 @@ class hpParser extends sbcParserBase {
                             }
 
                             foundClassItem.data.data.hp = +calcHp
-
-                            // PROBLEMS WITH UPDATING TEMPORARY ITEMS???
-
-
-                            
-                            /*await foundClassItem.update({
-                                "data.data.hp": +calcHp
-                            })*/
-                            
-                            
 
                         } 
 
@@ -1688,12 +1672,10 @@ class speedParser extends sbcParserBase {
 
             let flyManeuverabilitiesPattern = new RegExp("(" + Object.values(CONFIG["PF1"].flyManeuverabilities).join("\\b|\\b") + ")", "i")
 
-            console.log("flyManeuverabilitiesPattern: " + flyManeuverabilitiesPattern)
             if (input[1]) {
                 if (type === "fly") {
                     let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)[1]
                     sbcData.characterData.actorData.data.data.attributes.speed.fly.maneuverability = flyManeuverability
-                    console.log("flyManeuverability: " + flyManeuverability)
                     if (input[2]) {
                         speedContext = input[2]
                     }
@@ -1736,9 +1718,6 @@ class attacksParser extends sbcParserBase {
                 .replace(/\band\b (?![^(]*\)|\()/g,",")
             let attackGroups = rawInput.split(/\bor\b/g)
 
-            console.log("attackGroups")
-            console.log(attackGroups)
-
             let attackGroupKeys = Object.keys(attackGroups)
     
             for (var i = 0; i < attackGroupKeys.length; i++) {
@@ -1770,7 +1749,6 @@ class attacksParser extends sbcParserBase {
                     // mwk greatsword +16/+11 (3d6+14/19–20)                Iterative Attacks
 
                     let attack = attacks[j].trim()
-                    console.log("attack:" + attack)
 
                     let numberOfAttacks = 1
                     let enhancementBonus = 0
@@ -1985,6 +1963,7 @@ class attacksParser extends sbcParserBase {
                     /* [2] CREATE AN ATTACK WITH THAT DATA	*/
                     /* ------------------------------------ */
 
+                    /*
                     console.log("numberOfAttacks: " + numberOfAttacks)
                     console.log("enhancementBonus: "+ enhancementBonus)
                     console.log("attackName: "+ attackName)
@@ -2001,7 +1980,8 @@ class attacksParser extends sbcParserBase {
                     console.log("attackEffects: "+ attackEffects)
                     console.log("mwkWeapon: "+ mwkWeapon)
                     console.log("numberOfIterativeAttacks: "+ numberOfIterativeAttacks)
-                    console.log("attackNotes: "+ attackNotes)                                
+                    console.log("attackNotes: "+ attackNotes)
+                    */                           
 
                     // Create a temporary item
                     let newAttack = await Item.create({
@@ -2219,8 +2199,6 @@ export async function parseStatistics(data, startLine) {
                         let ability = abilities[i].match(/(\w+)/)[1]
                         let valueInStatblock = abilities[i].match(/(\d+|-)/)[1]
 
-                        console.log("Ability: " + ability)
-
                         // Change the value to zero if "-" is given and set the appropriate flag in sbcConfig.options.flags
 
                         // TODO: FLAGS NEED TO BE WORKED ON AFTER PARSING IS FINISHED, CREATE A NEW FUNCTION FOR THAT
@@ -2234,8 +2212,7 @@ export async function parseStatistics(data, startLine) {
                         // Check the current Items for changes to ablities
                         let currentItems = sbcData.characterData.items
                         let currentItemsKeys = Object.keys(currentItems)
-                        console.log("currentItems:")
-                        console.log(currentItems)
+
                         let abilityChangesInItems = 0
 
                         for (let i=0; i<currentItemsKeys.length; i++) {
@@ -2246,9 +2223,6 @@ export async function parseStatistics(data, startLine) {
                             if (currentItem.data.data.changes) {
                                 let currentItemChanges = currentItem.data.data.changes
 
-                                console.log("currentItem")
-                                console.log(currentItem)
-
                                 let currentItemWithAbilityChanges = currentItemChanges.find( function (element) {
                                     if(element.subTarget === ability.toLowerCase()) {
                                         return element
@@ -2256,24 +2230,16 @@ export async function parseStatistics(data, startLine) {
                                 })
 
                                 if (currentItemWithAbilityChanges !== undefined) {
-                                    console.log("currentItemWithAbilityChanges")
-                                    console.log(currentItemWithAbilityChanges)
                                     abilityChangesInItems += +currentItemWithAbilityChanges.formula
-                                    console.log("abilityChangesInItems ^1: " + abilityChangesInItems)
                                 }
                             }
                             
                         }
 
-                        console.log("abilityChangesInItems 1: " + abilityChangesInItems)
-
-                        
-                        console.log("valueInStatblock: " + valueInStatblock)
-
                         let correctedValue = +valueInStatblock - +abilityChangesInItems
 
                         sbcData.characterData.conversionValidation.attributes[ability] = +valueInStatblock
-                        sbcData.notes.statistics[ability] = +valueInStatblock
+                        sbcData.notes.statistics[ability.toLowerCase()] = +valueInStatblock
 
                         let parser = sbcMapping.map.statistics[ability.toLowerCase()]
                         await parser.parse(+correctedValue, line)

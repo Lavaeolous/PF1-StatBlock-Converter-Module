@@ -2,7 +2,7 @@
  * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
  *
  * Author: Lavaeolous
- * Version: 3.0.1
+ * Version: 3.0.2
  *
  */
 
@@ -146,7 +146,6 @@ Hooks.on("renderActorDirectory", (app, html, data) => {
     const startSBCButton = $("<button id='startSBCButton' class='create-entity sbcButton'><i class='fas fa-file-import'></i></i>sbc | Convert Statblock</button>");
     html.find(".directory-footer").append(startSBCButton)
     startSBCButton.click(async (ev) => {
-        console.log("SBC BUTTON CLICKED")
         await sbcApp.initializeSBC()
         sbcApp.startSBC()
     });
