@@ -1,12 +1,19 @@
 # Change Log
 
-2021_04_19
+2021_04_21 - v3.0.3
+*  Updated compatibility to PF1 System 0.77.21
+*  Fixed Copy & Paste Error in Morale parsing (#373)
+*  Reworked the sequence in which categories get parsed in (#376)
+*  Started rework on the attack parsing, as these was flawed rather spectacularily with attacks regularily achieving over +50 modifiers :). This relates to issues #374, #375 and fixes #357 mostly - i think.
+*  Changed the manifest file to always point to the latest release. I think updates via foundry may have been broken for some time, but i'm not really sure. Let me know.
+
+2021_04_19 - v3.0.2
 *  Hotfix for #362
 *  Fix for missing abilities in statblock preview (#370)
 *  Fix for missed identification of rage as a valid armor modificator type (#369). Rage is not supported as a valid change in the pf1 system, but statblocks including rage armor modificators in the ac-line will no longer break sbc
 *  Reworked the hp calculation and fixed giant errors in the validation of the hp calculation via conversion buff (#368)
 
-2021_04_14
+2021_04_14 - v3.0.1
 *  Updated compatibility to PF1 System 0.77.20
 *  Fixed broken token settings which led to missing configuration for prototype tokens
 *  Added additional resets for intermediary data, e.g. objects that store data in temporary actors (which up until now never got removed when the input changed)

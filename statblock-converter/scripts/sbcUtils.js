@@ -452,16 +452,25 @@ export class sbcUtils {
             let changes = []
             let contextNotes = []
 
-            // Attribute Validation
+            let valueInAcTypes = 0
+
+            // Get an array of all attributes that need to be validated
             let attributesToValidate = Object.keys(conversionValidation.attributes)
+            
+            // And push "acNormal", "acTouch" and "acFlatFooted" to the end of that array so it gets validated after the acTypes
+            attributesToValidate.splice(attributesToValidate.indexOf("acNormal"),1)
+            attributesToValidate.splice(attributesToValidate.indexOf("acTouch"),1)
+            attributesToValidate.splice(attributesToValidate.indexOf("acFlatFooted"),1)
+            attributesToValidate.push("acNormal", "acTouch", "acFlatFooted")
 
             sbcConfig.options.debug && console.log("attributesToValidate:")
             sbcConfig.options.debug && console.log(attributesToValidate)
 
-            // Get the currentItems
+            // Get an array of all items the actor currently owns
             let currentItems = await actor.data.items
             let currentItemsKeys = Object.keys(currentItems)
 
+            // Loop through the attributes ...
             for (let i=0; i<attributesToValidate.length; i++) {
                 let attribute = attributesToValidate[i]
                 let modifier = ""
@@ -472,6 +481,7 @@ export class sbcUtils {
                 let valueInItems = 0
                 let difference = 0
 
+                // (1) ... and loop through the current items looking for relevant changes
                 for (let i=0; i<currentItemsKeys.length; i++) {
                     
                     let currentItemKey = currentItemsKeys[i]
@@ -488,6 +498,8 @@ export class sbcUtils {
                             }
                         })
 
+                        // If the item had changes relevant to the current attribute,
+                        // add these to valueInItems
                         if (currentItemChange !== undefined) {
                             valueInItems += +currentItemChange.formula                            
                         }
@@ -495,6 +507,8 @@ export class sbcUtils {
                     }
 
                 }
+
+                
 
                 // Generate Changes for the conversionBuff
                 switch (attribute.toLowerCase()) {
@@ -530,7 +544,6 @@ export class sbcUtils {
                         difference = +totalInStatblock
                         break
                     case "hptotal":
-                        //let hpBonus = sbcData.characterData.conversionValidation.attributes.hpBonus
                         totalInActor = actor.data.data.attributes.hp.max
 
                         modifier = "untypedPerm"
@@ -550,35 +563,16 @@ export class sbcUtils {
                         })
                         
                         break
-                    /*
-                    case "armor":
-                        // Armor and Shield have no specific place in the sheet apart from the items granting these boni,
-                        // but for the conversionValidation we need to separate them, as they use separate subTargets ("sac", "aac")
-                        totalInActor = actor.data.data.attributes.ac.normal.total
-                        modifier = "untypedPerm"
-                        target = "ac"
-                        subTarget = "aac"
-                        difference = +totalInActor - +acNormalTotalInActor - +totalInStatblock - +valueInItems
-                        break
-                    case "shield":
-                        // Armor and Shield have no specific place in the sheet apart from the items granting these boni,
-                        // but for the conversionValidation we need to separate them, as they use separate subTargets ("sac", "aac") 
-                        modifier = "untypedPerm"
-                        target = "ac"
-                        subTarget = "sac"
-                        difference = +acNormalTotalInActor - +totalInStatblock - +valueInItems
-                        break
-                    */
                     case "acnormal":
                         totalInActor = actor.data.data.attributes.ac.normal.total
                         modifier = "untypedPerm"
                         target = "ac"
                         subTarget = "aac"
-                        difference = +totalInStatblock - +totalInActor 
+                        difference = +totalInStatblock - +totalInActor - +valueInAcTypes
                         break
                     case "base":
                     case "enhancement":
-                    //case "dodge":
+                    case "dodge":
                     case "inherent":
                     case "deflection":
                     case "morale":
@@ -597,6 +591,7 @@ export class sbcUtils {
                         target = "ac"
                         subTarget = "ac"
                         difference = +totalInStatblock - +valueInItems
+                        valueInAcTypes += +totalInStatblock
                         break
                     case "rage":
                         modifier = "untypedPerm"

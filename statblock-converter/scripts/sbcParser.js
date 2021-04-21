@@ -88,6 +88,9 @@ export class sbcParser {
 
                 let availableCategories = Object.keys(sbcMapping.map);
 
+                console.log("availableCategories")
+                console.log(availableCategories)
+
                 /* ------------------------------------ */
                 /* The input was prepared and is        */
                 /* currently in the form of an arry     */
@@ -129,6 +132,9 @@ export class sbcParser {
 
                 sbcData.foundCategories = foundCategories.length
 
+                console.log("foundCategories")
+                console.log(foundCategories)
+
                 if (foundCategories.length !== 0) {
 
                     // Check, if the needed categories are there
@@ -151,24 +157,58 @@ export class sbcParser {
                             "special abilities": [],
                             "description": [],
                         }
+
+                        let startLines = {
+                            "base": 0,
+                            "defense": 0,
+                            "offense": 0,
+                            "statistics": 0,
+                            "tactics": 0,
+                            "ecology": 0,
+                            "special abilities": 0,
+                            "description": 0,
+                        }
                         
                         let lastLine = 0
+
+                        // put the found data in the dataChunks and parse them after rearranging them
+                        // so that needed statistical data gets parsed first
+                        // even though its written after defense and offense data
                         for (let i=0; i<foundCategories.length; i++) {
                             
                             let category = foundCategories[i]
                             let startLine = lastLine
+                            startLines[category] = startLine
                             let stopLine = categoryIndexPositions[foundCategories[i+1]]
 
                             if (i === foundCategories.length-1) {
                                 dataChunks[category] = sbcData.preparedInput.data.slice(startLine)
+                                
                             } else {
                                 dataChunks[category] = sbcData.preparedInput.data.slice(startLine, stopLine)
                             }
 
-                            parsedCategories[category] = await parseCategories(category, dataChunks[category], startLine)
+                            //parsedCategories[category] = await parseCategories(category, dataChunks[category], startLine)
 
                             lastLine = stopLine
 
+                        }
+
+                        console.log("parsedCategories in dataChunks:")
+                        console.log(dataChunks)
+
+                        // Rearrange the foundCategories so that statistics gets parsed before defense and offense
+                        console.log("foundCategories")
+                        console.log(foundCategories)
+                        let orderedFoundCategories = foundCategories
+                        orderedFoundCategories.splice(foundCategories.indexOf("statistics"),1)[0]
+                        orderedFoundCategories.splice(1,0,"statistics")
+                        console.log("ORDERED FOUND CATEGORIES")
+                        console.log(orderedFoundCategories)
+
+                        for (let i=0; i<orderedFoundCategories.length; i++) {
+                            let category = orderedFoundCategories[i]
+                            parsedCategories[category] = await parseCategories(category, dataChunks[category], startLines[category])
                         }
 
                         // After parsing all available subCategories, create embedded entities

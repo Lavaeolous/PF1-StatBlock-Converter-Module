@@ -960,8 +960,8 @@ export async function parseDefense(data, startLine) {
                     let parserAcTypes = sbcMapping.map.defense.acTypes
                     let acTypes = lineContent.match(/^(?:AC[^\(]*[\(])([^\)]*)/i)[1].trim()
 
-                    sbcData.characterData.conversionValidation.attributes["acTypes"] = +acTypes
-
+                    sbcData.characterData.conversionValidation.attributes["acTypes"] = acTypes
+                    
                     parsedSubCategories["acTypes"] = await parserAcTypes.parse(acTypes, line+startLine)
                 }
             }
@@ -1106,7 +1106,11 @@ class acTypesParser extends sbcParserBase {
                     case "alchemical":
                     case "penalty":
                     case "rage":
+                        /* Try to put these in the front of the conversion,
+                         * so that acNormal etc get handled after handling
+                         * acTypes */
                         sbcData.characterData.conversionValidation.attributes[foundAcType] = foundAcTypeValue
+                        
                         break
                     default:
                         break
@@ -1718,6 +1722,11 @@ class attacksParser extends sbcParserBase {
                 .replace(/\band\b (?![^(]*\)|\()/g,",")
             let attackGroups = rawInput.split(/\bor\b/g)
 
+            /*
+            console.log("ATTACK GROUPS")
+            console.log(attackGroups)
+            */
+
             let attackGroupKeys = Object.keys(attackGroups)
     
             for (var i = 0; i < attackGroupKeys.length; i++) {
@@ -1728,6 +1737,11 @@ class attacksParser extends sbcParserBase {
                 // attacks = attacks.split(/,/g);
                 attacks = attacks.split(/(?:[^0-9]),(?:[^0-9])/g)
                 let attackKeys = Object.keys(attacks)
+
+                /*
+                console.log("ATTACKS")
+                console.log(attacks)
+                */
 
                 // Loop over all attacks in the attackGroup
                 for (let j = 0; j < attackKeys.length; j++) {
@@ -1753,7 +1767,7 @@ class attacksParser extends sbcParserBase {
                     let numberOfAttacks = 1
                     let enhancementBonus = 0
                     let attackName = ""
-                    let attackModifier = 0
+                    //let attackModifier = 0
                     let inputAttackModifier = 0
                     let numberOfDamageDice = 0
                     let damageDie = 0
@@ -1767,6 +1781,8 @@ class attacksParser extends sbcParserBase {
                     let mwkWeapon = false
                     let numberOfIterativeAttacks = 0
                     let attackNotes = ""
+                    let attackAbilityType = ""
+                    let damageAbilityType = ""
                                 
                     // Search for Touch or Ranged Touch
                     if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
@@ -1774,29 +1790,57 @@ class attacksParser extends sbcParserBase {
                         attackNotes += specialAttackType + "\n"
                         attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "")
                     }
-                                
+                             
+                    /*
+                    console.log("FLAGS")
+                    console.log(sbcConfig.options.flags)
+                    */
+
                     // Check if its Melee or Ranged
                     let attackAttrModifier = 0
                     if (type === "mwak") {
-                        if (!sbcConfig.options.flags.noStr) {
-                            attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.str.mod
-                        } else {
-                            attackAttrModifier = 0
-                        }
                         
+
+
+                        // WIP
+                        
+
+
+
+                        // check for noStr-Flag
+                        if (!sbcConfig.options.flags.noStr) {
+                            /* 
+                             * Calculate the attackAttrModifier via the value given in the statblock,
+                             * not the one currently in the actor (as this may be changed when embeddedItems get updated in the permanent actor)
+                             */
+                            // attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.str.mod
+                            attackAttrModifier = +sbcUtils.getModifier(sbcData.notes.statistics.str)
+
+                            // set abilityTypes
+                            attackAbilityType = "str"
+                            damageAbilityType = "str"
+                        } 
+
                     } else if (type === "rwak") {
+                        
+                        // check for noDex-Flag
                         if (!sbcConfig.options.flags.noDex) {
-                            attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.dex.mod
-                        } else {
-                            attackAttrModifier = 0
-                        }
+                            //attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.dex.mod
+                            attackAttrModifier = +sbcUtils.getModifier(sbcData.notes.statistics.dex)
+                            // set abilityTypes
+                            attackAbilityType = "dex"
+                            damageAbilityType = ""
+                        } 
+
                     }
                     
                     // Check, if Str is "-" and set the attackAttrModifier to -5 if it is
+                    /*
                     if (type === "mwak" && sbcConfig.options.flags.noStr) {
                         // -5 so that the negative modificator from strength gets negated in the final calculation of the attackModifier
                         attackAttrModifier = -5
                     }
+                    */
                                 
                     // numberOfAttacks
                     if (attack.match(/(^\d+)/) !== null) {
@@ -1829,7 +1873,12 @@ class attacksParser extends sbcParserBase {
                     if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/) !== null) {
                         inputAttackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1]
                         attackNotes += inputAttackModifier
-                                        
+                        
+                        /*
+                         * DO WE NEED THIS? I THINK NOT, IF WE VALIDATE LATER
+                         */
+
+                        /*
                         // Subtract BAB, ATTR-MOD and SIZE-MOD    
                         attackModifier =
                               +inputAttackModifier
@@ -1843,120 +1892,74 @@ class attacksParser extends sbcParserBase {
                         } else if (enhancementBonus === 0 && mwkWeapon === true) {
                             attackModifier = (attackModifier - 1)
                         }
+                        */
                         
                     }
                         
                     // numberOfIterativeAttacks
+
+                    /* 
+                     * WIP
+                     * HMMM, THESE SHOULD BE DERIVED BY BAB, NOT ATTACK MODIFIER
+                     */
+
+                    if (attack.match(/(\/\+\d+)/) !== null) {
+                        numberOfIterativeAttacks = attack.match(/(\/\+\d+)/g).length
+                        for (let i = numberOfIterativeAttacks; i>=1; i--) {
+                            attackNotes += "/+" + (inputAttackModifier-(inputAttackModifier-(5*i)))
+                        }
+                    }
+
+                    /*
                     if (attack.match(/(\/\+\d+)/) !== null) {
                         numberOfIterativeAttacks = attack.match(/(\/\+\d+)/g).length
                         for (let i = numberOfIterativeAttacks; i>=1; i--) {
                             attackNotes += "/+" + (attackModifier-(attackModifier-(5*i)))
                         }
                     }
+                    */
                     
-                    // If Strength is "-" do special undead stuff, otherwise calculate damage as normal
-                    if (!sbcConfig.options.flags.noStr) {
+                    /* ------------------------------------ */
+                    /* Damage Calculation		        	*/
+                    /* ------------------------------------ */
                         
-                        /* ------------------------------------ */
-                        /* Normal Damage Calculation			*/
-                        /* ------------------------------------ */
-                        
-                        // If the attack has damage dice
+                    // If the attack has damage dice
+                    if (attack.match(/\d+d\d+/) !== null) {
+                        // NumberOfDamageDice and DamageDie
                         if (attack.match(/\d+d\d+/) !== null) {
-                            // NumberOfDamageDice and DamageDie
-                            if (attack.match(/\d+d\d+/) !== null) {
-                                numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1]
-                                damageDie = attack.match(/(\d+)d(\d+)/)[2]
-                                attackNotes += " (" + numberOfDamageDice + "d" + damageDie
-                            }
-                            // damageBonus
-                            if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                                damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1]
-                                let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];               
-                                attackNotes += notesDamageBonus
-                            }
-                            // critRange
-                            if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
-                                critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1]
-                                attackNotes += "/" + critRange + "-20"
-                            }
-                            // critMult
-                            if (attack.match(/(?:\/x)(\d+)/) !== null) {
-                                critMult = attack.match(/(?:\/x)(\d+)/)[1]
-                                attackNotes += "/x" + critMult
-                            }
-                            // attackEffects
-                            if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
-                                attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1]
-                                attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ")
-                                attackNotes += " plus " + attackEffects
-                            }
-                        } else {
-                            // If there is just a specialEffect
-                            let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
-                            attackNotes += " (" + specialEffect
-                            attackEffects += specialEffect
+                            numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1]
+                            damageDie = attack.match(/(\d+)d(\d+)/)[2]
+                            attackNotes += " (" + numberOfDamageDice + "d" + damageDie
                         }
-
+                        // damageBonus
+                        if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                            damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1]
+                            let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];               
+                            attackNotes += notesDamageBonus
+                        }
+                        // critRange
+                        if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                            critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1]
+                            attackNotes += "/" + critRange + "-20"
+                        }
+                        // critMult
+                        if (attack.match(/(?:\/x)(\d+)/) !== null) {
+                            critMult = attack.match(/(?:\/x)(\d+)/)[1]
+                            attackNotes += "/x" + critMult
+                        }
+                        // attackEffects
+                        if (attack.match(/(?:plus )(.+)(?:\))/) !== null) {
+                            attackEffects = attack.match(/(?:plus )(.+)(?:\))/)[1]
+                            attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ")
+                            attackNotes += " plus " + attackEffects
+                        }
                     } else {
-                        
-                        /* ------------------------------------ */
-                        /* Damage Calculation for Str = "-"		*/
-                        /* ------------------------------------ */
-                        
-                        if (attack.match(/\d+d\d+/) !== null) {
-                            
-                            // If the attack has damage dice
-                            attackNotes += " ("
-                            
-                            let damagePool = attack.match(/(\d+d\d+[^0-9)]*)/g)
-                            
-                            for (let i=0; i<damagePool.length; i++) {
-                                
-                                let damageComponent = damagePool[i]
-                                let tempItem = damageComponent.split(/ plus /)
-                                
-                                for (let j=0; j<tempItem.length; j++) {
-                                    
-                                    let damageSubComponent = tempItem[j]
-                                    
-                                    // If there are damageDice
-                                    if (damageSubComponent.match(/(\d+d\d+)/) !== null) {
-                                        let specialDamage = damageSubComponent.match(/(\d+d\d+)/)[0]
-                                        attackNotes += specialDamage + " "
-                                        attackEffects += specialDamage + " "
-                                        
-                                        if (damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/) !== null) {
-                                            // If there are damageDice and a damageType
-                                            let specialDamageType = damageSubComponent.match(/(?:\d+d\d+\s*)([^0-9)]*)/)[1]
-                                            attackNotes += specialDamageType
-                                            attackEffects += specialDamageType
-                                        }
-                                    } else {
-                                        // If there is just a specialEffect
-                                        let specialEffect = damageSubComponent
-                                        attackNotes += specialEffect
-                                        attackEffects += specialEffect
-                                    }
-                                    
-                                    if (j < tempItem.length-1) {
-                                        attackNotes += " plus "
-                                        attackEffects += "\n"
-                                    }
-                                    
-                                }
-                                
-                            }
-                        
-                        } else {
-                            // If there is just a specialEffect
-                            let specialEffect = attack
-                            attackNotes += " (" + specialEffect + ")"
-                            attackEffects += specialEffect
-                        }
-                        
+                        // If there is just a specialEffect
+                        let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
+                        attackNotes += " (" + specialEffect
+                        attackEffects += specialEffect
                     }
-
+                    
                     attackNotes += ")"
 
                     /* ------------------------------------ */
@@ -1967,7 +1970,7 @@ class attacksParser extends sbcParserBase {
                     console.log("numberOfAttacks: " + numberOfAttacks)
                     console.log("enhancementBonus: "+ enhancementBonus)
                     console.log("attackName: "+ attackName)
-                    console.log("attackModifier: "+ attackModifier)
+                    //console.log("attackModifier: "+ attackModifier)
                     console.log("inputAttackModifier: "+ inputAttackModifier)
                     console.log("numberOfDamageDice: "+ numberOfDamageDice)
                     console.log("damageDie: "+ damageDie)
@@ -1981,7 +1984,7 @@ class attacksParser extends sbcParserBase {
                     console.log("mwkWeapon: "+ mwkWeapon)
                     console.log("numberOfIterativeAttacks: "+ numberOfIterativeAttacks)
                     console.log("attackNotes: "+ attackNotes)
-                    */                           
+                    */                       
 
                     // Create a temporary item
                     let newAttack = await Item.create({
@@ -1998,10 +2001,10 @@ class attacksParser extends sbcParserBase {
                                 "value": ""
                             },
                             "ability": {
-                                "attack": "str",
+                                "attack": attackAbilityType,
                                 "critMult": critMult,
                                 "critRange": critRange,
-                                "damage": "str",
+                                "damage": damageAbilityType,
                                 "damageMult": 1
                             },
                             "actionType": type,
@@ -2029,7 +2032,6 @@ class attacksParser extends sbcParserBase {
                         },
                         "img": ""
                     }, { temporary : true })
-
 
                     // Check, if the attack is a natural attack
                     let naturalAttacksKeys = Object.keys(sbcContent.naturalAttacks)
@@ -2059,17 +2061,33 @@ class attacksParser extends sbcParserBase {
                     // Calculate differences between given and calculated attack modifiers
                     let secondaryAttackModifier = 0
 
-                    let calculatedAttackModifier =
+                    let calculatedAttackModifier = 
                               +sbcData.characterData.actorData.data.data.attributes.bab.total
                             + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size]
                             + +attackAttrModifier
                             + +secondaryNaturalAttackPenalty
 
+                    
+
+                    /*
+                    console.log("sbcData.characterData.actorData.data.data.attributes.bab.total: " + sbcData.characterData.actorData.data.data.attributes.bab.total)
+                    console.log(sbcData.characterData.actorData.data.data.attributes.bab)
+                    console.log("CONFIG['PF1'].sizeMods[sbcData.characterData.actorData.data.data.traits.size]: " + CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size])
+                    console.log("attackAttrModifier: " + attackAttrModifier)
+                    console.log("secondaryNaturalAttackPenalty: " + secondaryNaturalAttackPenalty)
+
+                    console.log("calculatedAttackModifier: " + calculatedAttackModifier)
+                    console.log("inputAttackModifier: " + inputAttackModifier)
+                    */
+
                     if (+calculatedAttackModifier !== +inputAttackModifier) {
                         secondaryAttackModifier = +inputAttackModifier - +calculatedAttackModifier
                     }
 
-                    newAttack.data.data.attackBonus = (+attackModifier + +secondaryAttackModifier).toString()
+                    // console.log("secondaryAttackModifier: " + secondaryAttackModifier)
+
+                    //newAttack.data.data.attackBonus = (+inputAttackModifier + +secondaryAttackModifier).toString()
+                    newAttack.data.data.attackBonus = secondaryAttackModifier.toString()
 
                     // Change the attackName if there is an enhancementBonus
                     if (enhancementBonus !== 0) {
@@ -2108,9 +2126,14 @@ class attacksParser extends sbcParserBase {
                     }
 
                     // Push Damage Parts & Calculate the difference between input and calculatedDamageBonus
-                    let strDamageBonus = +sbcData.characterData.actorData.data.data.abilities.str.mod
+                    let strDamageBonus = 0 
+                    if (!sbcConfig.options.flags.noStr) {
+                        // Use the value given in the statblock instead of the one currently in the actor
+                        // strDamageBonus = +sbcData.characterData.actorData.data.data.abilities.str.mod
+                        strDamageBonus = +sbcUtils.getModifier(sbcData.notes.statistics.str)
+                    }
+
                     let calculatedDamageBonus = +strDamageBonus + +enhancementBonus
-                    
                     damageModifier = +damageBonus - +calculatedDamageBonus
 
                     // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
@@ -2132,6 +2155,7 @@ class attacksParser extends sbcParserBase {
                     }
 
                     // If it's a normal attack, push Damage as normal
+                    /*
                     if (!sbcConfig.options.flags.noStr && numberOfDamageDice !== 0) {
                         newAttack.data.data.damage.parts.push(
                             [
@@ -2140,16 +2164,18 @@ class attacksParser extends sbcParserBase {
                             ]
                         )
                     }
+                    */
+
+                    newAttack.data.data.damage.parts.push(
+                        [
+                            numberOfDamageDice + "d" + damageDie + "+" + damageModifier,
+                            damageType
+                        ]
+                    )
 
                     // Push attackNotes and effectNotes
                     newAttack.data.data.attackNotes = attackNotes;
                     newAttack.data.data.effectNotes = sbcUtils.makeValueRollable(attackEffects)
-
-                    if (type === "mwak") {
-                        newAttack.data.data.ability.attack = "str";
-                    } else if (type === "rwak") {
-                        newAttack.data.data.ability.attack = "dex"
-                    }
 
                     sbcData.characterData.items.push(newAttack)
                 }
@@ -2163,9 +2189,6 @@ class attacksParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as " + type + "-Attack." + err
             let error = new sbcError(1, "Parse/Offense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -2200,9 +2223,13 @@ export async function parseStatistics(data, startLine) {
                         let valueInStatblock = abilities[i].match(/(\d+|-)/)[1]
 
                         // Change the value to zero if "-" is given and set the appropriate flag in sbcConfig.options.flags
+                        /*
+                        console.log("ability: " + ability)
+                        console.log("valueInStackblock: " + valueInStatblock)
+                        */
 
                         // TODO: FLAGS NEED TO BE WORKED ON AFTER PARSING IS FINISHED, CREATE A NEW FUNCTION FOR THAT
-                        if (valueInStatblock == "-" || valueInStatblock === 0 || valueInStatblock === "0") {
+                        if (valueInStatblock === "-" || valueInStatblock === 0 || valueInStatblock === "0") {
                             valueInStatblock = 0
                             let flagKey = "no" + sbcUtils.capitalize(ability)
                             sbcConfig.options.flags[flagKey] = true
@@ -3016,15 +3043,15 @@ export async function parseTactics(data, startLine) {
                 }
             }
 
-            // Parse During Combat
+            // Parse Morale
             if (!parsedSubCategories["morale"]) {
                 if (lineContent.search(/(Morale)/i) !== -1) {
                     let morale = {
                         "name": "Morale",
                         "entry": lineContent.match(/^(?:Morale)([\s\S]*?)(?=$|Base Statistics)/i)[1]                       
                     }
-                    sbcData.notes.tactics.duringCombat = duringCombat.entry
-                    parsedSubCategories["duringCombat"] = await parserTactics.parse(duringCombat, startLine + line)
+                    sbcData.notes.tactics.morale = morale.entry
+                    parsedSubCategories["morale"] = await parserTactics.parse(morale, startLine + line)
                 }
             }
 
@@ -3534,7 +3561,6 @@ export function initMapping() {
             "attacks": new attacksParser(),
             
         },
-        "tactics": new tacticsParser(),
         "statistics": {
             
             "str": new abilityParser(["data.abilities.str.total", "data.abilities.str.value"], ["data.abilities.str.mod"], "number"),
@@ -3553,6 +3579,8 @@ export function initMapping() {
             "gear": new gearParser(),
 
         },
+        
+        "tactics": new tacticsParser(),
         "ecology": new ecologyParser(),
         "special abilities": new specialAbilityParser(),
         "description": new notesParser(["description.long"], "string")

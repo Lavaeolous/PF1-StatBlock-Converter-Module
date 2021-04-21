@@ -12,7 +12,7 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json
 ```
 # Compatibility
-GameSystem: [PF1 0.77.20](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+GameSystem: [PF1 0.77.21](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 
 FoundryVTT: 0.7.8-0.7.9
 
