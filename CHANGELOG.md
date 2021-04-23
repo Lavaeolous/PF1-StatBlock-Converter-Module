@@ -1,5 +1,10 @@
 # Change Log
 
+2021_04_23 - v3.1.0
+*  Added parsing of ranged attacks (#379)
+*  Fixed #377 so that statisticData gets parsed correctly
+*  Fixed errors in the calculation of attack modifiers and damage modifiers for attacks, especially for attacks with bows (which don't get a strength bonus).
+
 2021_04_21 - v3.0.3
 *  Updated compatibility to PF1 System 0.77.21
 *  Fixed Copy & Paste Error in Morale parsing (#373)

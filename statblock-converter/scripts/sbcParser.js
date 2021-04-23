@@ -88,9 +88,6 @@ export class sbcParser {
 
                 let availableCategories = Object.keys(sbcMapping.map);
 
-                console.log("availableCategories")
-                console.log(availableCategories)
-
                 /* ------------------------------------ */
                 /* The input was prepared and is        */
                 /* currently in the form of an arry     */
@@ -131,9 +128,6 @@ export class sbcParser {
                 let parsedCategories = {}
 
                 sbcData.foundCategories = foundCategories.length
-
-                console.log("foundCategories")
-                console.log(foundCategories)
 
                 if (foundCategories.length !== 0) {
 
@@ -177,13 +171,13 @@ export class sbcParser {
                         for (let i=0; i<foundCategories.length; i++) {
                             
                             let category = foundCategories[i]
+
                             let startLine = lastLine
                             startLines[category] = startLine
                             let stopLine = categoryIndexPositions[foundCategories[i+1]]
 
                             if (i === foundCategories.length-1) {
                                 dataChunks[category] = sbcData.preparedInput.data.slice(startLine)
-                                
                             } else {
                                 dataChunks[category] = sbcData.preparedInput.data.slice(startLine, stopLine)
                             }
@@ -194,17 +188,10 @@ export class sbcParser {
 
                         }
 
-                        console.log("parsedCategories in dataChunks:")
-                        console.log(dataChunks)
-
                         // Rearrange the foundCategories so that statistics gets parsed before defense and offense
-                        console.log("foundCategories")
-                        console.log(foundCategories)
                         let orderedFoundCategories = foundCategories
                         orderedFoundCategories.splice(foundCategories.indexOf("statistics"),1)[0]
                         orderedFoundCategories.splice(1,0,"statistics")
-                        console.log("ORDERED FOUND CATEGORIES")
-                        console.log(orderedFoundCategories)
 
                         for (let i=0; i<orderedFoundCategories.length; i++) {
                             let category = orderedFoundCategories[i]

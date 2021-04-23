@@ -1241,6 +1241,11 @@ export class sbcContent {
             "primaryAttack": false,
             "damageTypes": "B"
         },
+        "tail slap": {
+            "img": "systems/pf1/icons/items/inventory/monster-tail.jpg",
+            "primaryAttack": false,
+            "damageTypes": "B"
+        },
         "slam": {
             "img": "systems/pf1/icons/items/inventory/monster-forearm.jpg",
             "primaryAttack": true,
