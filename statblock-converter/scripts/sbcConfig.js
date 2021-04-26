@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.1.0",
+    "version": "3.1.1",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -396,7 +396,9 @@ sbcConfig.armorBonusTypes = [
     "circumstance",
     "alchemical",
     "penalty",
-    "rage"
+    "rage",
+    "monk",
+    "wis"
 ]
 
 /* ------------------------------------ */

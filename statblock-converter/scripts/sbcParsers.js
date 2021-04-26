@@ -461,107 +461,144 @@ class classesParser extends sbcParserBase {
             for (let i=0; i<classes.length; i++) {
                 let classInput = classes[i]
 
+                let isSupportedClass = false
+                let isPrestigeClass = false
+                let isWizardClass = false
+
                 if (classInput.search(patternPrestigeClasses) !== -1) {
-                    // If the input is a prestige class, create a placeholder item
-                    // as these are currently not supported in the pf1 system
+                    isPrestigeClass = true
+                }
+                if (classInput.search(patternSupportedClasses) !== -1) {
+                    isSupportedClass = true
+                }
+                if (classInput.search(patternWizardClasses) !== -1) {
+                    isWizardClass = true
+                }
 
-                    let className = sbcUtils.parseSubtext(classInput.replace(/\d+/g, "").trim())[0]
-                    let classLevel = classInput.match(/(\d+)/)[1]
-
-                    let classKey = Object.keys(sbcContent.prestigeClasses).find(key => key.toLowerCase() === className.toLowerCase())
-                    let classTemplate = sbcContent.prestigeClasses[classKey]
-
-                    let classSkills = {}
-                    let skillKeys = Object.keys(CONFIG.PF1.skills)
-
-                    for (let i=0; i<skillKeys.length; i++) {
-
-                        let searchSkill = skillKeys[i]
-                        if (classTemplate.classSkills.includes(searchSkill)) {
-                            classSkills[searchSkill] = true
-                        } else {
-                            classSkills[searchSkill] = false
-                        }
-
-                    }
+                // Supported Class, Prestige Class or Wizard Class found
+                if (isPrestigeClass || isSupportedClass || isWizardClass) {
                     
-                    let classItem = await Item.create({
-                        "name": sbcUtils.capitalize(className),
-                        "type": "class",
-                        "data": {
-                            "description": {
-                                "value": "sbc | As the PF1-System currently does not include prestige classes, a placeholder was generated."
-                            },
-                            "bab": classTemplate.bab,
-                            "classType": "prestige",
-                            "classSkills": classSkills,
-                            "level": +classLevel,
-                            "hd": +classTemplate.hd,
-                            "hp": +classTemplate.hd + +Math.floor(sbcUtils.getDiceAverage(+classTemplate.hd) * (+classLevel-1)),
-                            "savingThrows": {
-                                "fort": { "value": classTemplate.fort },
-                                "ref":  { "value": classTemplate.ref  },
-                                "will": { "value": classTemplate.will }
-                            },
-                            "skillsPerLevel": +classTemplate.skillsPerLevel,
-                            
-                        },
-                        "img": classTemplate.img
-                    }, { temporary : true })
-
-                    let infoMessage = "As the PF1-System currently does not include prestige classes, a placeholder will be generated for the class " + className + "."
-                    let info = new sbcError(3, "Parse/Base/Class", infoMessage, line)
-                    sbcData.errors.push(info)
-
-                    sbcData.characterData.items.push(classItem)
-
-                } else if (classInput.search(patternSupportedClasses) !== -1 || classInput.search(patternWizardClasses) !== -1) {
-                    // Supported Class or Wizard equivalent found
 
                     let tempClassName = sbcUtils.parseSubtext(classInput.replace(/\d+/g, "").trim())
+
+                    let classArchetype = ""
+                    if (tempClassName[1]) {
+                        classArchetype = tempClassName[1]
+                    }
+
+                    let classLevel = 0
+                    if (classInput.match(/(\d+)/)[0]) {
+                        classLevel = classInput.match(/(\d+)/)[0]
+                    }
 
                     let classData = {
                         "name": "",
                         "wizardClass": "",
                         "suffix": "",
-                        "archetype": tempClassName[1],
-                        "level": classInput.match(/(\d+)/)[1] 
+                        "archetype": classArchetype,
+                        "level": classLevel
                     }
 
-                    if (classInput.search(patternSupportedClasses) !== -1) {
-                        classData.name = tempClassName[0].match(patternSupportedClasses)[0]
-                        classData.suffix = tempClassName[0].replace(classData.name, "").trim()
-                    } else {
+                    classData.name = tempClassName[0]
+                    classData.suffix = tempClassName[0].replace(classData.name, "").trim()
+                    if (isWizardClass) {
                         classData.name = "wizard"
-                        classData.wizardClass = tempClassName[0].match(patternWizardClasses)[0]
+                        classData.wizardClass = tempClassName[0]
                         classData.suffix = tempClassName[0].replace(classData.wizardClass, "").trim()
                     }
 
                     let classItem = await sbcUtils.findEntityInCompendium(compendium, classData, line)
 
-                    // If the suffix contains an "of" the probability it names a deity is high. So, set that and hope for the best
-                    if (classData.suffix.search(/^(of\b)/i) !== -1 && classData.archetype !== undefined) {
-                        let deity = classData.suffix.replace(/^(of\b)/i, "").trim()
-                        sbcData.characterData.actorData.data.data.details.deity = deity
-                        classItem.data.name = sbcUtils.capitalize(classData.name) + " " + classData.suffix + " (" + sbcUtils.capitalize(classData.archetype) + ")"
-                    } else if (classData.suffix.search(/^(of\b)/i) !== -1) {
-                        let deity = classData.suffix.replace(/^(of\b)/i, "").trim()
-                        sbcData.characterData.actorData.data.data.details.deity = deity
-                        classItem.data.name = sbcUtils.capitalize(classData.name) + " " + classData.suffix
-                    } else if (classData.archetype) {
-                        classItem.data.name = sbcUtils.capitalize(classData.name) + " (" + sbcUtils.capitalize(classData.archetype) + ")"
-                    } else if (classData.wizardClass !== "") {
-                        classItem.data.name = sbcUtils.capitalize(classData.wizardClass)
-                        classItem.data.data.tag = "wizard"
-                        classItem.data.data.useCustomTag = true
-                    } else {
-                        classItem.data.name = sbcUtils.capitalize(classData.name)
-                    }
-       
-                    classItem.data.data.level = +classData.level
-                    classItem.data.data.hp = +classItem.data.data.hd + +Math.floor(sbcUtils.getDiceAverage(+classItem.data.data.hd) * (+classData.level-1))
+                    /*
+                     * If the input is a prestige class AND this prestige class could not be found,
+                     * create a new placeholder
+                     * otherwise
+                     * enter stuff as normal
+                     */
 
-                    sbcData.characterData.items.push(classItem)
+                    if (isPrestigeClass && !classItem) {
+                        // If the input is a prestige class that could not be found in any compendium, create a placeholder item
+                        // as these are currently not supported in the pf1 system
+
+                        let className = sbcUtils.parseSubtext(classInput.replace(/\d+/g, "").trim())[0]
+                        let classLevel = classInput.match(/(\d+)/)[1]
+
+                        let classKey = Object.keys(sbcContent.prestigeClasses).find(key => key.toLowerCase() === className.toLowerCase())
+                        let classTemplate = sbcContent.prestigeClasses[classKey]
+
+                        let classSkills = {}
+                        let skillKeys = Object.keys(CONFIG.PF1.skills)
+
+                        for (let i=0; i<skillKeys.length; i++) {
+
+                            let searchSkill = skillKeys[i]
+                            if (classTemplate.classSkills.includes(searchSkill)) {
+                                classSkills[searchSkill] = true
+                            } else {
+                                classSkills[searchSkill] = false
+                            }
+
+                        }
+                        
+                        let classItem = await Item.create({
+                            "name": sbcUtils.capitalize(className),
+                            "type": "class",
+                            "data": {
+                                "description": {
+                                    "value": "sbc | As the PF1-System currently does not include prestige classes, a placeholder was generated."
+                                },
+                                "bab": classTemplate.bab,
+                                "classType": "prestige",
+                                "classSkills": classSkills,
+                                "level": +classLevel,
+                                "hd": +classTemplate.hd,
+                                "hp": +classTemplate.hd + +Math.floor(sbcUtils.getDiceAverage(+classTemplate.hd) * (+classLevel-1)),
+                                "savingThrows": {
+                                    "fort": { "value": classTemplate.fort },
+                                    "ref":  { "value": classTemplate.ref  },
+                                    "will": { "value": classTemplate.will }
+                                },
+                                "skillsPerLevel": +classTemplate.skillsPerLevel,
+                                
+                            },
+                            "img": classTemplate.img
+                        }, { temporary : true })
+
+                        let infoMessage = "As the PF1-System currently does not include prestige classes, a placeholder will be generated for the class " + className + "."
+                        let info = new sbcError(3, "Parse/Base/Class", infoMessage, line)
+                        sbcData.errors.push(info)
+
+                        sbcData.characterData.items.push(classItem)
+
+                    } else {
+
+                        // If the suffix contains an "of" the probability it names a deity is high. So, set that and hope for the best
+                        if (classData.suffix.search(/^(of\b)/i) !== -1 && classData.archetype !== undefined) {
+                            let deity = classData.suffix.replace(/^(of\b)/i, "").trim()
+                            sbcData.characterData.actorData.data.data.details.deity = deity
+                            classItem.data.name = sbcUtils.capitalize(classData.name) + " " + classData.suffix + " (" + sbcUtils.capitalize(classData.archetype) + ")"
+                        } else if (classData.suffix.search(/^(of\b)/i) !== -1) {
+                            let deity = classData.suffix.replace(/^(of\b)/i, "").trim()
+                            sbcData.characterData.actorData.data.data.details.deity = deity
+                            classItem.data.name = sbcUtils.capitalize(classData.name) + " " + classData.suffix
+                        } else if (classData.archetype) {
+                            classItem.data.name = sbcUtils.capitalize(classData.name) + " (" + sbcUtils.capitalize(classData.archetype) + ")"
+                        } else if (classData.wizardClass !== "") {
+                            classItem.data.name = sbcUtils.capitalize(classData.wizardClass)
+                            classItem.data.data.tag = "wizard"
+                            classItem.data.data.useCustomTag = true
+                        } else {
+                            classItem.data.name = sbcUtils.capitalize(classData.name)
+                        }
+        
+                        classItem.data.data.level = +classData.level
+                        classItem.data.data.hp = +classItem.data.data.hd + +Math.floor(sbcUtils.getDiceAverage(+classItem.data.data.hd) * (+classData.level-1))
+
+                        sbcData.characterData.items.push(classItem)
+                        
+                    }
+
+                    
 
                 }  else {
                     let errorMessage = "Failed to create an item for the class " + value + "."
@@ -580,6 +617,7 @@ class classesParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as classes."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(error)
+            throw err
             return false
 
         }
@@ -1106,6 +1144,8 @@ class acTypesParser extends sbcParserBase {
                     case "alchemical":
                     case "penalty":
                     case "rage":
+                    case "monk":
+                    case "wis":
                         /* Try to put these in the front of the conversion,
                          * so that acNormal etc get handled after handling
                          * acTypes */
@@ -1145,8 +1185,10 @@ class hpParser extends sbcParserBase {
             let currentItems = sbcData.characterData.items
             let classItems = []
             let hasOnlyRacialHd = true
-            let numberOfClasses = 0
+            let classesLeftToParse = 0
             let parsedClasses = 0
+            let isRacial = false
+            let hasClassAndRacialHd = false
 
             for (let i=0; i<currentItems.length; i++) {
                 if (currentItems[i].type === "class") {
@@ -1157,10 +1199,11 @@ class hpParser extends sbcParserBase {
 
                     if (classItem.data.data.classType !== "racial") {
                         hasOnlyRacialHd = false
-                        numberOfClasses++
+                        classesLeftToParse++
                     } else {
                         // Reset Level of RacialHD
                         classItem.data.data.level = 0
+                        isRacial = true
                     }
 
                     // Save the classItems for later use
@@ -1168,7 +1211,8 @@ class hpParser extends sbcParserBase {
                         "name": classItem.name,
                         "hd": classItem.data.data.hd,
                         "level": classItem.data.data.level,
-                        "isParsed": false
+                        "isParsed": false,
+                        "isRacial": isRacial
                     }
                     
                     classItems.push(classWithHd)
@@ -1193,27 +1237,26 @@ class hpParser extends sbcParserBase {
 
             let hdInput = splitHpAndHd[1]
             let hdPool = hdInput.match(/(\d+d\d+)/g)
+            let hdPoolsToParse = hdPool.length
+
+            // If there are more hdPool Items (e.g. ["3d6",2d10"]) than classes
+            // then the creature has class and racial hit dice
+            if (hdPoolsToParse > classesLeftToParse && classesLeftToParse !== 0) {
+                hasClassAndRacialHd = true
+            }
 
             // HP Bonus Pool
             let hpBonus = 0
             // Check, if there are Bonus HP
-            if (hdInput.search(/(\b[^d+\s]*\d+[^\sd+]*\b)(?!\s*HD)/) !== -1) {
-                let hpBonusPool = hdInput.match(/(\b[^d+\s]*\d+[^\sd+]*\b)(?!\s*HD)/g)
+            if (hdInput.search(/(\b[^d+\s]*\d+[^\sd+]*\b)(?!\s*HD)/i) !== -1) {
+                let hpBonusPool = hdInput.match(/(\b[^d+\s]*\d+[^\sd+]*\b)(?!\s*HD)/gi)
             
                 for (let i=0; i<hpBonusPool.length; i++) {
                     hpBonus += +hpBonusPool[i]
                 }
 
             }
-            
-            // Put the bonus hp into the conversion validation
-            // Maybe not needed, see 3.0.1
-            /*
-            if (hpBonus > 0) {
-                sbcData.characterData.conversionValidation.attributes["hpBonus"] = +hpBonus
-            }
-            */
-            
+                        
             calculatedHpTotal += +hpBonus
 
             // Calculate HP from Hit Dice and distribute that to Class and RacialHD items
@@ -1245,30 +1288,48 @@ class hpParser extends sbcParserBase {
 
                             let calcHp = 0
 
-                            if (!hasOnlyRacialHd) {
-                                if (parsedClasses < numberOfClasses) {
-                                    // Calculate the HP for the Class
-                                    calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+classItem.level-1))
-                                    numberOfHitDice -= +classItem.level
-                                    classItems[j].isParsed = true
-                                    parsedClasses++
-                                } else {
-                                    // If all classes were found, the rest should be racialHD
-                                    // So set hp to zero
-                                    calcHp = 0
-                                }
-                                
-                            } else {
-                                // Calculate the HP for Entries with just RacialHd
+                            if (hasOnlyRacialHd) {
+                                // Calculate the HP for Entries with just Racial Hit Dice
                                 // These use the numberOfHitDice instead of the classItem.level 
-                                calcHp = +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
+                                calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
                                 // Set the HD for the racialHd as well
                                 foundClassItem.data.data.level = +numberOfHitDice
                                 
                                 numberOfHitDice -= +numberOfHitDice
                                 
-                            }
+                            } else if (hasClassAndRacialHd) {
 
+                                // Calculate the HP for Entries with Class and Racial Hit Dice
+                                if (parsedClasses < classesLeftToParse && !classItem.isRacial && numberOfHitDice == classItem.level) {                                    
+                                    // Calculate the HP for Classes of type Class as long as there are classes left to parse
+                                    calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+classItem.level-1))
+                                    numberOfHitDice -= +classItem.level
+                                    classItems[j].isParsed = true
+                                    parsedClasses++
+                                } else if (classItem.isRacial) {
+                                    // Calculate the HP for Classes of type Class as long as there are classes left to parse
+                                    calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
+                                    classItem.level = +numberOfHitDice
+                                    foundClassItem.data.data.level = classItem.level
+                                    numberOfHitDice -= +classItem.level
+                                    
+                                    classItems[j].isParsed = true
+                                } else {
+                                    // THIS SHOULD NOT HAPPEN AT ALL
+                                    sbcConfig.options.debug && sbcUtils.log("This should not happen while parsing hit dice and hit points. Please let me know it this happens on my github.")
+                                }
+
+                            } else {
+                                // Calculate the HP for Entries with just Class Hit Dice
+                                if (parsedClasses < classesLeftToParse) {
+                                    // Calculate the HP for Classes of type Class as long as there are classes left to parse
+                                    calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+classItem.level-1))
+                                    numberOfHitDice -= +classItem.level
+                                    classItems[j].isParsed = true
+                                    parsedClasses++
+                                }
+                            }
+                                
                             foundClassItem.data.data.hp = +calcHp
 
                         } 
@@ -1786,6 +1847,7 @@ class attacksParser extends sbcParserBase {
                     let attackAbilityType = ""
                     let damageAbilityType = ""
                     let attackRangeUnits = ""
+                    let attackRangeIncrement = ""
                                 
                     // Search for Touch or Ranged Touch
                     if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
@@ -1813,8 +1875,9 @@ class attacksParser extends sbcParserBase {
                             attackRangeUnits = "melee"
                         } 
 
-                    } else if (type === "rwak") {
-                        
+                    }
+                    
+                    if (type === "rwak") {
                         // check for noDex-Flag
                         if (!sbcConfig.options.flags.noDex) {
                             //attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.dex.mod
@@ -1828,30 +1891,32 @@ class attacksParser extends sbcParserBase {
                             }
 
                             attackRangeUnits = "ft"
+                            attackRangeIncrement = "5"
                         } 
 
                     }
-
-                    
                                 
                     // numberOfAttacks
                     if (attack.match(/(^\d+)/) !== null) {
                         numberOfAttacks = attack.match(/(^\d+)/)[1];
                         attackNotes += numberOfAttacks + " "
                     }
+
                     // enhancementBonus
                     if (attack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/) !== null) {
                         enhancementBonus = attack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/)[1];
                         attackNotes += "+" + enhancementBonus + " "
                     }
+
                     // Masterwork
                     if (attack.match(/\bmwk\b/i) !== null) {
                         mwkWeapon = true
                         attackNotes += "mwk "
                     }
+
                     // attackName
-                    if (attack.match(/(\b[a-zA-Z*]+)(?:[ +0-9(/]+\()/) !== null) {
-                        attackName = attack.match(/(\b[a-zA-Z *]+)(?:[ +0-9(/]+\()/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "")
+                    if (attack.match(/(\b[a-zA-Z*]+)(?:[ +0-9(/]+\(*)/) !== null) {
+                        attackName = attack.match(/(\b[a-zA-Z *]+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "")
                         
                         // Special ActionType for swarmAttacks
                         if (attackName.search(/\bSwarm\b/i) !== -1) {
@@ -1862,8 +1927,8 @@ class attacksParser extends sbcParserBase {
                     }
                     
                     // attackModifier
-                    if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/) !== null) {
-                        inputAttackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\()/)[1]
+                    if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\(*)/) !== null) {
+                        inputAttackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\(*)/)[1]
                         attackNotes += inputAttackModifier                        
                     }
                         
@@ -1910,14 +1975,19 @@ class attacksParser extends sbcParserBase {
                             attackNotes += " " + attackEffects
                             attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ").replace(/(\s+\bplus\b\s+)/i, ", ")
                         }
-                    } else {
-                        // If there is just a specialEffect
+                        attackNotes += ")"
+
+                    } else if (attack.match(/\(([^)]*)\)/) !== null){
+                        // If there is just a specialEffect in parenthesis
                         let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
-                        attackNotes += " (" + specialEffect
+                        attackNotes += " (" + specialEffect + ")"
                         attackEffects += specialEffect
+                    } else {
+                        // If there are neither damage dice nor special effects in parenthesis
+                        sbcConfig.options.debug && sbcUtils.log("Kind of embarrasing, but this should never happen.")
                     }
                     
-                    attackNotes += ")"
+                    
 
                     /* ------------------------------------ */
                     /* [2] CREATE AN ATTACK WITH THAT DATA	*/
@@ -1928,7 +1998,7 @@ class attacksParser extends sbcParserBase {
                     console.log("enhancementBonus: "+ enhancementBonus)
                     console.log("attackName: "+ attackName)
                     //console.log("attackModifier: "+ attackModifier)
-                    console.log("inputAttackModifier: "+ inputAttackModifier)
+                    ("inputAttackModifier: "+ inputAttackModifier)
                     console.log("numberOfDamageDice: "+ numberOfDamageDice)
                     console.log("damageDie: "+ damageDie)
                     console.log("damageBonus: "+ damageBonus)
@@ -1941,7 +2011,8 @@ class attacksParser extends sbcParserBase {
                     console.log("mwkWeapon: "+ mwkWeapon)
                     console.log("numberOfIterativeAttacks: "+ numberOfIterativeAttacks)
                     console.log("attackNotes: "+ attackNotes)
-                    */                    
+                    */
+                                      
 
                     // Create a temporary item
                     let newAttack = await Item.create({
@@ -1984,7 +2055,8 @@ class attacksParser extends sbcParserBase {
                             "effectNotes": attackEffects,
                             "primaryAttack": false,
                             "range": {
-                                "units": attackRangeUnits
+                                "units": attackRangeUnits,
+                                "value": attackRangeIncrement
                             }
                         },
                         "img": ""
@@ -1994,7 +2066,7 @@ class attacksParser extends sbcParserBase {
                     let naturalAttacksKeys = Object.keys(sbcContent.naturalAttacks)
                     let naturalAttacksPattern = new RegExp("(" + naturalAttacksKeys.join("s*\\b|\\b") + ")", "i")
 
-                    let secondaryAttackPenalty = 0
+                    let secondaryNaturalAttackPenalty = 0
 
                     if (attackName.search(naturalAttacksPattern) !== -1) {
 
@@ -2005,11 +2077,24 @@ class attacksParser extends sbcParserBase {
                         
                         // If its a secondary attack, give it a malus of 5
                         if (!newAttack.data.data.primaryAttack) {
-                            secondaryAttackPenalty = 5
+                            secondaryNaturalAttackPenalty = 5
                         }
 
                         newAttack.data.img = tempNaturalAttack.img
 
+                    }
+
+                    // Set Masterwork Status
+                    if (mwkWeapon) {
+                        newAttack.data.name = "Mwk " + sbcUtils.capitalize(attackName)
+                        newAttack.data.data.masterwork = true
+                    }
+
+                    // Change the attackName if there is an enhancementBonus
+                    if (enhancementBonus) {
+                        newAttack.data.name = "+" + enhancementBonus + " " + sbcUtils.capitalize(attackName)
+                        newAttack.data.data.enh = enhancementBonus
+                        newAttack.data.data.masterwork = true
                     }
                     
                     // Calculate differences between given and calculated attack modifiers
@@ -2018,29 +2103,15 @@ class attacksParser extends sbcParserBase {
                               +sbcData.characterData.actorData.data.data.attributes.bab.total
                             + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size]
                             + +attackAttrModifier
-                            - +secondaryAttackPenalty
+                            + +mwkWeapon                    // Use the boolean for this calculation
+                            + +enhancementBonus
+                            - +secondaryNaturalAttackPenalty
 
                     if (+calculatedAttackModifier !== +inputAttackModifier) {
                         calculatedAttackBonus = +inputAttackModifier - +calculatedAttackModifier
                     }
 
                     newAttack.data.data.attackBonus = calculatedAttackBonus.toString()
-
-                    // Change the attackName if there is an enhancementBonus
-                    if (enhancementBonus !== 0) {
-                        newAttack.data.name = "+" + enhancementBonus + " " + sbcUtils.capitalize(attackName)
-                    }
-
-                    // Set Masterwork Status
-                    if (mwkWeapon !== false) {
-                        newAttack.data.data.masterwork = true
-                    }
-
-                    // Set Enhancement Bonus
-                    if (enhancementBonus !== 0) {
-                        newAttack.data.data.enh = enhancementBonus
-                        newAttack.data.data.masterwork = true
-                    }
 
                     // Push extra attacks from numberOfAttacks
                     for (let i=1; i<numberOfAttacks; i++) {
@@ -2073,7 +2144,7 @@ class attacksParser extends sbcParserBase {
                     let calculatedDamageBonus =
                           +strDamageBonus
                         + +enhancementBonus
-                        - +secondaryAttackPenalty
+                        - +secondaryNaturalAttackPenalty
 
                     damageModifier = +damageBonus - +calculatedDamageBonus
 
@@ -2083,36 +2154,34 @@ class attacksParser extends sbcParserBase {
                         let damageTypePattern = new RegExp("(^\\b" + attackName.replace(/(\bmwk\b|s$)/ig,"").trim() + "\\b$)", "ig");
                     
                         for (let i=0; i < attackDamageTypeKeys.length; i++) {
-                            if (attackDamageTypeKeys[i].toLowerCase().search(damageTypePattern) !== -1) {
-                                damageType = sbcContent.attackDamageTypes[attackDamageTypeKeys[i]].type;
-                                weaponSpecial = sbcContent.attackDamageTypes[attackDamageTypeKeys[i]].special;
+                            let attackDamageTypeKey = attackDamageTypeKeys[i]
+                            let attackDamageType = sbcContent.attackDamageTypes[attackDamageTypeKey]
+                            if (attackDamageTypeKey.toLowerCase().search(damageTypePattern) !== -1) {
+                                damageType = attackDamageType.type
+                                weaponSpecial = attackDamageType.special
+                                // If the Weapon has Range Increment and it is used for a ranged attack
+                                // Set the range increment accordingly
+                                if (attackDamageType.rangeIncrement && type === "rwak") {
+                                    newAttack.data.data.range.value = attackDamageType.rangeIncrement
+                                }
                                 
                                 // If the weapon has special properties, add that to the attackNotes
                                 if (weaponSpecial !== "-") {
-                                    attackNotes += "\nWeapon Qualities: [" + weaponSpecial + "]";
+                                    attackNotes += "\nWeapon Qualities: [" + weaponSpecial + "]"
                                 }
                             }
                         }
                     }
 
-                    // If it's a normal attack, push Damage as normal
-                    /*
-                    if (!sbcConfig.options.flags.noStr && numberOfDamageDice !== 0) {
-                        newAttack.data.data.damage.parts.push(
-                            [
-                                numberOfDamageDice + "d" + damageDie + "+" + damageModifier,
-                                damageType
-                            ]
-                        )
-                    }
-                    */
-
+                    // Push the damage values to the attack
                     newAttack.data.data.damage.parts.push(
                         [
                             numberOfDamageDice + "d" + damageDie + "+" + damageModifier,
                             damageType
                         ]
                     )
+
+
 
                     // Push attackNotes and effectNotes
                     newAttack.data.data.attackNotes = attackNotes;
@@ -2166,13 +2235,7 @@ export async function parseStatistics(data, startLine) {
                         let ability = abilities[i].match(/(\w+)/)[1]
                         let valueInStatblock = abilities[i].match(/(\d+|-)/)[1]
 
-                        // Change the value to zero if "-" is given and set the appropriate flag in sbcConfig.options.flags
-                        /*
-                        console.log("ability: " + ability)
-                        console.log("valueInStackblock: " + valueInStatblock)
-                        */
-
-                        // TODO: FLAGS NEED TO BE WORKED ON AFTER PARSING IS FINISHED, CREATE A NEW FUNCTION FOR THAT
+                        // FLAGS NEED TO BE WORKED ON AFTER PARSING IS FINISHED
                         if (valueInStatblock === "-" || valueInStatblock === 0 || valueInStatblock === "0") {
                             valueInStatblock = 0
                             let flagKey = "no" + sbcUtils.capitalize(ability)
@@ -2411,6 +2474,12 @@ class skillsParser extends sbcParserBase {
             for (let i=0; i<skills.length; i++) {
 
                 let rawSkill = skills[i]
+
+                // Check, if the rawSkill contains "racial modifiers"
+                // And skip to the end of the array as we do not need these
+                if (rawSkill.search(/racial modifier/i) !== -1) {
+                    return
+                }
 
                 let skill = null
 
@@ -3358,59 +3427,44 @@ export async function parseDescription(data, startLine) {
 // Check if some special flags were set during parsing
 export async function checkFlags() {
 
-    sbcConfig.options.debug && sbcUtils.log("Checking for flags set during the conversion process")
-
-    let parsedFlags = []
-
-    sbcConfig.options.debug && sbcUtils.log("Currently set flags:")
+    sbcConfig.options.debug && sbcUtils.log("Flags set during the conversion process")
     sbcConfig.options.debug && console.log(sbcConfig.options.flags)
+
+    let parsedFlags = []    
 
     for (const flag in sbcConfig.options.flags) {
 
         // Fix for set abilities persisting even when flags are reset
+        if (sbcConfig.options.flags[flag]) {
     
-        let fields = []
-        let value = ""
-        let supportedTypes = "string"
-
-        switch(flag) {
-            case "isUndead":
-                // When its an undead, use Cha for HP and Save Calculation
-                fields = ["data.attributes.hpAbility", "data.attributes.savingThrows.fort.ability"]
-                if (sbcConfig.options.flags[flag] === true) {
-                    value = "cha"
-                } else {
-                    value = "con"
-                }
-                break
-            default:
-                break
-        }
-
-        let parser = new singleValueParser(fields, supportedTypes)
-        parsedFlags[flag] = await parser.parse(value)
-
-        /*
-        if (sbcConfig.options.flags[flag] === true) {
-
             let fields = []
             let value = ""
             let supportedTypes = "string"
+            let flagNeedsAdditionalParsing = false
 
             switch(flag) {
                 case "isUndead":
                     // When its an undead, use Cha for HP and Save Calculation
                     fields = ["data.attributes.hpAbility", "data.attributes.savingThrows.fort.ability"]
-                    value = "cha"
+                    if (sbcConfig.options.flags[flag] === true) {
+                        value = "cha"
+                    } else {
+                        value = "con"
+                    }
+                    flagNeedsAdditionalParsing = true
                     break
                 default:
                     break
             }
 
-            let parser = new singleValueParser(fields, supportedTypes)
-            parsedFlags[flag] = await parser.parse(value)
+            if (flagNeedsAdditionalParsing) {
+                let parser = new singleValueParser(fields, supportedTypes)
+                parsedFlags[flag] = await parser.parse(value)
+            }
+
+            
         }
-        */
+
     }
 
 }

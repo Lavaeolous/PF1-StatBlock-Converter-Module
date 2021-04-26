@@ -1,5 +1,17 @@
 # Change Log
 
+2021_04_26 - v3.1.1
+*  Changed handling of set flags (e.g. "isUndead") to only run when needed (#385)
+*  Reworked the way hp and hd get parsed so that all three kinds of cases get handled correctly. Namely cases where the statblock represents a npc with JUST Racial HD, JUST Class HD or a mix of both. (#365)
+*  Fixed error where parts of the hd/hp line would get double parsed as a hpAbility (#382)
+*  Added "Monk" and "Wis" to valid armorClassTypes (#381)
+*  Added rangeIncrements to ranged weapons and melee weapons that can be thrown in sbcContent.attackDamageTypes (#380)
+*  Added support for ranged attacks parsing the default range for a given weapon (#380)
+*  Added support for ranged attack parsing (#379)
+*  Fixed error in the attack modifier calculation for masterwork and enhanced weapons (#378)
+*  Added handling of racial modifiers in the skills section by ignoring these (as they are already included in the skill totals given in the statblock) (#9 - WOW! This was an old one).
+
+
 2021_04_23 - v3.1.0
 *  Added parsing of ranged attacks (#379)
 *  Fixed #377 so that statisticData gets parsed correctly

@@ -290,7 +290,7 @@ export class sbcUtils {
         } else {
 
             sbcConfig.options.debug && sbcUtils.log("Failed to find " + input.name + " in the compendiums [" + compendiums + "]")
-            return searchResult
+            return null
 
         }
 
@@ -775,23 +775,31 @@ export class sbcUtils {
             if (tempInput.match(/([^,]+\([^(.]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
                 // Get the input with parenthesis and commas inside the parenthesis
                 let itemsWithCommasInParenthesis = tempInput.match(/([^,]+\([^(.]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
-                let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)
-
+                let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)                
+                
                 for (let i=0; i<itemsWithCommasInParenthesisKeys.length; i++) {
 
                     let tempKey = itemsWithCommasInParenthesisKeys[i]
                     let tempItem = itemsWithCommasInParenthesis[tempKey].trim()
 
-                    let patternTempItem = new RegExp (tempItem.replace(/\(/,"\\(").replace(/\)/,"\\)").replace(/\+/,"\\+"), "i")
+                    let patternTempItem = new RegExp (tempItem.replace(/\(/g,"\\(").replace(/\)/g,"\\)").replace(/\+/g,"\\+"), "i")
+
                     tempInput = tempInput.replace(patternTempItem, "").replace(/,\s*,/, ",").replace(/^,/, "")
 
                     items.push(tempItem)
 
                 }
 
-                let itemsWithoutParenthesis = tempInput.replace(/,\s*,/, ",").split(/[,;]/)
+                // Add any items without parenthesis back into the "items"-array
+                let itemsWithoutParenthesis = []
 
-                items = items.concat(...itemsWithoutParenthesis)
+                if (tempInput !== "") {
+                    itemsWithoutParenthesis = tempInput.replace(/,\s*,/, ",").split(/[,;]/)
+                }
+                
+                if (itemsWithoutParenthesis.length > 0) {
+                    items = items.concat(...itemsWithoutParenthesis)
+                }                
 
             } else {
 
@@ -955,165 +963,5 @@ export class sbcUtils {
             ret[obj[key]] = key;
         });
         return ret;
-    }
-
-    
-
-    
-
-    /* ------------------------------------ */
-    /* Functions from the Starfinder Parser */
-    /* ------------------------------------ */
-
-    /** Will try to find an entry in the specified compendium that matches all the terms, will return the first entry that does. */
-    
-    static async fuzzyFindCompendiumAsync(compendiumName, searchString) {
-        if (!compendiumName) {
-            sbcUtils.log("No compendium name specified.");
-            return null;
-        }
-
-        if (!searchString) {
-            sbcUtils.log("No search string specified.");
-            return null;
-        }
-
-        let compendium = game.packs.find(element => element.title.includes(compendiumName));
-        if (compendium == undefined) {
-            sbcUtils.log("Could not find compendium named " + compendium + ".");
-            return null;
-        }
-
-        let rawString = this.parseSubtext(searchString)[0];
-        
-        // Let the compendium load
-        await compendium.getIndex();
-        
-        let terms = rawString.toLowerCase().replace("(ex)","").replace("(su)","").replace("(sp)","").trim().replace(/[*,;()\[\]'"]/g,"").split(' ');
-        let entryWeWant = null;
-        for (let entry of compendium.index) {
-            let rawEntryName = this.parseSubtext(entry.name)[0];
-            let entryName = rawEntryName.toLowerCase().replace("(ex)","").replace("(su)","").replace("(sp)","").trim();
-            let entryTerms = entryName.replace(/[*,;()\[\]'"]/g,"").split(' ');
-
-            if (terms.length !== entryTerms.length) {
-                continue;
-            }
-            
-            let bAllTermsPresent = true;
-            for (let term of terms) {
-                if (!entryTerms.includes(term)) {
-                    bAllTermsPresent = false;
-                    break;
-                }
-            }
-
-            if (!bAllTermsPresent) {
-                continue;
-            }
-
-            entryWeWant = compendium.getEntry(entry._id);
-            break;
-        }
-
-        if (entryWeWant != undefined) {
-            //sbcUtils.log("Item " + JSON.stringify(entryWeWant));
-        } else {
-            //sbcUtils.log("Item " + entryName + " not found.");
-        }
-        return entryWeWant;
-    }
-    
-
-    static async fuzzyFindItemAsync(statBlockItemName) {
-        statBlockItemName = statBlockItemName.toLowerCase();
-
-        // Common substitutions
-        statBlockItemName = statBlockItemName.replace("grenades", "grenade");
-        if (statBlockItemName.endsWith("grenade 1")) {
-            statBlockItemName = statBlockItemName.replace("grenade 1", "grenade i");
-        } else if (statBlockItemName.endsWith("grenade 2")) {
-            statBlockItemName = statBlockItemName.replace("grenade 2", "grenade ii");
-        } else if (statBlockItemName.endsWith("grenade 3")) {
-            statBlockItemName = statBlockItemName.replace("grenade 3", "grenade iii");
-        } else if (statBlockItemName.endsWith("grenade 4")) {
-            statBlockItemName = statBlockItemName.replace(" 4", "grenade iv");
-        } else if (statBlockItemName.endsWith("grenade 5")) {
-            statBlockItemName = statBlockItemName.replace("grenade 5", "grenade v");
-        }
-
-        statBlockItemName = statBlockItemName.replace("batteries", "battery");
-        if (sbcUtils.stringContains(statBlockItemName, "battery", false)) {
-            if (!sbcUtils.stringContains(statBlockItemName, "capacity", false)) {
-                statBlockItemName += ", standard";
-            }
-        }
-        return this.fuzzyFindCompendiumAsync("Equipment", statBlockItemName);
-    }
-
-    static async fuzzyFindSpellAsync(statBlockSpellName) {
-        statBlockSpellName = statBlockSpellName.replace("/ ", "/");
-        statBlockSpellName = statBlockSpellName.replace(" /", "/");
-        return this.fuzzyFindCompendiumAsync("Spells", statBlockSpellName);
-    }
-
-    
-
-    static splitEntries(baseString, additionalEntrySplitters = null) {
-        let textualEntrySplitters = ["or", "and"];
-        if (additionalEntrySplitters) {
-            textualEntrySplitters = textualEntrySplitters.concat(additionalEntrySplitters);
-        }
-
-        let results = null;
-        let stack = [];
-        let entry = "";
-        for (let i = 0; i<baseString.length; i++) {
-            let character = baseString[i];
-            let stackTop = stack.length > 0 ? stack[stack.length-1] : '';
-            if (sbcUtils.openingBrackets.includes(character)) {
-                entry += character;
-                stack.push(character);
-            } else if (stackTop && character == sbcUtils.matchingClosingBrackets[stackTop]) {
-                entry += character;
-                stack.pop();
-            } else if (character === ',' || character === ';') {
-                if (stack.length === 0 && entry.length > 0) {
-                    if (!results) {
-                        results = [entry.trim()];
-                    } else {
-                        results.push(entry.trim());
-                    }
-                    entry = "";
-                } else {
-                    entry += character;
-                }
-            } else {
-                entry += character;
-                for (let splitter of textualEntrySplitters) {
-                    let ending = " " + splitter;
-                    if (entry.toLowerCase().endsWith(ending) && stack.length == 0 && baseString[i+1] == ' ') {
-                        entry = entry.substring(0, entry.length - splitter.length);
-                        if (!results) {
-                            results = [entry.trim()];
-                        } else {
-                            results.push(entry.trim());
-                        }
-                        entry = "";
-                    }
-                }
-            }
-        }
-
-        entry = entry.trim();
-        if (entry) {
-            if (!results) {
-                results = [entry];
-            } else {
-                results.push(entry);
-            }
-        }
-
-        return results;
     }
 }
