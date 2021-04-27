@@ -199,14 +199,11 @@ export class sbcParser {
                         }
 
                         // After parsing all available subCategories, create embedded entities
-                        console.log("CALLING createEmbeddedEntitites")
                         await createEmbeddedEntities()
 
-                        console.log("CALLING checkFlags")
                         // After parsing all available subCategories, check the flags set on the way
                         await checkFlags()
 
-                        console.log("CALLING generateNotesSection")
                         // Create the notes section composed of the statblock and the raw input
                         await generateNotesSection()
 

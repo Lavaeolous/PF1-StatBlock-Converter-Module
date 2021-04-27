@@ -240,11 +240,13 @@ export class sbcUtils {
 
     static async findEntityInCompendium(compendium, input, line = -1) {
 
-        let customCompendiums = game.settings.get(sbcConfig.modData.mod, "customCompendiums")
+        let customCompendiums = game.settings.get(sbcConfig.modData.mod, "customCompendiums").split(/[,;]/g)
+
         let compendiums = []
         compendiums.push(compendium)
-        if (customCompendiums !== "") {
-            compendiums.unshift(customCompendiums)
+
+        if (customCompendiums.length > 0) {
+            compendiums = customCompendiums.concat(compendiums)
         }
 
         let searchTerms = input.name.split(" ")

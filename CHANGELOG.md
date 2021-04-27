@@ -1,5 +1,8 @@
 # Change Log
 
+2021_04_27 - v3.1.2
+*  Fixed an error where custom compendia were not handled correctly when searching for existing entities (#386)
+
 2021_04_26 - v3.1.1
 *  Changed handling of set flags (e.g. "isUndead") to only run when needed (#385)
 *  Reworked the way hp and hd get parsed so that all three kinds of cases get handled correctly. Namely cases where the statblock represents a npc with JUST Racial HD, JUST Class HD or a mix of both. (#365)
