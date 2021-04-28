@@ -1,5 +1,8 @@
 # Change Log
 
+2021_04_28 - v3.1.3
+*  Fixed an error where custom compendia were not handled correctly when entered with extra spaces (#388) 
+
 2021_04_27 - v3.1.2
 *  Fixed an error where custom compendia were not handled correctly when searching for existing entities (#386)
 

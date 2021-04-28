@@ -254,11 +254,16 @@ export class sbcUtils {
         let foundEntity = false
         let searchResult = {}
 
+        /*
+         * THIS GETS EXTREMELY SLOW WHEN A LARGE NUMBER
+         * CUSTOM COMPENDIUMS IS USED
+         */
+
         for (let i=0; i<compendiums.length; i++) {
             
             if (!foundEntity) {
 
-                let currentCompendium = compendiums[i]
+                let currentCompendium = compendiums[i].trim()
 
                 let pack = game.packs.get(currentCompendium)
 
