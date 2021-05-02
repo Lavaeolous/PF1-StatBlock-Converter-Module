@@ -1,5 +1,17 @@
 # Change Log
 
+2021_05_2 - v3.1.4
+*  Fixed a bug where additional attack effects were not parsed (#395)
+*  Added damage in attack effects to nonCritDamageParts of attacks (#394)
+*  Fixed missing wordboundary in regex for resistance parsing (#403)
+*  Fixed a bug where weaknesses were not parsed correctly and not entered into the preview (#402)
+*  Fixed a bug where regeneration and fast healing (as special cases of hdAbilities) were not parsed into the correct fields in the sheet (#401)
+*  Fixed errors in the languageParser (missing trim, etc.) (#396)
+*  Added Title-Case-Formatting for the name of the creature (#393)
+*  Fixed findEntityInCompendium() by a) escaping "+"-signs (#398), b) fixing a couple of bugs regarding the usage of custom compendia (#399, #397)
+*  Changed the max-height of the preview area to 500px to prevent large statblocks from making the error area unreachable (#351)
+*  Fixed a bug where damage reduction was not parsed (#400)
+
 2021_04_28 - v3.1.3
 *  Fixed an error where custom compendia were not handled correctly when entered with extra spaces (#388) 
 

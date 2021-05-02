@@ -63,6 +63,8 @@
 
 .sbcPreview {
     border: 1px solid black;
+    overflow: scroll;
+    max-height: 500px;
 }
 
 /* Buttons */

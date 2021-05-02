@@ -212,7 +212,7 @@ export async function parseBase(data, startLine) {
                     // Parse the name
                     let parserName = sbcMapping.map.base.name
                     let name = lineContent.replace(/\(?\s*CR\s*(\d+\/*\d*|-)\)?.*/, "").trim()
-                    parsedSubCategories["name"] = await parserName.parse(name, line)
+                    parsedSubCategories["name"] = await parserName.parse(sbcUtils.capitalize(name), line)
                 }
             }
 
@@ -1025,9 +1025,9 @@ export async function parseDefense(data, startLine) {
 
             // Parse Damage Reduction
             if (!parsedSubCategories["dr"]) {
-                if (lineContent.search(/^(DR.*)/i) !== -1) {
+                if (lineContent.search(/(\bDR\b)/i) !== -1) {
                     let parserDr = sbcMapping.map.defense.dr
-                    let dr = lineContent.match(/^(?:DR\s*)([^;,]*)/i)[1].trim()
+                    let dr = lineContent.match(/(?:\bDR\b\s*)([^;,]*)/i)[1].trim()
                     parsedSubCategories["dr"] = await parserDr.parse(dr, line+startLine)
                 }
             }
@@ -1045,7 +1045,7 @@ export async function parseDefense(data, startLine) {
             if (!parsedSubCategories["resist"]) {
                 if (lineContent.search(/(Resist\b.*)/i) !== -1) {
                     let parserResist = sbcMapping.map.defense.resist
-                    let resistances = lineContent.match(/(?:Resist)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
+                    let resistances = lineContent.match(/(?:Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
                     parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
                 }
             }
@@ -1348,19 +1348,48 @@ class hpParser extends sbcParserBase {
             // If there is data after the hd in brackets, add it as a special hdAbility
             if (input.length > 1) {
 
-                let hdAbilities = [] 
+                let hdAbilities = []
+
+                let hdAbilitiesPattern = new RegExp("(\\bregeneration\\b|\\bfast healing\\b)", "gi")
+
 
                 for (let i=1; i<input.length; i++) {
 
-                    let hdAbility = {
-                        "name": input[i],
-                        "type": "misc"
+                    let tempInput = input[i]
+
+                    // Check, if the input matches "regeneration" or "fast healing"
+                    if (tempInput.search(hdAbilitiesPattern) !== -1) {
+                        // Input the hdAbility into the correct places in the sheet
+                        let hpAbilityType = tempInput.match(hdAbilitiesPattern)[0].toLowerCase()
+
+                        switch (hpAbilityType) {
+                            case "regeneration":
+                                let parserRegeneration = new singleValueParser(["data.traits.regen"], "string")
+                                await parserRegeneration.parse(tempInput, line)
+                                break
+                            case "fast healing":
+                                let parserFastHealing = new singleValueParser(["data.traits.fastHealing"], "string")
+                                await parserFastHealing.parse(tempInput, line)
+                                break
+                            default:
+                                break
+                        }
+                        hdAbilities.push(tempInput)
+                    } else {
+                        // Generate a placeholder for every hdAbility that is not accounted for in the character sheet
+                        let hdAbility = {
+                            "name": tempInput,
+                            "type": "misc"
+                        }
+    
+                        hdAbilities.push(hdAbility.name)
+                        
+                        let placeholder = await sbcUtils.generatePlaceholderEntity(hdAbility, line)
+                        sbcData.characterData.items.push(placeholder)
                     }
 
-                    hdAbilities.push(hdAbility.name)
                     
-                    let placeholder = await sbcUtils.generatePlaceholderEntity(hdAbility, line)
-                    sbcData.characterData.items.push(placeholder)
+
                 }
 
                 sbcData.notes.defense["hdAbilities"] = hdAbilities.join(", ")
@@ -1552,6 +1581,7 @@ class weaknessParser extends sbcParserBase {
             sbcData.notes.defense["weakness"] = rawInput
 
             let systemSupportedDamageTypes = Object.values(CONFIG["PF1"].damageTypes).map(x => x.toLowerCase())
+
             let patternDamageTypes = new RegExp("(" + systemSupportedDamageTypes.join("\\b|\\b") + ")", "gi")
 
             for (let i=0; i<input.length; i++) {
@@ -1560,13 +1590,17 @@ class weaknessParser extends sbcParserBase {
                     .trim()
                 
                 if (weakness.search(patternDamageTypes) !== -1) {
+                    let matchedWeakness = weakness.match(patternDamageTypes)[0]
                     // its a damage resistance
-                    sbcData.characterData.actorData.data.data.traits.dv.value.push(sbcUtils.camelize(weakness))
+                    sbcData.characterData.actorData.data.data.traits.dv.value.push(sbcUtils.camelize(matchedWeakness))
                 } else {
                     // Its a custom resistance, as there is no place for that, just put it into energy resistances
                     sbcData.characterData.actorData.data.data.traits.dv.custom += sbcUtils.capitalize(weakness) + ";"
                 }
             }
+
+            // Remove any semicolons at the end of the custom vulnerabilities
+            sbcData.characterData.actorData.data.data.traits.dv.custom = sbcData.characterData.actorData.data.data.traits.dv.custom.replace(/(;)$/, "")            
 
             return true
 
@@ -1836,7 +1870,10 @@ class attacksParser extends sbcParserBase {
                     let damageDie = 0
                     let damageBonus = 0
                     let damageModifier = 0
+                    let defaultDamageType = ""
                     let damageType = ""
+                    let specialDamageType = ""
+                    let specialDamageTypeFound = false
                     let weaponSpecial = "-"
                     let critRange = 20
                     let critMult = 2
@@ -1969,12 +2006,15 @@ class attacksParser extends sbcParserBase {
                             critMult = attack.match(/(?:\/x)(\d+)/)[1]
                             attackNotes += "/x" + critMult
                         }
+
                         // attackEffects
-                        if (attack.match(/(?:\([\dd\s]* )(.+)(?:\))/) !== null) {
-                            attackEffects = attack.match(/(?:\([\dd\s]* )(.+)(?:\))/)[1]
+                        if (attack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/) !== null) {
+                            attackEffects = attack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/)[1]
                             attackNotes += " " + attackEffects
-                            attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ", ").replace(/(\s+\bplus\b\s+)/i, ", ")
+                            attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ",").replace(/(\s*\bplus\b\s+)/i, ",").split(",")
                         }
+
+                        // add the closing parenthesis to the attack notes
                         attackNotes += ")"
 
                     } else if (attack.match(/\(([^)]*)\)/) !== null){
@@ -1998,12 +2038,12 @@ class attacksParser extends sbcParserBase {
                     console.log("enhancementBonus: "+ enhancementBonus)
                     console.log("attackName: "+ attackName)
                     //console.log("attackModifier: "+ attackModifier)
-                    ("inputAttackModifier: "+ inputAttackModifier)
+                    console.log("inputAttackModifier: "+ inputAttackModifier)
                     console.log("numberOfDamageDice: "+ numberOfDamageDice)
                     console.log("damageDie: "+ damageDie)
                     console.log("damageBonus: "+ damageBonus)
                     console.log("damageModifier: "+ damageModifier)
-                    console.log("damageType: "+ damageType)
+                    console.log("defaultDamageType: "+ defaultDamageType)
                     console.log("weaponSpecial: "+ weaponSpecial)
                     console.log("critRange: "+ critRange)
                     console.log("critMult: "+ critMult)
@@ -2052,7 +2092,7 @@ class attacksParser extends sbcParserBase {
                             "duration": {
                                 "units": "inst"
                             },
-                            "effectNotes": attackEffects,
+                            "effectNotes": attackEffects.join(", "),
                             "primaryAttack": false,
                             "range": {
                                 "units": attackRangeUnits,
@@ -2148,7 +2188,9 @@ class attacksParser extends sbcParserBase {
 
                     damageModifier = +damageBonus - +calculatedDamageBonus
 
-                    // Try to find the damageType by checking if the attackName can be found in enumAttackDamageTypes
+                    // Try to find the defaultDamageType by checking if the attackName can be found in enumAttackDamageTypes
+                    // This is done to find common damage types of attacks and weapons
+                    // e.g. bite is piercing, bludgeoning and slashing
                     let attackDamageTypeKeys = Object.keys(sbcContent.attackDamageTypes)
                     if (attackName !== "") {
                         let damageTypePattern = new RegExp("(^\\b" + attackName.replace(/(\bmwk\b|s$)/ig,"").trim() + "\\b$)", "ig");
@@ -2157,7 +2199,7 @@ class attacksParser extends sbcParserBase {
                             let attackDamageTypeKey = attackDamageTypeKeys[i]
                             let attackDamageType = sbcContent.attackDamageTypes[attackDamageTypeKey]
                             if (attackDamageTypeKey.toLowerCase().search(damageTypePattern) !== -1) {
-                                damageType = attackDamageType.type
+                                defaultDamageType = attackDamageType.type
                                 weaponSpecial = attackDamageType.special
                                 // If the Weapon has Range Increment and it is used for a ranged attack
                                 // Set the range increment accordingly
@@ -2173,19 +2215,73 @@ class attacksParser extends sbcParserBase {
                         }
                     }
 
+                    // Check for specialDamageTypes
+                    // Check, if the attackEffect denotes a valid damageType for the base damage,
+                    
+                    // and use this override the default damage type
+                    for (let k = 0; k<attackEffects.length; k++) {
+                        let attackEffect = attackEffects[k]
+
+                        let systemSupportedDamageTypes = Object.values(CONFIG["PF1"].damageTypes).map(x => x.toLowerCase())
+                        let patternDamageTypes = new RegExp("(" + systemSupportedDamageTypes.join("\\b|\\b") + ")", "gi")
+
+                        // If the attackEffect has no additional damagePools XdY ...
+                        if (attackEffect.match(/\d+d\d+/) === null) {
+
+                            // ... and it matches any of the supported damageTypes ...
+                            if (attackEffect.search(patternDamageTypes) !== -1) {
+                                specialDamageType = attackEffect.match(patternDamageTypes)[0].trim()
+                                // Remove the found attackEffect from the attackEffects array
+                                attackEffects.splice(k,1)
+                                specialDamageTypeFound = true
+                            }
+
+                        } else {
+
+                            // ... if the attackEffect has damagePools, create a new damageEntry for the attack
+
+                            let attackEffectDamage = attackEffect.match(/(\d+d\d+\+*\d*)/)[0]
+                            
+                            let attackEffectDamageType = "untyped"
+
+                            // ... if the attackEffect has damage and a damageType
+                            // otherwise use default "untyped"
+                            if (attackEffect.search(patternDamageTypes) !== -1) {
+                                attackEffectDamageType = attackEffect.match(patternDamageTypes)[0].trim()
+                            }
+
+                            // Push the damage values to the attack
+                            newAttack.data.data.damage.nonCritParts.push(
+                                [
+                                    attackEffectDamage,
+                                    attackEffectDamageType
+                                ]
+                            )
+                            // Remove the found attackEffect from the attackEffects array
+                            attackEffects.splice(k,1)
+
+                        }
+                        
+                    }
+
+                    // Set the main damageType
+                    if (specialDamageTypeFound) {
+                        damageType = specialDamageType
+                    } else {
+                        damageType = defaultDamageType
+                    }
+
                     // Push the damage values to the attack
-                    newAttack.data.data.damage.parts.push(
+                    newAttack.data.data.damage.parts.unshift(
                         [
                             numberOfDamageDice + "d" + damageDie + "+" + damageModifier,
                             damageType
                         ]
                     )
 
-
-
                     // Push attackNotes and effectNotes
                     newAttack.data.data.attackNotes = attackNotes;
-                    newAttack.data.data.effectNotes = sbcUtils.makeValueRollable(attackEffects)
+                    newAttack.data.data.effectNotes = sbcUtils.makeValueRollable(attackEffects.join("\n"))
 
                     sbcData.characterData.items.push(newAttack)
                 }
@@ -2794,12 +2890,12 @@ class languageParser extends sbcParserBase {
             let systemSupportedLanguages = Object.values(CONFIG["PF1"].languages).map(x => x.toLowerCase())
             let patternLanguages = new RegExp("(" + systemSupportedLanguages.join("\\b|\\b") + ")", "gi")
             
-            let languages = value.split(/,/)
+            let languages = value.split(/[,;]/g)
             let specialLanguages = []
         
             for (let i=0; i<languages.length; i++) {
 
-                let language = languages[i]
+                let language = languages[i].trim()
 
                 if (language.search(patternLanguages) !== -1) {
                     let languageKey = sbcUtils.getKeyByValue(CONFIG["PF1"].languages, language)
@@ -2905,7 +3001,6 @@ class gearParser extends sbcParserBase {
                 
                 if (gearText.search(/^\+/) !== -1) {
                     gear.enhancementValue = +gearText.match(/(\d+)/)[1].trim()
-                    gear.enhancementTypes = ["test"]
                 }
 
                 if (gearText.search(/(masterwork|mwk)/) !== -1) {
@@ -2915,7 +3010,6 @@ class gearParser extends sbcParserBase {
                 let entity = {}
 
                 if (gearText.search(patternSupportedWeapons) !== -1) {
-
                     // If the input is a weapon in one of the compendiums
                     gear.type = "weapon"
                     entity = await sbcUtils.findEntityInCompendium(weaponCompendium, gear)
@@ -2946,11 +3040,13 @@ class gearParser extends sbcParserBase {
 
                 } else {
                     // WIP
+                    // Edit May 2021: Why WIP?
                 }
 
                 if (entity !== undefined && Object.keys(entity).length !== 0 && entity !== null) {
 
-                    entity.data.name = sbcUtils.capitalize(input)
+                    entity.data.name = sbcUtils.capitalize(gear.rawName)
+                    entity.data.data.identifiedName = sbcUtils.capitalize(gear.rawName)
 
                     for (let i=0; i<gearKeys.length; i++) {
                         let key = gearKeys[i]

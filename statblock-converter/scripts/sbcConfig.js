@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.1.3",
+    "version": "3.1.4",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -81,8 +81,9 @@ sbcConfig.initializeConfig = async function () {
     let armorsIndex = await game.packs.get("pf1.armors-and-shields").getIndex()
     for (let key in armorsIndex) { if (armorsIndex[key].name !== "") { sbcConfig.armors.push(armorsIndex[key].name) } }
 
+    // Escaping "+", as some items include that in the name (e.g. "Headband of Alluring Charisma +2")
     let itemIndex = await game.packs.get("pf1.items").getIndex()
-    for (let key in itemIndex) { if (itemIndex[key].name !== "") { sbcConfig.items.push(itemIndex[key].name) } }
+    for (let key in itemIndex) { if (itemIndex[key].name !== "") { sbcConfig.items.push(itemIndex[key].name.replace(/(\+)/g, "\\+")) } }
 
     let classAbilitiesIndex = await game.packs.get("pf1.class-abilities").getIndex()
     for (let key in classAbilitiesIndex) { if (classAbilitiesIndex[key].name !== "") { sbcConfig["class-abilities"].push(classAbilitiesIndex[key].name) } }

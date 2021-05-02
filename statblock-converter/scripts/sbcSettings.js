@@ -17,8 +17,7 @@ export class sbcSettings {
         let validCompendiums = []
         let invalidCompendiums = []
 
-        if (customCompendiums.length > 0) {
-
+        if (customCompendiums !== "") {
             // Replace semi-colons with commas
             customCompendiums = customCompendiums.replace(/;/g,",").split(",")
             
@@ -55,7 +54,9 @@ export class sbcSettings {
                 }
             }
             
-        }        
+        } else {
+            customCompendiums = validCompendiums
+        }   
     }
 
     // Update the default folder into which statblocks get imported

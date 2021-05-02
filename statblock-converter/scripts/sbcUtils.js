@@ -45,8 +45,30 @@ export class sbcUtils {
         sbcData.characterData.conversionValidation.attributes = {}
         sbcData.characterData.conversionValidation.skills = {}
 
+        
+        this.resetTraits()
         this.resetTokenData()
         
+    }
+
+    static resetTraits() {
+        // Reset traits
+        sbcData.characterData.actorData.data.data.traits.cres = ""
+        sbcData.characterData.actorData.data.data.traits.eres = ""
+        sbcData.characterData.actorData.data.data.traits.senses = ""
+        sbcData.characterData.actorData.data.data.traits.size = ""
+        sbcData.characterData.actorData.data.data.traits.stature = ""
+        sbcData.characterData.actorData.data.data.traits.dr = ""
+        sbcData.characterData.actorData.data.data.traits.regen = ""
+        sbcData.characterData.actorData.data.data.traits.fastHealing = ""
+        sbcData.characterData.actorData.data.data.traits.ci.custom = ""
+        sbcData.characterData.actorData.data.data.traits.ci.value = []
+        sbcData.characterData.actorData.data.data.traits.di.custom = ""
+        sbcData.characterData.actorData.data.data.traits.di.value = []
+        sbcData.characterData.actorData.data.data.traits.dv.custom = ""
+        sbcData.characterData.actorData.data.data.traits.dv.value = []
+        sbcData.characterData.actorData.data.data.traits.languages.custom = ""
+        sbcData.characterData.actorData.data.data.traits.languages.value = []
     }
 
     static resetTokenData () {
@@ -240,13 +262,20 @@ export class sbcUtils {
 
     static async findEntityInCompendium(compendium, input, line = -1) {
 
-        let customCompendiums = game.settings.get(sbcConfig.modData.mod, "customCompendiums").split(/[,;]/g)
+        // Create an array for all compendiums to search through
+        let searchableCompendiums = []
 
-        let compendiums = []
-        compendiums.push(compendium)
+        // Push the default compendium given when calling findEntityInCompendium
+        searchableCompendiums.push(compendium)
 
-        if (customCompendiums.length > 0) {
-            compendiums = customCompendiums.concat(compendiums)
+        // If there are customCompendiums, given as a string in the module settings,
+        // split them and add them to the searchableCompendiums
+        let customCompendiums = []
+        let customCompendiumSettings = game.settings.get(sbcConfig.modData.mod, "customCompendiums")
+
+        if (customCompendiumSettings !== "") {
+            customCompendiums = customCompendiumSettings.split(/[,;]/g)
+            searchableCompendiums = customCompendiums.concat(searchableCompendiums)
         }
 
         let searchTerms = input.name.split(" ")
@@ -256,15 +285,16 @@ export class sbcUtils {
 
         /*
          * THIS GETS EXTREMELY SLOW WHEN A LARGE NUMBER
-         * CUSTOM COMPENDIUMS IS USED
+         * OF CUSTOM COMPENDIUMS IS USED
          */
 
-        for (let i=0; i<compendiums.length; i++) {
+        for (let i=0; i<searchableCompendiums.length; i++) {
+
+            let currentCompendium = searchableCompendiums[i].trim()
             
             if (!foundEntity) {
 
-                let currentCompendium = compendiums[i].trim()
-
+                // Check, if a pack can be found for the compendium
                 let pack = game.packs.get(currentCompendium)
 
                 if (pack) {
@@ -274,15 +304,15 @@ export class sbcUtils {
                     // Example: Let it find "Holy Symbol (Silver)" when the in put is "Silver Holy Symbol"
                     let search = await pack.getIndex().then(p => p.find(o => o.name.toLowerCase() === input.name.toLowerCase()))
 
+                    // If an itemName could be found in the packIndex of the compendium, get the item and return it as searchResult
                     if (search) {
-
                         searchResult = await pack.getEntity(search._id).then(entity => {
                             sbcConfig.options.debug && sbcUtils.log("Found " + input.name + " in " + currentCompendium + ".")
                             foundEntity = true
                             return entity
                         })
 
-                    }
+                    } 
 
                 }
 
@@ -290,17 +320,9 @@ export class sbcUtils {
 
         }
 
-        if (foundEntity) {
-
-            return searchResult
-
-        } else {
-
-            sbcConfig.options.debug && sbcUtils.log("Failed to find " + input.name + " in the compendiums [" + compendiums + "]")
-            return null
-
-        }
-
+        // Return the searchResult, which either is the found entity or an empty object
+        return searchResult
+        
     }
 
     static async generatePlaceholderEntity (input, line = -1) {
@@ -779,10 +801,10 @@ export class sbcUtils {
         if (tempInput.search(/,|;/g) !== -1) {
 
             // Check if there are parenthesis including commas in the input
-            if (tempInput.match(/([^,]+\([^(.]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
+            if (tempInput.match(/([^,;]+\([^(.]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
                 // Get the input with parenthesis and commas inside the parenthesis
-                let itemsWithCommasInParenthesis = tempInput.match(/([^,]+\([^(.]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
-                let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)                
+                let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(.]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
+                let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)
                 
                 for (let i=0; i<itemsWithCommasInParenthesisKeys.length; i++) {
 
@@ -791,7 +813,7 @@ export class sbcUtils {
 
                     let patternTempItem = new RegExp (tempItem.replace(/\(/g,"\\(").replace(/\)/g,"\\)").replace(/\+/g,"\\+"), "i")
 
-                    tempInput = tempInput.replace(patternTempItem, "").replace(/,\s*,/, ",").replace(/^,/, "")
+                    tempInput = tempInput.replace(patternTempItem, "").replace(/,\s*,/, ",").replace(/^,/, "").trim()
 
                     items.push(tempItem)
 
@@ -801,17 +823,18 @@ export class sbcUtils {
                 let itemsWithoutParenthesis = []
 
                 if (tempInput !== "") {
-                    itemsWithoutParenthesis = tempInput.replace(/,\s*,/, ",").split(/[,;]/)
+                    itemsWithoutParenthesis = tempInput.replace(/,\s*,/, ",").replace(/[;,]\s*$/, "").split(/[,;]/g)
                 }
                 
                 if (itemsWithoutParenthesis.length > 0) {
-                    items = items.concat(...itemsWithoutParenthesis)
+                    //items = items.concat(...itemsWithoutParenthesis)
+                    items = itemsWithoutParenthesis.concat(...items)
                 }                
 
             } else {
 
                 // If there are no parenthesis with commas, just split at commas/semi-colons
-                items = tempInput.split(/[,;]/)
+                items = tempInput.split(/[,;]/g)
 
             }
 
@@ -919,6 +942,8 @@ export class sbcUtils {
         return output;
     }
     
+    // WIP:
+    // MAYBE CHANGE THIS TO KEEP WORDS LIKE "of" LOWER CASE
     static capitalize (string) {
         return string.toLowerCase().replace(/^\w|\s\w/g, function (letter) {
             return letter.toUpperCase();

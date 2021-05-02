@@ -112,7 +112,6 @@ export class sbcInputDialog extends Application {
 
                 // if the input could successly be parsed, generate a new preview
                 if (sbcData.parsedInput.success) {
-                    console.log("UPDATING PREVIEW IN sbcInput.js")
                     sbcUtils.updatePreview()
                     sbcUtils.updateErrorArea()
                     sbcConfig.options.actorReady = true
