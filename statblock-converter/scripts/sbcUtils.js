@@ -415,6 +415,19 @@ export class sbcUtils {
                     "img": "systems/pf1/icons/skills/yellow_36.jpg"
                 }, { temporary : true })
                 break
+            case "attack":
+                entity = await Item.create({
+                    "name": sbcUtils.capitalize(entityData.name),
+                    "type": "attack",
+                    "data": {
+                        "description": {
+                            "value": entityData.desc
+                        },
+                        "attackType": "misc"
+                    },
+                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
+                }, { temporary : true })
+                break
             case "classFeat":
             case "class-abilities":
                 if (entityData.specialAbilityType !== null) {
@@ -888,13 +901,18 @@ export class sbcUtils {
 
         let highlightedText = []
 
-        for (let i=0; i<sbcData.preparedInput.data.length; i++) {          
+        for (let i=0; i<sbcData.preparedInput.data.length; i++) {  
 
             if (errorLines.includes(i)) {
-                let highlightedLine = "<mark>" + sbcData.preparedInput.data[i] + "</mark><br/>"
+                let highlightedLine = "<mark>" + sbcData.preparedInput.data[i] + "</mark><br>"
                 highlightedText.push(highlightedLine)
             } else {
-                sbcData.preparedInput.data[i] !== "<br>" && highlightedText.push(sbcData.preparedInput.data[i] + "<br/>")
+                //sbcData.preparedInput.data[i] !== "<br>" && highlightedText.push(sbcData.preparedInput.data[i] + "<br>")
+                if (sbcData.preparedInput.data[i] !== "") {
+                    highlightedText.push("<div class='lineNumbers'>" + sbcData.preparedInput.data[i] + "</div>")
+                } else {
+                    highlightedText.push("<div class='lineNumbers'><br></div>")
+                }
             }
 
         }

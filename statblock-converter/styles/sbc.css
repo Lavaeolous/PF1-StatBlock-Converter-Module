@@ -26,6 +26,23 @@
     resize: none;
     font-size: 14px;
     padding-right: 0;
+    padding-left: 2em;
+}
+
+.sbcHighlights {
+    counter-reset: line;
+    padding-left: 2em;
+}
+
+.sbcHighlights div::before {
+    counter-increment: line;
+    content: counter(line);
+    font-size: 1em;
+    user-select: none;
+    width: 5rem;
+    text-align: right;
+    left: 0;
+    color: #616161;
 }
 
 .sbcInputContainer, .sbcPreviewContainer {
@@ -51,6 +68,7 @@
      * and that leads to foundry-errors when dragging
      */
     user-select: none;
+    margin-left: 50px;
 }
 
 .sbcVisible {
@@ -208,6 +226,7 @@
     border-radius: 15px;
     padding: 0 5px;
     margin-right: 5px;
+    margin-left: -55px;
     visibility: hidden;
 }
 

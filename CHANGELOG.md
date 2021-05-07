@@ -1,6 +1,14 @@
 # Change Log
 
-2021_05_2 - v3.1.4
+2021_05_07 - v3.1.5
+*  Fixed a bug where class names in the statblock source got incorrectly parsed as a class (#409)
+*  Reworked the parsing of special abilities to also parse abilities without type-keywords (Su, Sp, Ex) and added an info message to inform the user about this. Also reclassified these errors as warnings so the statblock can be parsed incomplete if errors occur (#408)
+*  Added replacement for ligatures, which up until now broke sbc when copied from pdfs (#405)
+*  Added parsing of Special Attacks (#390), for now just as placeholders (see #410)
+*  Added line numbers to the input field to more easily identify "unwanted" linebreaks
+*  Added more status info into the placeholder text of the input field to inform users who do not frequent the git.
+
+2021_05_02 - v3.1.4
 *  Fixed a bug where additional attack effects were not parsed (#395)
 *  Added damage in attack effects to nonCritDamageParts of attacks (#394)
 *  Fixed missing wordboundary in regex for resistance parsing (#403)

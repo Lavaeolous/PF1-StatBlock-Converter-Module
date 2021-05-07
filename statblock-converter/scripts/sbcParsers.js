@@ -290,7 +290,11 @@ export async function parseBase(data, startLine) {
                     // So as not to match the class "MEDIUM" when it's a Medium Humanoid for example
                     let isAlignmentLine = lineContent.match(/^(\\*A|LG|LN|LE|NG|N|TN|NE|CG|CN|CE)\s*/)
 
-                    if (!isAlignmentLine) {
+                    // Check for classes only in lines that do not start with "Source"
+                    // So as not to match the class "Witch" when it's included in "Source Pathfinder #72: The Witch Queen's Revenge pg. 86"
+                    let isSourceLine = lineContent.match(/^(Source)\s*/)
+
+                    if (!isAlignmentLine && !isSourceLine) {
                         let patternClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + "\\b|\\b" + sbcConfig.prestigeClassNames.join("\\b|\\b") + "\\b|\\b" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(.*)", "gi")
                         if (lineContent.search(patternClasses) !== -1) {
                             // Take everything from the first class found up until the end of line
@@ -1746,6 +1750,18 @@ export async function parseOffense(data, startLine) {
                 }
             }
 
+            // Parse Special Attacks
+            if (!parsedSubCategories["specialAttacks"]) {
+                if (lineContent.search(/^Special\s+Attacks\b\s*/i) !== -1) {
+                    let parserSpecialAttacks = sbcMapping.map.offense.specialAttacks
+                    let specialAttacks = lineContent.match(/^Special\s+Attacks\s*(.*)/i)[1].trim()
+
+                    sbcData.notes.offense.specialAttacks = specialAttacks
+
+                    parsedSubCategories["specialAttacks"] = await parserSpecialAttacks.parse(specialAttacks, line+startLine)
+                }
+            }
+
         } catch (err) {
             let errorMessage = `Parsing the offense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Offense", errorMessage, line+startLine)
@@ -2304,6 +2320,37 @@ class attacksParser extends sbcParserBase {
 
     }
 
+}
+
+// Parse Special Attacks
+class specialAttacksParser extends sbcParserBase {
+    async parse(value, line) {
+        sbcConfig.options.debug && sbcUtils.log("Trying to parse " + value + " as a Special Attack.")
+
+        try {  
+
+            let specialAttacks = sbcUtils.sbcSplit(value)
+            let type = "attack"
+
+            for (let i=0; i<specialAttacks.length; i++) {
+                let specialAttack = {
+                    "name": "Special Attack: " + specialAttacks[i],
+                    "type": type,
+                    "desc": "sbc | Placeholder for Special Attacks, which in most statblocks are listed under 'Special Attacks' in the statistics block, but are described in the 'Special Abilities' block. Remove duplicates as needed!"
+                }
+                let placeholder = await sbcUtils.generatePlaceholderEntity(specialAttack, line)
+                sbcData.characterData.items.push(placeholder)
+            }
+
+        } catch (err) {
+
+            let errorMessage = "Failed to parse " + value + " as a Special Attack."
+            let error = new sbcError(1, "Parse/Offense", errorMessage, line)
+            sbcData.errors.push(error)
+            return false
+
+        }
+    }
 }
 
 /* ------------------------------------ */
@@ -3424,11 +3471,26 @@ class specialAbilityParser extends sbcParserBase {
                 //     So, try to find the first word starting with a lowercase letter, check if its one of the keywords [of, the, is, etc.]
                 //     And put that into the name
 
-                let patternFindStartOfDescription = new RegExp("(\\w*)(?:\\s)(?!is|the|of)(\\b[a-z]+\\b)", "")
-                let indexOfStartOfDescription = value.search(patternFindStartOfDescription)
+                //let patternFindStartOfDescription = new RegExp("(^\\w*)(?:\\s)(?!is|the|of)(\\b[a-z]+\\b)", "")
+                //let patternFindStartOfDescription = new RegExp("(?:^[a-zA-Z]+?\\s+)([a-z]?)", "")
+                let patternFindStartOfDescription = new RegExp("((?:[A-Z][a-z]*)*\\s*(?:of|the|is)*\\s*(?:[A-Z][a-z]*)[a-z])", "")
+                let indexOfStartOfDescription = 0
+
+                if (value.match(patternFindStartOfDescription) !== null) {
+                    indexOfStartOfDescription = value.match(patternFindStartOfDescription)[0].length
+                }
 
                 specialAbilityName = value.slice(0,indexOfStartOfDescription).trim()
                 specialAbilityDesc = value.slice(indexOfStartOfDescription).trim()
+
+                let errorMessage = `
+                    Could not find an ability type (Su, Sp or Ex).<br>
+                    >> Is this the special ability you want to parse?<br>
+                    >> Ability Name: ${specialAbilityName}<br>
+                    >> Ability Description: ${specialAbilityDesc}
+                    `
+                let error = new sbcError(3, "Parse/Special Abilties", errorMessage, line)
+                sbcData.errors.push(error)
 
             }
 
@@ -3455,7 +3517,7 @@ class specialAbilityParser extends sbcParserBase {
 
         } catch (err) {
 
-            let errorMessage = "Failed to parse " + value + " as Special Ability."
+            let errorMessage = "Failed to parse [" + value + "] as Special Ability."
             let error = new sbcError(1, "Parse/Special Abilties", errorMessage, line)
             sbcData.errors.push(error)
             return false
@@ -3653,6 +3715,7 @@ export function initMapping() {
         "offense": {
             "speed": new speedParser(),
             "attacks": new attacksParser(),
+            "specialAttacks": new specialAttacksParser()
             
         },
         "tactics": new tacticsParser(),

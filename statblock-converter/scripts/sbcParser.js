@@ -36,11 +36,19 @@ export class sbcParser {
             // Remove Source Superscript (e.g. ^APG, ^UE)
             .replace(/(APG\b|ACG\b|UE\b|UM\b|HA\b|OA\b|ISWG\b)/gm, "")
             // Replace common Skill shorthands and misswordings
-            .replace(/\bEnter Choice\b/ig, "any one")
-            .replace(/Arcane/i, "Arcana")
-            .replace(/\bPer\./i, "Perception")
-            .replace(/S\. Motive/i, "Sense Motive")
-            .replace(/\bLing\./i, "Linguistics")
+            .replace(/\bEnter Choice\b/igm, "any one")
+            .replace(/Arcane/igm, "Arcana")
+            .replace(/\bPer\./igm, "Perception")
+            .replace(/S\. Motive/igm, "Sense Motive")
+            .replace(/\bLing\./igm, "Linguistics")
+            // Replace ligatures
+            .replace(/ﬂ/igm, "fl")
+            .replace(/ﬁ/igm, "fi")
+            .replace(/ﬀ/igm, "ff")
+            .replace(/ﬃ/igm, "ffi")
+            .replace(/ﬄ/igm, "ffl")
+            .replace(/ﬆ/igm, "st")
+
 
             // Separate the input into separate lines and put them into an array,
             // so that we can place highlights on specific lines when for
