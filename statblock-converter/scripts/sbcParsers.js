@@ -106,11 +106,18 @@ class entityParser extends sbcParserBase {
 
                 let input = array[i].trim()
 
+                console.log("Input in EntityParser:")
+                console.log(input)
+
                 let searchEntity = {
                     "name": sbcUtils.parseSubtext(input.replace(/\+*\d+/g, "").trim())[0],
                     "type": type
                 }
 
+                // This only works for items in the default compendiums
+                // The check, if an item can be found, should only be in findEntityInCompendium!
+
+                /*
                 if (input.search(patternSupportedEntities) !== -1) {
                     // If the input is found in one of the compendiums, generate an entity from that
                     let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
@@ -126,6 +133,17 @@ class entityParser extends sbcParserBase {
                     let placeholder = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
                     sbcData.characterData.items.push(placeholder)
 
+                }
+                */
+
+                // If the input is found in one of the compendiums, generate an entity from that
+                let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
+
+                if (Object.keys(entity).length > 0) {
+                    sbcData.characterData.items.push(entity)
+                } else {
+                    let placeholder = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
+                    sbcData.characterData.items.push(placeholder)
                 }
 
             }

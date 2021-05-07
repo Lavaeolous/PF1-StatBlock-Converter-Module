@@ -1,5 +1,8 @@
 # Change Log
 
+2021_05_07 - v3.1.6
+*  Hotfix for feat-parsing, where an error prevented feats to be found in custom compendia (#411)
+
 2021_05_07 - v3.1.5
 *  Fixed a bug where class names in the statblock source got incorrectly parsed as a class (#409)
 *  Reworked the parsing of special abilities to also parse abilities without type-keywords (Su, Sp, Ex) and added an info message to inform the user about this. Also reclassified these errors as warnings so the statblock can be parsed incomplete if errors occur (#408)

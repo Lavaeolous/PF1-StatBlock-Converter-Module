@@ -262,6 +262,9 @@ export class sbcUtils {
 
     static async findEntityInCompendium(compendium, input, line = -1) {
 
+        console.log("TRYING TO FIND THE FOLLOWING ITEM IN A COMPENDIUM")
+        console.log(input)
+
         // Create an array for all compendiums to search through
         let searchableCompendiums = []
 
@@ -278,7 +281,7 @@ export class sbcUtils {
             searchableCompendiums = customCompendiums.concat(searchableCompendiums)
         }
 
-        let searchTerms = input.name.split(" ")
+        //let searchTerms = input.name.split(" ")
                 
         let foundEntity = false
         let searchResult = {}
@@ -291,6 +294,8 @@ export class sbcUtils {
         for (let i=0; i<searchableCompendiums.length; i++) {
 
             let currentCompendium = searchableCompendiums[i].trim()
+
+            console.log("searching the item in: " + currentCompendium)
             
             if (!foundEntity) {
 
