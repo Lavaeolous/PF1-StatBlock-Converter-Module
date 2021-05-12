@@ -262,9 +262,6 @@ export class sbcUtils {
 
     static async findEntityInCompendium(compendium, input, line = -1) {
 
-        console.log("TRYING TO FIND THE FOLLOWING ITEM IN A COMPENDIUM")
-        console.log(input)
-
         // Create an array for all compendiums to search through
         let searchableCompendiums = []
 
@@ -295,8 +292,6 @@ export class sbcUtils {
 
             let currentCompendium = searchableCompendiums[i].trim()
 
-            console.log("searching the item in: " + currentCompendium)
-            
             if (!foundEntity) {
 
                 // Check, if a pack can be found for the compendium
@@ -317,7 +312,9 @@ export class sbcUtils {
                             return entity
                         })
 
-                    } 
+                    } else {
+                        searchResult = null
+                    }
 
                 }
 
@@ -357,6 +354,10 @@ export class sbcUtils {
             // Ability-related
             "specialAbilityType": input.specialAbilityType ? input.specialAbilityType : null,
             "desc": input.desc ? input.desc : "sbc | Placeholder"
+
+            // Spell-related
+            // WIP
+            
         }
 
         let entity = null
@@ -501,6 +502,42 @@ export class sbcUtils {
 
             let valueInAcTypes = 0
 
+            // Validate the spellBooks
+            let spellBooksToValidate = Object.keys(conversionValidation.spellBooks)
+            for (let i=0; i<spellBooksToValidate.length; i++) {
+                let spellBookToValidate = spellBooksToValidate[i]
+                let casterLevelToValidate = conversionValidation.spellBooks[spellBookToValidate].casterLevel
+                let concentrationBonusToValidate = conversionValidation.spellBooks[spellBookToValidate].concentrationBonus
+                let casterLevelInActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].cl.total
+
+                let spellCastingAbility = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].ability
+                let spellCastingAbilityModifier = actor.data.data.abilities[spellCastingAbility].mod
+
+                let differenceInCasterLevel = +casterLevelToValidate - +casterLevelInActor
+                let differenceInConcentrationBonus = +concentrationBonusToValidate - +casterLevelToValidate + +spellCastingAbilityModifier
+
+                if (differenceInCasterLevel !== 0) {
+                    await actor.update({
+                        "data": {
+                            "attributes": {
+                                "spells": {
+                                    "spellbooks": {
+                                        [spellBookToValidate]: {
+                                            "cl": {
+                                                "formula": differenceInCasterLevel.toString()
+                                            },
+                                            "concentrationFormula": differenceInConcentrationBonus.toString()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+
+            }
+            
+
             // Get an array of all attributes that need to be validated
             let attributesToValidate = Object.keys(conversionValidation.attributes)
             
@@ -555,8 +592,6 @@ export class sbcUtils {
 
                 }
 
-                
-
                 // Generate Changes for the conversionBuff
                 switch (attribute.toLowerCase()) {
                     case "str":
@@ -600,13 +635,13 @@ export class sbcUtils {
                         difference = +totalInStatblock - +totalInActor
 
                         await actor.update({
-                                "data": {
-                                    "attributes": {
-                                        "hp": {
-                                            "value": +actor.data.data.attributes.hp.value - +difference
-                                        }
+                            "data": {
+                                "attributes": {
+                                    "hp": {
+                                        "value": +actor.data.data.attributes.hp.value - +difference
                                     }
                                 }
+                            }
                         })
                         
                         break

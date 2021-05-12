@@ -42,14 +42,20 @@
                 {{#if notes.offense.melee}}<strong>Melee</strong> {{notes.offense.melee}}<br/>{{/if}}
                 {{#if notes.offense.ranged}}<strong>Ranged</strong> {{notes.offense.ranged}}<br/>{{/if}}
                 {{#if notes.offense.space}}<strong>Space</strong> {{notes.offense.space}}; {{/if}}
-                {{#if notes.offense.reach}}<strong>Reach</strong> {{notes.offense.reacg}}<br/>{{/if}}
+                {{#if notes.offense.reach}}<strong>Reach</strong> {{notes.offense.reach}}<br/>{{/if}}
                 {{#if notes.offense.specialAttacks}}<strong>Special Attacks</strong> {{notes.offense.specialAttacks}}<br/>{{/if}}
             </div>
         </div>
         <!-- SPELLCASTING -->
-        {{#if data.hasSpellcasting}}
+        {{#if notes.offense.spellBooks}}
             <div style='break-inside: avoid;'>
-                <h4 style='border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;'>Spellcasting</h4><hr style='margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;' />
+                {{#each notes.offense.spellBooks}}
+                    <div class="spellBook">
+                        {{#each this}}
+                            <span>{{this}}</span><br/>
+                        {{/each}}
+                    </div>
+                {{/each}}    
             </div>
         {{/if}}
                 

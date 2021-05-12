@@ -2,7 +2,7 @@
  * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
  *
  * Author: Lavaeolous
- * Version: 3.1.6
+ * Version: 3.2.0
  *
  */
 
@@ -97,7 +97,8 @@ export class sbcApp {
             conversionValidation: {
                 "context": {},
                 "attributes": {},
-                "skills": {}
+                "skills": {},
+                "spellBooks": {}
             }
         }
         

@@ -106,40 +106,15 @@ class entityParser extends sbcParserBase {
 
                 let input = array[i].trim()
 
-                console.log("Input in EntityParser:")
-                console.log(input)
-
                 let searchEntity = {
                     "name": sbcUtils.parseSubtext(input.replace(/\+*\d+/g, "").trim())[0],
                     "type": type
                 }
 
-                // This only works for items in the default compendiums
-                // The check, if an item can be found, should only be in findEntityInCompendium!
-
-                /*
-                if (input.search(patternSupportedEntities) !== -1) {
-                    // If the input is found in one of the compendiums, generate an entity from that
-                    let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
-
-                    if (Object.keys(entity).length > 0) {
-                        sbcData.characterData.items.push(entity)
-                    } else {
-                        let placeholder = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
-                        sbcData.characterData.items.push(placeholder)
-                    }
-
-                } else {
-                    let placeholder = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
-                    sbcData.characterData.items.push(placeholder)
-
-                }
-                */
-
                 // If the input is found in one of the compendiums, generate an entity from that
                 let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
 
-                if (Object.keys(entity).length > 0) {
+                if (entity !== null) {
                     sbcData.characterData.items.push(entity)
                 } else {
                     let placeholder = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
@@ -521,12 +496,18 @@ class classesParser extends sbcParserBase {
                         "level": classLevel
                     }
 
-                    classData.name = tempClassName[0]
-                    classData.suffix = tempClassName[0].replace(classData.name, "").trim()
-                    if (isWizardClass) {
+                    if (isSupportedClass) {
+                        classData.name = tempClassName[0].match(patternSupportedClasses)[0]
+                        classData.suffix = tempClassName[0].replace(classData.name, "").trim()
+                    } else if (isPrestigeClass) {
+                        classData.name = tempClassName[0].match(patternPrestigeClasses)[0]
+                        classData.suffix = tempClassName[0].replace(classData.name, "").trim()
+                    } else if (isWizardClass) {
                         classData.name = "wizard"
                         classData.wizardClass = tempClassName[0]
                         classData.suffix = tempClassName[0].replace(classData.wizardClass, "").trim()
+                    } else {
+                        return false
                     }
 
                     let classItem = await sbcUtils.findEntityInCompendium(compendium, classData, line)
@@ -1684,6 +1665,22 @@ export async function parseOffense(data, startLine) {
     
     let parsedSubCategories = []
     sbcData.notes["offense"] = {}
+    sbcData.notes.offense.spellBooks = {}
+
+    // Setup indices, booleans and arrays for spell-parsing
+    let rawSpellBooks = {}
+    let spellBooksFound = 0
+    let currentSpellBook = 0
+    let currentSpellBookType = {
+        "0": "primary",
+        "1": "secondary",
+        "2": "tertiary"
+    }
+    let startIndexOfSpellLikeAbilities = 0
+    let startIndexOfSpellBooks = []
+    let spellLikeAbilitiesFound = false
+    let endOfSpellLikeAbilitiesFound = false
+    let endOfSpellBookFound = []
 
     // Loop through the lines
     for (let line = 0; line < data.length; line++) {
@@ -1780,10 +1777,211 @@ export async function parseOffense(data, startLine) {
                 }
             }
 
+            // Parse Spell-Like Abilities
+            if (!parsedSubCategories["spellLikeAbilities"]) {
+                /* Collate all lines that are part of the Spell-Like Abilities,
+                 * by putting all lines found after the keyword ...
+                 * ... up until the end of the section or
+                 * ... up until the next keyword
+                 * into an array
+                 */
+                
+                // Start with the line containing the keyword, CL and other base info
+                if (lineContent.search(/^Spell-Like\s+Abilities\b\s*/i) !== -1) {
+
+                    spellLikeAbilitiesFound = true
+
+                    sbcData.notes.offense.hasSpellcasting = true
+
+                    // Set the startIndexOfSpellLikeAbilities to the line in the current offense section
+                    startIndexOfSpellLikeAbilities = line
+
+                    // Set casterLevel and concentrationBonus
+                    let casterLevel = 0
+                    let concentrationBonus = 0
+
+                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
+                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
+                    }
+
+                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
+                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
+                    }
+
+                    // Push the line into the array holding the raw data for Spell-Like Abilities
+                    rawSpellBooks[spellBooksFound] = {
+                        "firstLine": lineContent,
+                        "spells": [],
+                        "spellCastingType": "spontaneous",
+                        "spellCastingClass": "_hd",
+                        "casterLevel": casterLevel,
+                        "concentrationBonus": concentrationBonus,
+                        "spellBookType": "spelllike"
+                    }
+
+                    currentSpellBook = spellBooksFound
+                    //spellBooksFound += 1
+
+                }
+
+                /* If there are Spell-Like Abilities
+                 * and the current line comes after the start of this section
+                 */
+
+                if (spellLikeAbilitiesFound && +line > +startIndexOfSpellLikeAbilities) {
+
+                    /* If the line contains any of the keyswords that denote a new spell section
+                     * like "spells prepared" or "spells known"
+                     * set endOfSpellLikeAbilitiesFound to true
+                     */ 
+                    if (lineContent.search(/Spells (?:Prepared|Known)/gi) !== -1) {
+                        endOfSpellLikeAbilitiesFound = true
+                    }
+
+                    // If the end of the section containing these was not found
+                    if (!endOfSpellLikeAbilitiesFound) {
+                        // Push the line into the array holding the raw data for Spell-Like Abilities
+                        //rawSpellLikeAbilities.push(lineContent)
+                        rawSpellBooks[currentSpellBook].spells.push(lineContent)
+                    }
+
+                }
+                
+            }
+
+            // Parse Spells Prepared
+            if (!parsedSubCategories["spellBooks"]) {
+                /* Collate all lines that are part of the prepared spells,
+                 * by putting all lines found after the keyword ...
+                 * ... up until the end of the section or
+                 * ... up until the next keyword
+                 * into an array
+                 */
+                
+                // Start with the line containing the keyword, CL and other base info
+                if (lineContent.search(/Spells (?:Prepared|Known)\b\s*/i) !== -1) {
+
+                    currentSpellBook = spellBooksFound
+                    startIndexOfSpellBooks[currentSpellBook] = line
+                    spellBooksFound += 1
+
+                    sbcData.notes.offense.hasSpellcasting = true
+
+                    // Check for the spellCastingType (Spontaneous is default)
+                    // Set casterLevel and concentrationBonus
+                    // Set spellCastingClass (hd is default)
+
+                    let spellCastingType = "spontaneous"
+                    let casterLevel = 0
+                    let concentrationBonus = 0
+                    let spellCastingClass = "hd"
+
+                    if (lineContent.match(/prepared/i) !== null) {
+                        spellCastingType = "prepared"
+                    }
+
+                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
+                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
+                    }
+
+                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
+                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
+                    }
+
+                    let patternSupportedClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + ")", "gi")
+                    let patternPrestigeClasses = new RegExp("(" + sbcConfig.prestigeClassNames.join("\\b|\\b") + ")(.*)", "gi")
+                    let patternWizardClasses = new RegExp("(" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(.*)", "gi")
+
+                    if (lineContent.match(patternSupportedClasses) !== null) {
+                        spellCastingClass = lineContent.match(patternSupportedClasses)[0]
+                    }
+
+                    if (lineContent.match(patternPrestigeClasses) !== null) {
+                        spellCastingClass = lineContent.match(patternPrestigeClasses)[0]
+                    }
+
+                    if (lineContent.match(patternWizardClasses) !== null) {
+                        spellCastingClass = lineContent.match(patternWizardClasses)[0]
+                    }
+
+                    // Push the line into the array holding the raw data for spellBook
+                    rawSpellBooks[spellBooksFound] = {
+                        "firstLine": lineContent,
+                        "spells": [],
+                        "spellCastingClass": spellCastingClass,
+                        "spellCastingType": spellCastingType,
+                        "casterLevel": casterLevel,
+                        "concentrationBonus": concentrationBonus,
+                        "spellBookType": currentSpellBookType[currentSpellBook]
+                    }
+
+                    //rawSpellBooks[spellBooksFound].data.push(lineContent)
+
+                }
+
+                /* If there are Spells prepared
+                 * and the current line comes after the start of this section
+                 */
+
+                if (spellBooksFound !== 0 && currentSpellBook == spellBooksFound-1 && +line > +startIndexOfSpellBooks[currentSpellBook]) {
+
+                    /* If the line contains any of the keyswords that denote a new spell section
+                     * like "spells prepared" or "spells known"
+                     * set endOfSpellBookFound to true
+                     */
+
+                    if (lineContent.search(/Spells (?:Prepared|Known)/gi) !== -1) {
+                        endOfSpellBookFound[spellBooksFound] = true
+                    }
+
+                    // If the end of the section containing these was not found
+                    if (!endOfSpellBookFound[spellBooksFound]) {
+                        // Push the line into the array holding the raw data for Spell-Like Abilities
+                        rawSpellBooks[spellBooksFound].spells.push(lineContent)
+                    }
+
+                    
+
+                }
+                
+            }
+
+            /* If this is the last line of the offense block
+             * send spellBooks (if available) to the spellBooksParser
+             * and the notes section
+             */
+                    
+            if (line == data.length-1) {
+
+                let keysRawSpellBooks = Object.keys(rawSpellBooks)
+
+                if (keysRawSpellBooks.length > 0) {
+
+                    let parserSpellBooks = sbcMapping.map.offense.spellBooks
+
+                    for (let i=0; i<keysRawSpellBooks.length; i++) {
+                        
+                        let keyRawSpellBook = keysRawSpellBooks[i]
+                        let rawSpellBook = rawSpellBooks[keyRawSpellBook]
+
+                        let spellBookNote = [
+                            rawSpellBook.firstLine
+                        ]
+                        spellBookNote = spellBookNote.concat(rawSpellBook.spells)
+
+                        sbcData.notes.offense["spellBooks"][i] = spellBookNote
+
+                        await parserSpellBooks.parse(rawSpellBook, startIndexOfSpellBooks[i])
+                    }
+                }
+
+            }
+
         } catch (err) {
             let errorMessage = `Parsing the offense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Offense", errorMessage, line+startLine)
             sbcData.errors.push(error)
+            throw err
             return false
         }
     
@@ -2371,6 +2569,189 @@ class specialAttacksParser extends sbcParserBase {
     }
 }
 
+
+// Parse Spell Books and Spell-Like Abilities
+class spellBooksParser extends sbcParserBase {
+    async parse(value, line) {
+        sbcConfig.options.debug && sbcUtils.log("Trying to parse the following Spell Book.")
+        sbcConfig.options.debug && console.log(value)
+
+        let spellCastingType = value.spellCastingType
+        let spellCastingClass = value.spellCastingClass
+        let casterLevel = value.casterLevel
+        let concentrationBonus = value.concentrationBonus
+        let spellRows = value.spells
+        let spellBookType = value.spellBookType
+
+        // Save Data needed for validation
+        // and put it into the notes sections as well
+        sbcData.characterData.conversionValidation.spellBooks[spellBookType] = {
+            "casterLevel": +casterLevel,
+            "concentrationBonus": +concentrationBonus
+        }
+
+        sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].clNotes = "sbc | Total in statblock was CL " + casterLevel + ", adjust as needed."
+        sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].concentrationNotes = "sbc | Total in statblock was +" + concentrationBonus + ", adjust as needed."
+
+        try {  
+
+            // Activate the spellBooks in the sheet settings
+            sbcData.characterData.actorData.data.data.attributes.spells.usedSpellbooks.push(spellBookType)
+
+            let altNameSuffix = "Prepared"
+
+            // Set the spellBook data
+            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].autoSpellLevels = false
+            
+            if (spellCastingType == "spontaneous") {
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spontaneous = true
+                altNameSuffix = "Known"
+            }
+
+            if (spellBookType !== "spelllike") {
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].class = spellCastingClass.toLowerCase()
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = sbcUtils.capitalize(spellCastingClass) + " Spells " + altNameSuffix
+            } else {
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = "Spell-like Abilities"
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].arcaneSpellFailure = false
+            }
+
+            /* Parse the spell rows
+             * line by line
+             */
+
+            for (let i=0; i<spellRows.length; i++) {
+                let spellRow = spellRows[i]
+
+                let spellLevel = -1
+                let spellsPerX = ""
+                let spellsPerXTotal = -1
+
+                // A) Check if its a normal spellRow starting with a spellLevel or the spells per day
+                if (spellRow.match(/(^\d)/) !== null) {
+
+                    // if it's a Spell-Like Ability get the spells per day, otherwise the spellLevel
+                    // WIP: THIS IS STUPID CODE; REFACTOR THIS PLS
+                    if (spellBookType == "prepared") {
+                        spellLevel = spellRow.match(/(^\d)/)[1]
+                    } else {
+                        if (spellRow.match(/(^\d)/) !== null) {
+                            spellLevel = spellRow.match(/(^\d)/)[1]
+                        } 
+                        if (spellRow.match(/(\d+)(?:\/(?:day|week|month|year))/) !== null) {
+                            spellsPerXTotal = spellRow.match(/(\d+)(?:\/(?:day|week|month|year))/)[1]
+                        }
+                        if (spellRow.match(/\/([a-zA-Z]*)\)*\-/) !== null) {
+                            spellsPerX = spellRow.match(/\/([a-zA-Z]*)\)*\-/)[1]
+                        }
+                        
+                    }
+
+                    let spells = sbcUtils.sbcSplit(spellRow.replace(/(^[^\-]*\-)/, ""))
+                    
+
+                    // Loop through the spells
+                    for (let j=0; j<spells.length; j++) {
+
+                        let spell = spells[j].trim()
+                        let spellName = sbcUtils.parseSubtext(spell)[0]
+                            .trim()
+                            .replace(/[D]$/, "")    // Remove Domain Notation at the end of spellNames
+                        let spellDC = -1
+
+                        if (spell.search(/\bDC\b/) !== -1) {
+                            spellDC = spell.match(/(?:DC\s*)(\d+)/)[1]
+                        }
+
+                        let searchEntity = {
+                            "name": spellName,
+                            "type": "spell"
+                        }
+
+                        let compendium = "pf1.spells"
+        
+                        // If the input is found in one of the compendiums, generate an entity from that
+                        let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
+
+                        // otherwise overwrite "entity" with a placeholder
+                        if (entity === null) {
+                            entity = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
+                        }
+
+                        // Edit the entity to match the data given in the statblock
+                        entity.data.data.spellbook = spellBookType
+
+                        // Set the spellLevel
+                        if (spellLevel !== -1) {
+                            entity.data.data.level = +spellLevel
+                        }
+
+                        // Set the spellDC
+                        if (spellDC !== -1) {
+                            entity.data.data.save.dc = spellDC.toString()
+                        }
+
+                        /* Set the spells uses / preparation
+                         * where SLAs can be cast a number of times per X per sla
+                         * and spontaneous spells of a given spellLevel can be cast a total of X times per day
+                         */
+                        if (spellsPerXTotal !== -1 && spellBookType === "spelllike") {
+                            entity.data.data.uses.max = +spellsPerXTotal
+                            entity.data.data.uses.value = +spellsPerXTotal
+                            entity.data.data.uses.per = spellsPerX
+                        } 
+
+                        // Spells Known can be cast a number of times per day in total for the given spellRow
+                        if (spellsPerXTotal !== -1 && spellCastingType === "spontaneous") {
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].base = +spellsPerXTotal
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].max = +spellsPerXTotal
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].value = +spellsPerXTotal
+                        }
+
+                        // Spells Prepared can be cast a according to how often they are prepared
+                        if (spellCastingType === "prepared") {
+
+                            // WIP: BUILD A CHECK FOR MULTIPLE PREPARATIONS OF THE SAME SPELL
+
+                            entity.data.data.preparation.maxAmount = 1
+                            entity.data.data.preparation.preparedAmount = 1
+
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].base += 1
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].max += 1
+
+                        }
+
+                        sbcData.characterData.items.push(entity)
+
+                    }
+
+                } else {
+                    // B) If it's not a normal spellRow, try to extract domains, schools, mysteries, etc.
+
+
+                    // WIP
+
+                    
+                }
+
+
+            }
+            
+            return true
+
+        } catch (err) {
+
+            let errorMessage = "Failed to parse the following Spell Book."
+            sbcConfig.options.debug && console.log(value)
+            let error = new sbcError(1, "Parse/Offense", errorMessage, line)
+            sbcData.errors.push(error)
+            throw err
+            return false
+
+        }
+    }
+}
+
 /* ------------------------------------ */
 /* Parser for statistics data           */
 /* ------------------------------------ */
@@ -2638,7 +3019,7 @@ class skillsParser extends sbcParserBase {
 
                 // Check, if the rawSkill contains "racial modifiers"
                 // And skip to the end of the array as we do not need these
-                if (rawSkill.search(/racial modifier/i) !== -1) {
+                if (rawSkill.search(/racial (?:modifier|bonus)/i) !== -1) {
                     return
                 }
 
@@ -3669,7 +4050,15 @@ export async function generateNotesSection() {
 
     let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.data, notes: sbcData.notes })
 
+    let d = new Date()
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    let sbcInfo = `
+        <div class="sbcInfo" style="margin-top: 15px; margin-bottom: 5px; text-align: center; font-size: 1em; font-weight: 900;">sbc | Generated with version ${sbcConfig.modData.version} on ${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}</div>
+    `
+
     let styledNotes = `
+        <hr>
         <div class="statblockContainer" style="margin-top: 15px">${preview}</div>
     `
     let rawNotes = `
@@ -3683,7 +4072,7 @@ export async function generateNotesSection() {
     `
     
     // WRITE EVERYTHING TO THE NOTES
-    sbcData.characterData.actorData.data.data.details.notes.value = styledNotes + rawNotes
+    sbcData.characterData.actorData.data.data.details.notes.value = sbcInfo + styledNotes + rawNotes
 }
 
 /* ------------------------------------ */
@@ -3733,7 +4122,8 @@ export function initMapping() {
         "offense": {
             "speed": new speedParser(),
             "attacks": new attacksParser(),
-            "specialAttacks": new specialAttacksParser()
+            "specialAttacks": new specialAttacksParser(),
+            "spellBooks": new spellBooksParser()
             
         },
         "tactics": new tacticsParser(),

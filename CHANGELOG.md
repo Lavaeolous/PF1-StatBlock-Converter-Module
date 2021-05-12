@@ -1,5 +1,10 @@
 # Change Log
 
+2021_05_12 - v3.2.0
+*  Added spell-parsing (#383. #329 partial)
+*  Fixed a bug where class names with suffix (e.g. "Cleric of Rovagug") failed to parse (#413)
+
+
 2021_05_07 - v3.1.6
 *  Hotfix for feat-parsing, where an error prevented feats to be found in custom compendia (#411)
 
