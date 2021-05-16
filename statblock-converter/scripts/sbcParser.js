@@ -19,6 +19,7 @@ export class sbcParser {
         try {
 
             // Initial Clean-up of input
+            $( "#sbcProgressBar" ).css("width", "5%")
             
             // Replace different dash-glyphs with the minus-glyph
             sbcData.preparedInput.data = sbcData.input.replace(/–|—|−/gm,"-")
@@ -94,11 +95,14 @@ export class sbcParser {
 
             try {
 
+                
+                sbcUtils.updateProgressBar("Preparation", "Clean-up", 1, 1)
+
                 let availableCategories = Object.keys(sbcMapping.map);
 
                 /* ------------------------------------ */
                 /* The input was prepared and is        */
-                /* currently in the form of an arry     */
+                /* currently in the form of an array    */
                 /* which consists of one entry per line */
                 /* ------------------------------------ */
 
@@ -203,16 +207,21 @@ export class sbcParser {
 
                         for (let i=0; i<orderedFoundCategories.length; i++) {
                             let category = orderedFoundCategories[i]
+                            sbcUtils.updateProgressBar("Parsing", category, orderedFoundCategories.length, i+1)
                             parsedCategories[category] = await parseCategories(category, dataChunks[category], startLines[category])
+                            
                         }
 
                         // After parsing all available subCategories, create embedded entities
+                        sbcUtils.updateProgressBar("Entities", "Creating Embedded Entities", 1, 1)
                         await createEmbeddedEntities()
 
                         // After parsing all available subCategories, check the flags set on the way
+                        sbcUtils.updateProgressBar("Flags", "Checking if Special Flags were set", 1, 1)
                         await checkFlags()
 
                         // Create the notes section composed of the statblock and the raw input
+                        sbcUtils.updateProgressBar("Preview", "Generating Preview", 1, 1)
                         await generateNotesSection()
 
                     
@@ -221,6 +230,7 @@ export class sbcParser {
                         // close the inputDialog and resetSBC
 
                         // SET THIS TO TRUE WHEN ALL CATEGORIES ARE PARSED SUCCESSFULLY (MORE OR LESS)
+                        sbcUtils.updateProgressBar("Actor", "Actor is ready", 1, 1)
                         sbcData.parsedInput.success = true
 
                     } else {

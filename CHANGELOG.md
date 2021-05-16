@@ -1,5 +1,11 @@
 # Change Log
 
+2021_05_16 - v3.2.1
+*  Added a progress bar (#419)
+*  Fixed a bug where context notes in the AC section broke sbc (#417)
+*  Fixed a bug where non-numeric characters in the HP section where parsed (#416)
+*  Fixed a bug where the generation of PC-Actors was broken (#414)
+
 2021_05_12 - v3.2.0
 *  Added spell-parsing (#383. #329 partial)
 *  Fixed a bug where class names with suffix (e.g. "Cleric of Rovagug") failed to parse (#413)

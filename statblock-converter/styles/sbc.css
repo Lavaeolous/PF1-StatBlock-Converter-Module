@@ -5,6 +5,7 @@
 
 .sbcContainer {
     display: flex;
+    flex-wrap: wrap;
 }
 
 #sbcModal {
@@ -46,7 +47,7 @@
 }
 
 .sbcInputContainer, .sbcPreviewContainer {
-    flex: 1;
+    flex: 1 1 50%;
     flex-flow: row nowrap;
     padding: 5px;
 }
@@ -272,4 +273,92 @@ mark {
 
 .spellBook span:first-child {
     font-weight: 900;
+}
+/*
+
+.progressBarContainer {
+    width: 100%;
+    flex: 1 1 100%;
+    margin: -8px -8px 8px -8px;
+}
+
+.progressBar {
+    width: 100%;
+    height: auto;
+    background-color: red;
+    display: inline-block;
+    min-height: 20px;
+    visibility: hidden;
+    text-align: right;
+    padding-right: 5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: white;
+    padding-top:3px;
+}
+
+.progressBar.visible {
+    visibility: visible;
+}
+
+*/
+
+.progressBarContainer {
+    height: 26px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 40px;
+    overflow: visible;
+    position: relative;
+    width: 100%;
+    flex: 1 1 100%;
+    margin: -8px -8px 8px -8px;
+}
+.progressBarContainer .progressBar {
+    width: 0%;
+    min-height: 25px;
+    box-shadow: none;
+    border-radius: 0;
+    position: relative;
+    padding-right: 5px;
+    padding-top: 4px;
+    font-weight: 900;
+    color: black;
+    text-transform: uppercase;
+    animation: progress-bar-stripes 2s linear infinite forwards;
+    background-image: linear-gradient(45deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 25%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 75%, rgba(0,0,0,0) 75%);
+    background-size: 40px 40px;
+    animation-play-state: running;
+}
+
+.progressBarContainer .progressBar .progressValue {
+    display: inline-block;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: all ease-in-out 250ms;
+}
+
+.progressBarContainer .progressBar.ready {
+    animation-play-state: paused;
+    background: rgba(0,0,0,0.2);
+}
+
+
+@-webkit-keyframes progress-bar-stripes {
+    from {
+      background-position: 40px 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+@keyframes progress-bar-stripes {
+    from {
+      background-position: 40px 0;
+    }
+    to {
+      background-position: 0 0;
+    }
 }

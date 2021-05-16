@@ -106,7 +106,7 @@ export class sbcInputDialog extends Application {
 
             // Check, if there is an input and try to parse that
             if (sbcData.input) {
-
+                
                 // Prepare and parse the input
                 await sbcParser.prepareInput()
 
@@ -115,6 +115,7 @@ export class sbcInputDialog extends Application {
                     sbcUtils.updatePreview()
                     sbcUtils.updateErrorArea()
                     sbcConfig.options.actorReady = true
+                    
                 } else {
                     // The input could not be parsed
                     let errorMessage = "Could not parse the input"

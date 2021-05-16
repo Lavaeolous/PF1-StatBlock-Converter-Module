@@ -143,39 +143,73 @@ export class sbcUtils {
             sbcData.actorType = 0;
             actorTypeToggle.removeClass("createPC")
         }
-            
-        // 14.04.2021 -- NEW ACTOR TYPE UPDATE
-        sbcData.characterData.actorData.update({
-            type: sbcConfig.const.actorType[sbcData.actorType]
-        })
-
-        /*
-        let tempActor = await Actor.create({
-            name: sbcData.characterData.actorData.data.name,
-            type: sbcConfig.const.actorType[sbcData.actorType],
-            folder: sbcData.characterData.actorData.data.folder,
-            sort: 12000,
-            data: {},
-            token: {},
-            items: [],
-            flags: {}
-        }, {temporary: true} );
-
-        sbcData.characterData = {
-            actorData: tempActor,
-            items: [],
-            spells: [],
-            abilityDescriptions: [],
-            characterDescriptions: [],
-            conversionValidation: {
-                "context": {},
-                "attributes": {},
-                "skills": {}
-            }
-        }
-        */
+        
+        sbcData.characterData.actorData.data.type = sbcConfig.const.actorType[sbcData.actorType]
 
     }
+
+    /* ------------------------------------ */
+    /* ProgressBar Related Stuff            */
+    /* ------------------------------------ */
+
+    /*
+     * TOTAL = 1
+     * "preparation" = 0.1
+     * "parsing" = 0.6
+     * "entityCreation" = 0.2
+     * "checkFlags" =  0.05
+     * "generateNotes" = 0.05
+     */
+
+    static async updateProgressBar (process = "", subProcess = "", total = 1, step = 1) {
+
+        let widthPreparation = 0.10
+        let widthParsing = 0.60
+        let widthEntities = 0.20
+        let widthFlags =  0.05
+        let widthPreview = 0.05
+
+        let progressBar = $( "#sbcProgressBar" )
+        let progressBarValue = $( "#sbcProgressValue" )
+        let increment = 100 / total
+
+        let newWidth = 0
+        let progressBarText = ""
+
+        switch (process.toLowerCase()) {
+            case "preparation":
+                progressBar.removeClass("ready")
+                newWidth = Math.floor( widthPreparation * increment * step )
+                progressBarText = process + ": " + subProcess
+                break
+            case "parsing":
+                newWidth = Math.floor( 100 * ( widthPreparation ) + widthParsing * increment * step )
+                progressBarText = process + ": " + subProcess
+                break
+            case "entities":
+                newWidth = Math.floor( 100 * ( widthParsing + widthPreparation ) + widthEntities * increment * step )
+                progressBarText = subProcess
+                break
+            case "flags":
+                newWidth = Math.floor( 100 * ( widthEntities + widthParsing + widthPreparation ) + widthFlags * increment * step )
+                progressBarText = subProcess
+                break
+            case "preview":
+                newWidth = Math.floor( 100 * ( widthFlags + widthEntities + widthParsing + widthPreparation ) + widthPreview * increment * step )
+                progressBarText = subProcess
+                break
+            case "actor":
+                newWidth = 100
+                progressBarText = subProcess
+                progressBar.addClass("ready")
+            default:
+                break
+        }
+
+        progressBar.css("width", newWidth + "%")
+        progressBarValue.empty().append(progressBarText)
+    }
+        
 
     /* ------------------------------------ */
     /* Log to the console and errorArea     */

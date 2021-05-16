@@ -1109,12 +1109,23 @@ class acTypesParser extends sbcParserBase {
 
             sbcData.notes.defense.acTypes = "(" + value + ")"
 
-            let foundAcTypes = value.split(",")
+            // Separate Context Notes from ACTypes
+
+            let rawAcTypes = value.split(";")
+            let acContextNotes = ""
+            
+            // If there are context notes, set them in the actor
+            if (rawAcTypes.length > 1) {
+                acContextNotes = rawAcTypes[1].trim()
+                sbcData.characterData.actorData.data.data.attributes.acNotes = acContextNotes
+            }
+
+            let foundAcTypes = rawAcTypes[0].split(",")
             // Get supported AC Types
             let patternAcTypes = new RegExp("(" + sbcConfig.armorBonusTypes.join("\\b|\\b") + ")", "gi")
 
             for (let i=0; i<foundAcTypes.length; i++) {
-                let foundAc = foundAcTypes[i]
+                let foundAc = foundAcTypes[i].trim()
                 let foundAcType = foundAc.match(patternAcTypes)[0]
                 let foundAcTypeValue = foundAc.replace(foundAcType, "").trim()
 
@@ -1228,7 +1239,8 @@ class hpParser extends sbcParserBase {
             // Get the HitDice and the bonus HP
             let splitHpAndHd = sbcUtils.parseSubtext(input[0])
 
-            let hpTotalInStatblock = splitHpAndHd[0]
+            // Get the total hp (only numbers!)
+            let hpTotalInStatblock = splitHpAndHd[0].match(/(\d+)/)[1]
 
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
@@ -3882,12 +3894,7 @@ class specialAbilityParser extends sbcParserBase {
                 specialAbilityName = value.slice(0,indexOfStartOfDescription).trim()
                 specialAbilityDesc = value.slice(indexOfStartOfDescription).trim()
 
-                let errorMessage = `
-                    Could not find an ability type (Su, Sp or Ex).<br>
-                    >> Is this the special ability you want to parse?<br>
-                    >> Ability Name: ${specialAbilityName}<br>
-                    >> Ability Description: ${specialAbilityDesc}
-                    `
+                let errorMessage = `There may be some issues here. Please check the preview!`
                 let error = new sbcError(3, "Parse/Special Abilties", errorMessage, line)
                 sbcData.errors.push(error)
 
