@@ -67,15 +67,14 @@ export class sbcInputDialog extends Application {
             // When the actorTypeToggle is clicked, check if there i input and try to generate an updated preview
             sbcConfig.options.debug && sbcUtils.log("Switching between PC and NPC actor type")
 
+            await sbcUtils.resetCategoryCounter()
             await sbcUtils.updateActorType()
             
             if (sbcData.input) {
-                //await sbcParser.parseInput(sbcInputDialog.characterData, sbcInputDialog.input)
                 await sbcParser.prepareInput(sbcInputDialog.characterData, sbcInputDialog.input)
             }
 
             if (sbcData.parsedInput.success) {
-                //
                 sbcConfig.options.actorReady = true
                 sbcUtils.updatePreview()
                 sbcUtils.updateErrorArea()

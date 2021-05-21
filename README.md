@@ -12,9 +12,15 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json
 ```
 # Compatibility
-GameSystem: [PF1 0.77.23](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 
-FoundryVTT: 0.7.8-0.7.9
+
+Version 3.3 and upwards of SBC:
+* GameSystem: [PF1 0.78.X](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 0.8.X
+
+Version 3.2.2 of SBC (see releases): 
+* GameSystem: [PF1 0.77.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 0.7.8-0.7.9
 
 # How to Use
 1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).

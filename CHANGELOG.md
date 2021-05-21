@@ -1,5 +1,13 @@
 # Change Log
 
+2021_05_21 - v3.2.2
+*  Fixed a bug where LN and LG Alignments broke the import (#437)
+*  Added support for "Any Aligment" aligments (#431)
+*  Refactored spellparsing (#436, #435, #434, #433, #432, #423, #422)
+*  Added support for natural attacks with prefix' (#430)
+*  Refactored parsing of auras (#429, #428, #427, #426)
+*  Fixed a bug where classes without archetypes had empty brackets in the name (#421)
+
 2021_05_16 - v3.2.1
 *  Added a progress bar (#419)
 *  Fixed a bug where context notes in the AC section broke sbc (#417)

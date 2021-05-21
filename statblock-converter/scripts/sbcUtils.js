@@ -31,12 +31,16 @@ export class sbcUtils {
         sbcData.parsedInput = {}
         sbcData.characterData = {}
         sbcData.notes = {}
+        this.resetCategoryCounter()
+    }
+
+    static resetCategoryCounter () {
         sbcData.foundCategories = 0
         sbcData.parsedCategories = 1
     }
 
     static resetCharacterData () {
-            
+
         sbcData.characterData.items = []
         sbcData.characterData.spells = []
         sbcData.characterData.abilityDescriptions = []
@@ -45,7 +49,7 @@ export class sbcUtils {
         sbcData.characterData.conversionValidation.attributes = {}
         sbcData.characterData.conversionValidation.skills = {}
 
-        
+        this.resetCategoryCounter()
         this.resetTraits()
         this.resetTokenData()
         
@@ -502,6 +506,20 @@ export class sbcUtils {
                     }, { temporary : true })
                 }
                 break
+            case "domains":
+            case "mysteries":
+                entity = await Item.create({
+                    "name": sbcUtils.capitalize(entityData.name),
+                    "type": "feat",
+                    "data": {
+                        "description": {
+                            "value": "sbc | As there is no dedicated field for " + entityData.type + ", this placeholder was created."
+                        },
+                        "featType": "classFeat"
+                    },
+                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
+                }, { temporary : true })
+                break
             default:
                 entity = await Item.create({
                     "name": sbcUtils.capitalize(entityData.name),
@@ -580,9 +598,6 @@ export class sbcUtils {
             attributesToValidate.splice(attributesToValidate.indexOf("acTouch"),1)
             attributesToValidate.splice(attributesToValidate.indexOf("acFlatFooted"),1)
             attributesToValidate.push("acNormal", "acTouch", "acFlatFooted")
-
-            sbcConfig.options.debug && console.log("attributesToValidate:")
-            sbcConfig.options.debug && console.log(attributesToValidate)
 
             // Get an array of all items the actor currently owns
             let currentItems = await actor.data.items
@@ -882,16 +897,25 @@ export class sbcUtils {
         let items = []
         
         // Remove Commas in large Numbers, e.g. 3,000 GP --> 3000 GP
-        let tempInput = input.replace(/(\d{1})(,)(\d{1})/g, "$1$3")
+        let tempInput = input.replace(/(\d{1})(,)(\d{1})/g, "$1$3").trim()
+
+        console.log("sbcSplit: TempInput")
+        console.log(tempInput)
 
         // Check if there are commas or semicolons
         if (tempInput.search(/,|;/g) !== -1) {
 
+            console.log("comma or semicolon found")
+            console.log(tempInput)
+
             // Check if there are parenthesis including commas in the input
-            if (tempInput.match(/([^,;]+\([^(.]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
+            if (tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
                 // Get the input with parenthesis and commas inside the parenthesis
-                let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(.]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
+                let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
                 let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)
+
+                console.log("itemsWithCommasInParenthesis")
+                console.log(itemsWithCommasInParenthesis)
                 
                 for (let i=0; i<itemsWithCommasInParenthesisKeys.length; i++) {
 
