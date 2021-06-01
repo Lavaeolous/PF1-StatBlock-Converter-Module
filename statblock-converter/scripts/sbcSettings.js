@@ -85,10 +85,10 @@ export class sbcSettings {
                 let info = "Created a custom folder for imported statblocks."
                 ui.notifications.info(info)
                 sbcConfig.options.debug && sbcUtils.log(info)
-                return newFolder._id
+                return newFolder.id
             } else {
                 // Existing folder found
-                return searchForExistingFolder._id
+                return searchForExistingFolder.id
             }
 
         } else {
@@ -228,7 +228,7 @@ export const registerSettings = function () {
     game.settings.register(sbcConfig.modData.mod, "disposition", {
         name: "Disposition",
         hint: "Define the disposition of created tokens (which results in differently colored token borders). Default: Hostile",
-        default: "-1",
+        default: -1,
         scope: "world",
         type: String,
         choices: {"-1": "Hostile", "0": "Neutral", "1": "Friendly"},
@@ -288,16 +288,15 @@ export const initializeSettings = async function () {
     //let attributeKeys = Object.keys(game.system.model.Actor.npc.attributes)
 
     let attributeKeys = sbcConfig.const.tokenBarAttributes
-
     attributeKeys.unshift("NONE")
 
     sbcConfig.options.actorReady = false
     sbcConfig.options.debug = game.settings.get(sbcConfig.modData.mod, "debug")
     sbcConfig.options.defaultActorType = game.settings.get(sbcConfig.modData.mod, "defaultActorType")
     sbcConfig.options.inputDelay = game.settings.get(sbcConfig.modData.mod, "inputDelay")
-    sbcConfig.options.tokenSettings.disposition = game.settings.get(sbcConfig.modData.mod, "disposition")
-    sbcConfig.options.tokenSettings.displayName = game.settings.get(sbcConfig.modData.mod, "displayName")
-    sbcConfig.options.tokenSettings.displayBars = game.settings.get(sbcConfig.modData.mod, "displayBars")
+    sbcConfig.options.tokenSettings.disposition = +game.settings.get(sbcConfig.modData.mod, "disposition")
+    sbcConfig.options.tokenSettings.displayName = +game.settings.get(sbcConfig.modData.mod, "displayName")
+    sbcConfig.options.tokenSettings.displayBars = +game.settings.get(sbcConfig.modData.mod, "displayBars")
     sbcConfig.options.customFolder = game.settings.get(sbcConfig.modData.mod, "importFolder")
 
     sbcSettings.updatePrototypeTokenSettings("attributeBar1", attributeKeys)

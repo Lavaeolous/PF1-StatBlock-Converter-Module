@@ -13,12 +13,11 @@ https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/dow
 ```
 # Compatibility
 
+**Version 3.3 and upwards of SBC:**
+* GameSystem: [PF1 0.78.6](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 0.8.6
 
-Version 3.3 and upwards of SBC:
-* GameSystem: [PF1 0.78.X](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 0.8.X
-
-Version 3.2.2 of SBC (see releases): 
+**Version 3.2.2 of SBC (see releases, no longer developed):**
 * GameSystem: [PF1 0.77.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 * FoundryVTT: 0.7.8-0.7.9
 
@@ -28,21 +27,21 @@ Version 3.2.2 of SBC (see releases):
 3.  Paste the Statblock into the textarea, check the preview for any errors and import via button as NPC or PC actor
 
 # Disclaimer
-sbc is currently in development, some data may not be parsed. See change log for latest updates and issues for known bugs.
+sbc is never finished it seems :D. See change log for latest updates and issues for known bugs.
 
 If you find any errors or have a statblock that can't be converted at all, feel free to open an issue here or let me know on the FoundryVTT Discord.
 
 # What gets converted
-SBC creates a mostly complete Actor (PC or NPC) with embedded entities for feats, spells and stuff like that. Most of the time the conversion will not be complete, as for example items and gear may be imported incorrectly or as placeholders. For most actors this will be fine, for critical and important NPCs, Bosses and PCs i strongly advise you to use sbc for the bulk, but check for errors carefully!
+SBC creates a mostly complete Actor (PC or NPC) with embedded documents for feats, spells and stuff like that. Most of the time the conversion will not be complete, as for example items and gear may be imported incorrectly or as placeholders. For most actors this will be fine, for critical and important NPCs, Bosses and PCs i strongly advise you to use sbc for the bulk, but check for errors carefully!
 
 # Known Bugs
-*  Depending on the size of the input, there may be **long** loading times!
+*  Depending on the size of the input and the number of custom compendia used, there may be **long** loading times!
 *  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the preview area or console.
 *  See Issues. If you find anythings thats not noted there, please let me know.
 
 # To Do
-*  Finalize spell parsing
 *  Optimize loading times, as currently the search for items in compendia is taking forever
+*  Fix bugs
 
 # Contact
 Primer#2220 | FoundryVTT Discord

@@ -1,7 +1,7 @@
 import { sbcConfig } from "./sbcConfig.js"
 import { sbcUtils } from "./sbcUtils.js"
 import { sbcData, sbcError } from "./sbcData.js"
-import { checkFlags, createEmbeddedEntities, parseCategories, sbcMapping, generateNotesSection } from "./sbcParsers.js"
+import { checkFlags, createEmbeddedDocuments, parseCategories, sbcMapping, generateNotesSection } from "./sbcParsers.js"
 
 /* ------------------------------------ */
 /* sbcParser    						*/
@@ -69,6 +69,7 @@ export class sbcParser {
             let error = new sbcError(0, "Prepare", errorMessage)
             sbcData.errors.push(error)
             sbcData.preparedInput.success = false
+            throw errorMessage
         }
 
         sbcConfig.options.debug && console.groupEnd()
@@ -214,7 +215,7 @@ export class sbcParser {
 
                         // After parsing all available subCategories, create embedded entities
                         sbcUtils.updateProgressBar("Entities", "Creating Embedded Entities", 1, 1)
-                        await createEmbeddedEntities()
+                        await createEmbeddedDocuments()
 
                         // After parsing all available subCategories, check the flags set on the way
                         sbcUtils.updateProgressBar("Flags", "Checking if Special Flags were set", 1, 1)

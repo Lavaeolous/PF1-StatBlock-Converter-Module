@@ -1,5 +1,16 @@
 # Change Log
 
+2021_06_01 - v3.3.0
+*  **Updated SBC to work with FoundryVTT 8.x (#425)**
+*  Fixed a bug where custom compendia were not correctly searched for specific equipment types (#444)
+*  Fixed a bug where certain speeds could not be parsed correctly (#459)
+*  Fixed a bug where skills with subskills were parsed incorrectly (#452), which led to malformed changes in the conversion buff (#456)
+*  Negative save modifiers could not be parsed (#454), which is now fixed. Saves without a "+" or "-" glyph now can be parsed as well (as positive modifiers)
+*  Fixed a calculation error for spell dcs, where instead of calculating a spell dc offset the total included in the statblock was used as offset (#449, #448)
+*  Changed the documents/feats created for tactics and ecology information to now only use one item instead of multiple (#453)
+*  Migrating to 0.8.x led to an error, where attack modifiers and attack damage were not entered correctly in attacks. This is now fixed (#441, #442)
+*  Changed SBC to work in the new document based structure of FoundryVTT, which led to multiple bug manifestations (#445, #439, #440, #439, #438)
+
 2021_05_21 - v3.2.2
 *  Fixed a bug where LN and LG Alignments broke the import (#437)
 *  Added support for "Any Aligment" aligments (#431)

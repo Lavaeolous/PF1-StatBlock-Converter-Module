@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.2.2",
+    "version": "3.3.0",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -64,29 +64,29 @@ sbcConfig.options = {
 sbcConfig.initializeConfig = async function () {
 
     let raceIndex = await game.packs.get("pf1.races").getIndex()
-    for (let key in raceIndex) { if (raceIndex[key].name !== "") { sbcConfig.races.push(raceIndex[key].name) } }
+    for (let entry of raceIndex) { if (entry.name !== "") { sbcConfig.races.push(entry.name) } }
 
     let classIndex = await game.packs.get("pf1.classes").getIndex()
-    for (let key in classIndex) { if (classIndex[key].name !== "") { sbcConfig.classes.push(classIndex[key].name.replace(/[()]*/g,"")) } }
+    for (let entry of classIndex) { if (entry.name !== "") { sbcConfig.classes.push(entry.name.replace(/[()]*/g,"")) } }
 
     let prestigeClassIndex = Object.keys(sbcContent.prestigeClasses)
-    for (let key in prestigeClassIndex) { if (prestigeClassIndex[key].name !== "") { sbcConfig.prestigeClassNames.push(prestigeClassIndex[key]) } }
+    for (let entry of prestigeClassIndex) { if (entry.name !== "") { sbcConfig.prestigeClassNames.push(entry) } }
 
     let featsIndex = await game.packs.get("pf1.feats").getIndex()
-    for (let key in featsIndex) { if (featsIndex[key].name !== "") { sbcConfig.feats.push(featsIndex[key].name) } }
+    for (let entry of featsIndex) { if (entry.name !== "") { sbcConfig.feats.push(entry.name) } }
 
     let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").getIndex()
-    for (let key in weaponIndex) { if (weaponIndex[key].name !== "") { sbcConfig.weapons.push(weaponIndex[key].name) } }
+    for (let entry of weaponIndex) { if (entry.name !== "") { sbcConfig.weapons.push(entry.name) } }
 
     let armorsIndex = await game.packs.get("pf1.armors-and-shields").getIndex()
-    for (let key in armorsIndex) { if (armorsIndex[key].name !== "") { sbcConfig.armors.push(armorsIndex[key].name) } }
+    for (let entry of armorsIndex) { if (entry.name !== "") { sbcConfig.armors.push(entry.name) } }
 
     // Escaping "+", as some items include that in the name (e.g. "Headband of Alluring Charisma +2")
     let itemIndex = await game.packs.get("pf1.items").getIndex()
-    for (let key in itemIndex) { if (itemIndex[key].name !== "") { sbcConfig.items.push(itemIndex[key].name.replace(/(\+)/g, "\\+")) } }
+    for (let entry of itemIndex) { if (entry.name !== "") { sbcConfig.items.push(entry.name.replace(/(\+)/g, "\\+")) } }
 
     let classAbilitiesIndex = await game.packs.get("pf1.class-abilities").getIndex()
-    for (let key in classAbilitiesIndex) { if (classAbilitiesIndex[key].name !== "") { sbcConfig["class-abilities"].push(classAbilitiesIndex[key].name) } }
+    for (let entry of classAbilitiesIndex) { if (entry.name !== "") { sbcConfig["class-abilities"].push(entry.name) } }
 
 }
 

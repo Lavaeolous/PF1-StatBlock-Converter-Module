@@ -157,19 +157,29 @@ export class sbcInputDialog extends Application {
 
                 // If the input could be parsed correctly
                 if (sbcConfig.options.actorReady) {
-    
-                    // Create a permanent actor using the data from the temporary one
-                    let newActor = await Actor.create(sbcData.characterData.actorData.data)
-                    //await newActor.update({})
-                    //await newActor.update({})
 
-                    // Conversion Validation
-                    await sbcUtils.conversionValidation(newActor._id)
-                    //await newActor.update({})
-                    //await newActor.update({})
+                    try {
+                        // Create a permanent actor using the data from the temporary one
+                        //let newActor = await Actor.create([sbcData.characterData.actorData.data])
+
+                        let newActor = await Actor.create([sbcData.characterData.actorData.data.toObject(false)])
+                        //await newActor.update({})
+                        //await newActor.update({})
+
+
+                        // Conversion Validation
+                        await sbcUtils.conversionValidation(newActor[0].id)
+                        
+                        //await newActor.update({})
+                        //await newActor.update({})
+        
+                        sbcInputDialog.sbcInputDialogInstance.close()
+                        sbcApp.resetSBC()
+                    } catch (err) {
+                        throw err
+                    }
     
-                    sbcInputDialog.sbcInputDialogInstance.close()
-                    sbcApp.resetSBC()
+                    
     
                 } else {
                     let errorMessage = "Could not create an Actor"

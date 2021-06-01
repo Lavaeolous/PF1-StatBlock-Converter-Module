@@ -8,6 +8,7 @@ export class sbcUtils {
     static matchingClosingBrackets = {'(': ')', '[' : ']', '{': '}'};
 
     static async createTempActor () {
+        /*
         let tempActor =  await Actor.create({
             name: "sbc | Actor Template",
             type: sbcConfig.const.actorType[sbcData.actorType],
@@ -17,6 +18,14 @@ export class sbcUtils {
             items: [],
             flags: {}
         }, {temporary: true} )
+        */
+
+        let tempActor = new Actor({
+            name: "sbc | Actor Template",
+            type: sbcConfig.const.actorType[sbcData.actorType],
+            folder: sbcData.customFolderId
+        })
+
         return tempActor
     }
 
@@ -304,7 +313,10 @@ export class sbcUtils {
         let searchableCompendiums = []
 
         // Push the default compendium given when calling findEntityInCompendium
-        searchableCompendiums.push(compendium)
+        if (compendium !== null) {
+            searchableCompendiums.push(compendium)
+        }
+        
 
         // If there are customCompendiums, given as a string in the module settings,
         // split them and add them to the searchableCompendiums
@@ -340,11 +352,24 @@ export class sbcUtils {
                     // WIP: MAKE THIS SEARCH MORE FUZZY!!!
                     // Example: LEt it find "Shortsword" when the input is "Short Sword"
                     // Example: Let it find "Holy Symbol (Silver)" when the in put is "Silver Holy Symbol"
-                    let search = await pack.getIndex().then(p => p.find(o => o.name.toLowerCase() === input.name.toLowerCase()))
+                    //let search = await pack.getIndex().then(p => p.find(o => o.name.toLowerCase() === input.name.toLowerCase()))
+
+                    let searchIndex = await pack.getIndex()
+
+                    let search = {}
+                    // o.name.toLowerCase() === input.name.toLowerCase()))
+                    for (let entry of searchIndex) {
+
+                        if (entry.name.trim().toLowerCase() === input.name.trim().toLowerCase()) {
+                            search = entry
+                        }
+
+                    }
 
                     // If an itemName could be found in the packIndex of the compendium, get the item and return it as searchResult
-                    if (search) {
-                        searchResult = await pack.getEntity(search._id).then(entity => {
+                    
+                    if (Object.keys(search).length !== 0 && search.constructor === Object) {
+                        searchResult = await pack.getDocument(search._id).then(entity => {
                             sbcConfig.options.debug && sbcUtils.log("Found " + input.name + " in " + currentCompendium + ".")
                             foundEntity = true
                             return entity
@@ -375,7 +400,7 @@ export class sbcUtils {
             // Creature-related
             "creatureType": input.creatureType ? input.creatureType : null,
             "subTypes": input.subTypes ? input.subTypes : null,
-            "img": input.img ? input.img : null,
+            "img": input.img ? input.img : "systems/pf1/icons/skills/yellow_36.jpg",
             
             // Gear-related
             "subtext": input.subtext ? input.subtext : null,
@@ -402,7 +427,7 @@ export class sbcUtils {
 
         switch (input.type) {
             case "container":
-                entity = await Item.create({
+                entity = new Item({
                     "name": "Money Pouch: " + sbcUtils.capitalize(entityData.name),
                     "type": "container",
                     "data": {
@@ -417,10 +442,10 @@ export class sbcUtils {
                         }
                     },
                     "img": "systems/pf1/icons/items/inventory/pouch-sealed.jpg"
-                }, { temporary : true })
+                })
                 break
             case "feats":
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": "feat",
                     "data": {
@@ -429,25 +454,25 @@ export class sbcUtils {
                         },
                         
                     },
-                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                }, { temporary : true })
+                    "img": entityData.img
+                })
                 break
             case "race":
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": "race",
                     "data": {
                         "description": {
-                            "value": "sbc | As the statblock did not include a race, a custom one was generated."
+                            "value": "sbc | As no playable race was found a placeholder was generated."
                         },
                         "creatureType": entityData.creatureType,
                         "subTypes": entityData.subTypes
                     },
                     "img": entityData.img
-                }, { temporary : true })
+                })
                 break
             case "misc":
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": "feat",
                     "data": {
@@ -456,11 +481,11 @@ export class sbcUtils {
                         },
                         "featType": "misc"
                     },
-                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                }, { temporary : true })
+                    "img": entityData.img
+                })
                 break
             case "attack":
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": "attack",
                     "data": {
@@ -469,13 +494,13 @@ export class sbcUtils {
                         },
                         "attackType": "misc"
                     },
-                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                }, { temporary : true })
+                    "img": entityData.img
+                })
                 break
             case "classFeat":
             case "class-abilities":
                 if (entityData.specialAbilityType !== null) {
-                    entity = await Item.create({
+                    entity = new Item({
                         "name": sbcUtils.capitalize(entityData.name),
                         "abilityType": sbcUtils.capitalize(CONFIG['PF1'].abilityTypes[entityData.specialAbilityType].long),
                         "abilityTypeShort": sbcUtils.capitalize(entityData.specialAbilityType),
@@ -487,10 +512,10 @@ export class sbcUtils {
                             },
                             "featType": "classFeat"
                         },
-                        "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                    }, { temporary : true })
+                        "img": entityData.img
+                    })
                 } else {
-                    entity = await Item.create({
+                    entity = new Item({
                         "name": sbcUtils.capitalize(entityData.name),
                         "abilityType": "",
                         "abilityTypeShort": "",
@@ -502,13 +527,13 @@ export class sbcUtils {
                             },
                             "featType": "classFeat"
                         },
-                        "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                    }, { temporary : true })
+                        "img": entityData.img
+                    })
                 }
                 break
             case "domains":
             case "mysteries":
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": "feat",
                     "data": {
@@ -517,11 +542,11 @@ export class sbcUtils {
                         },
                         "featType": "classFeat"
                     },
-                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                }, { temporary : true })
+                    "img": entityData.img
+                })
                 break
             default:
-                entity = await Item.create({
+                entity = new Item({
                     "name": sbcUtils.capitalize(entityData.name),
                     "type": entityData.type,
                     "data": {
@@ -529,8 +554,8 @@ export class sbcUtils {
                             "value": "sbc | As " + entityData.name + " could not be found in any compendium, a placeholder was generated."
                         }
                     },
-                    "img": "systems/pf1/icons/skills/yellow_36.jpg"
-                }, { temporary : true })
+                    "img": entityData.img
+                })
                 break
         }
 
@@ -547,6 +572,7 @@ export class sbcUtils {
         try {
 
             const actor = await game.actors.get(actorID)
+
             const conversionValidation = sbcData.characterData.conversionValidation
 
             let changes = []
@@ -588,7 +614,6 @@ export class sbcUtils {
                 }
 
             }
-            
 
             // Get an array of all attributes that need to be validated
             let attributesToValidate = Object.keys(conversionValidation.attributes)
@@ -601,7 +626,9 @@ export class sbcUtils {
 
             // Get an array of all items the actor currently owns
             let currentItems = await actor.data.items
-            let currentItemsKeys = Object.keys(currentItems)
+     
+            //let currentItemsKeys = Object.keys(currentItems)
+            let currentItemsKeys = currentItems//.keys()
 
             // Loop through the attributes ...
             for (let i=0; i<attributesToValidate.length; i++) {
@@ -754,7 +781,7 @@ export class sbcUtils {
                         "subTarget": subTarget,
                         "target": target,
                         "value": +difference,
-                        "_id": randomID(8)
+                        "id": randomID(8)
                     }
 
                     changes.push(attributeChange)
@@ -794,17 +821,23 @@ export class sbcUtils {
                 
                 let skillSubKeys = Object.keys(actor.data.data.skills[parentSkillKey])
 
+                // For Skills with subskill --> subTarget: "skill.prf.subSkills.prf1"
+                let subTarget = ""
+
                 if (!skillSubKeys.includes("subSkills")) {
                     skillModInActor = await actor.data.data.skills[skillKey].mod
+                    subTarget = "skill." + skillKey
                 } else {
                     skillModInActor = await actor.data.data.skills[parentSkillKey].subSkills[skillKey].mod
+                    subTarget = "skill." + parentSkillKey + ".subSkills." + skillKey
+
                 }
 
                 // (1) Create skillContext Objects to add to the Buff
                 if (skillToValidate.context !== "") {
                     let contextNote = skillToValidate.context
                     let skillContext = {
-                        "subTarget": "skill." + skillKey,
+                        "subTarget": subTarget,
                         "target": "skill",
                         "text": contextNote
                     }
@@ -814,17 +847,17 @@ export class sbcUtils {
                 // (2) Adjust for differences between calculated skillTotals and statblockTotals
                 if (+skillToValidate.total !== +skillModInActor) {
                     let difference = +skillToValidate.total - +skillModInActor
-
+                    
                     if (difference !== 0) {
                         let skillChange = {
                             "formula": difference.toString(),
                             "modifier": "untypedPerm",
                             "operator": "add",
                             "priority": 0,
-                            "subTarget": "skill." + skillKey,
+                            "subTarget": subTarget,
                             "target": "skill",
                             "value": +difference,
-                            "_id": randomID(8)
+                            "id": randomID(8)
                         }
                         changes.push(skillChange)
                     }
@@ -834,7 +867,7 @@ export class sbcUtils {
             }
 
             // Create the conversionBuffItem as an embedded entity
-            let conversionBuffItem = await Item.create({
+            /*let conversionBuffItem = await Item.create({
                 "name": "sbc | Conversion Buff",
                 "type": "buff",
                 "data": {
@@ -871,8 +904,47 @@ export class sbcUtils {
                 },
                 "img": "systems/pf1/icons/skills/yellow_36.jpg"
             }, { temporary : true })
+            */
 
-            await actor.createEmbeddedEntity("OwnedItem", conversionBuffItem)
+            let conversionBuffItem = new Item({
+                "name": "sbc | Conversion Buff",
+                "type": "buff",
+                "data": {
+                    "description": {
+                        "value": `<h2>sbc | Conversion Buff</h2>
+                        This Buff was created by <strong>sbc</strong> to compensate for differences between the input and the values FoundryVTT calculates automatically.
+                        <br><br>
+                        Especially when the pathfinder system gets upgraded, entries in compendiums get updated or foundry changes in some way, this buff may become outdated.
+                        <br><br>
+                        For most mooks the conversion should more or less work, but for important NPCs or creatures it is adviced to double check the conversion manually.`
+                    },
+                    "active": true,
+                    "buffType": "perm",
+                    "changeFlags": {
+                        "heavyArmorFullSpeed": false,
+                        "loseDexToAC": false,
+                        "mediumArmorFullSpeed": false,
+                        "noDex": false,
+                        "noEncumbrance": false,
+                        "noStr": false,
+                        "oneCha": false,
+                        "oneInt": false,
+                        "oneWis": false
+                    },
+                    "changes": changes,
+                    "contextNotes": contextNotes,
+                    "hideFromToken": true,
+                    "level": 0,
+                    "links": {children: Array(0)},
+                    "tag": "sbcConversionBuff",
+                    "tags": [],
+                    "useCustomTag": true,
+                    "uses": {value: 0, max: 0}
+                },
+                "img": "systems/pf1/icons/skills/yellow_36.jpg"
+            })
+
+            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject(false)])
             
         } catch (err) {
 
@@ -899,23 +971,14 @@ export class sbcUtils {
         // Remove Commas in large Numbers, e.g. 3,000 GP --> 3000 GP
         let tempInput = input.replace(/(\d{1})(,)(\d{1})/g, "$1$3").trim()
 
-        console.log("sbcSplit: TempInput")
-        console.log(tempInput)
-
         // Check if there are commas or semicolons
         if (tempInput.search(/,|;/g) !== -1) {
-
-            console.log("comma or semicolon found")
-            console.log(tempInput)
 
             // Check if there are parenthesis including commas in the input
             if (tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
                 // Get the input with parenthesis and commas inside the parenthesis
                 let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
                 let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)
-
-                console.log("itemsWithCommasInParenthesis")
-                console.log(itemsWithCommasInParenthesis)
                 
                 for (let i=0; i<itemsWithCommasInParenthesisKeys.length; i++) {
 

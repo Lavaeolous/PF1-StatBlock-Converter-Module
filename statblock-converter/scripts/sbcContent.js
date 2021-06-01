@@ -1,5 +1,13 @@
 export class sbcContent {
 
+    static "otherRaces" = [
+        
+        "Jotund Troll",
+        "Troll"
+        
+
+    ]
+
     static "additionalSenses" = [
         "all-around vision",
         "blindsense",
