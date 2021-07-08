@@ -8,23 +8,12 @@ export class sbcUtils {
     static matchingClosingBrackets = {'(': ')', '[' : ']', '{': '}'};
 
     static async createTempActor () {
-        /*
-        let tempActor =  await Actor.create({
-            name: "sbc | Actor Template",
-            type: sbcConfig.const.actorType[sbcData.actorType],
-            folder: sbcData.customFolderId,
-            sort: 10000,
-            data: {},
-            items: [],
-            flags: {}
-        }, {temporary: true} )
-        */
 
-        let tempActor = new Actor({
+        let tempActor = Actor.create({
             name: "sbc | Actor Template",
             type: sbcConfig.const.actorType[sbcData.actorType],
             folder: sbcData.customFolderId
-        })
+        }, {temporary: true} )
 
         return tempActor
     }
@@ -317,7 +306,6 @@ export class sbcUtils {
             searchableCompendiums.push(compendium)
         }
         
-
         // If there are customCompendiums, given as a string in the module settings,
         // split them and add them to the searchableCompendiums
         let customCompendiums = []
@@ -325,68 +313,30 @@ export class sbcUtils {
 
         if (customCompendiumSettings !== "") {
             customCompendiums = customCompendiumSettings.split(/[,;]/g)
-            searchableCompendiums = customCompendiums.concat(searchableCompendiums)
+            searchableCompendiums = searchableCompendiums.concat(customCompendiums)
+        }
+                
+        let searchResult = {}
+        let foundEntity = {}
+        
+        let searchOptions = {
+            "packs" : searchableCompendiums
         }
 
-        //let searchTerms = input.name.split(" ")
-                
-        let foundEntity = false
-        let searchResult = {}
+        searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
 
-        /*
-         * THIS GETS EXTREMELY SLOW WHEN A LARGE NUMBER
-         * OF CUSTOM COMPENDIUMS IS USED
-         */
+        if (searchResult !== false) {
+            let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
 
-        for (let i=0; i<searchableCompendiums.length; i++) {
+            let pack = await game.packs.get(packName)
+            foundEntity = await pack.getDocument(searchResult.index._id)
 
-            let currentCompendium = searchableCompendiums[i].trim()
-
-            if (!foundEntity) {
-
-                // Check, if a pack can be found for the compendium
-                let pack = game.packs.get(currentCompendium)
-
-                if (pack) {
-
-                    // WIP: MAKE THIS SEARCH MORE FUZZY!!!
-                    // Example: LEt it find "Shortsword" when the input is "Short Sword"
-                    // Example: Let it find "Holy Symbol (Silver)" when the in put is "Silver Holy Symbol"
-                    //let search = await pack.getIndex().then(p => p.find(o => o.name.toLowerCase() === input.name.toLowerCase()))
-
-                    let searchIndex = await pack.getIndex()
-
-                    let search = {}
-                    // o.name.toLowerCase() === input.name.toLowerCase()))
-                    for (let entry of searchIndex) {
-
-                        if (entry.name.trim().toLowerCase() === input.name.trim().toLowerCase()) {
-                            search = entry
-                        }
-
-                    }
-
-                    // If an itemName could be found in the packIndex of the compendium, get the item and return it as searchResult
-                    
-                    if (Object.keys(search).length !== 0 && search.constructor === Object) {
-                        searchResult = await pack.getDocument(search._id).then(entity => {
-                            sbcConfig.options.debug && sbcUtils.log("Found " + input.name + " in " + currentCompendium + ".")
-                            foundEntity = true
-                            return entity
-                        })
-
-                    } else {
-                        searchResult = null
-                    }
-
-                }
-
-            }
-
+        } else {
+            foundEntity = null
         }
 
         // Return the searchResult, which either is the found entity or an empty object
-        return searchResult
+        return foundEntity
         
     }
 

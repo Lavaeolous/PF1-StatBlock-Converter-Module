@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.3.0",
+    "version": "3.3.1",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -63,29 +63,44 @@ sbcConfig.options = {
 
 sbcConfig.initializeConfig = async function () {
 
-    let raceIndex = await game.packs.get("pf1.races").getIndex()
+    // Create an index for each pf1 system compendium
+    // Get the names of all available compendiums
+    let packKeys = Array.from(game.packs.keys())
+    for (let i=0; i<packKeys.length; i++) {
+        
+        let packKey = packKeys[i]
+
+        if (packKey.includes("pf1")) {
+
+            let systemPack = await game.packs.get(packKeys[i])
+            if (!systemPack.indexed) await systemPack.getIndex()
+
+        } 
+    }
+
+    let raceIndex = await game.packs.get("pf1.races").index
     for (let entry of raceIndex) { if (entry.name !== "") { sbcConfig.races.push(entry.name) } }
 
-    let classIndex = await game.packs.get("pf1.classes").getIndex()
+    let classIndex = await game.packs.get("pf1.classes").index
     for (let entry of classIndex) { if (entry.name !== "") { sbcConfig.classes.push(entry.name.replace(/[()]*/g,"")) } }
 
     let prestigeClassIndex = Object.keys(sbcContent.prestigeClasses)
     for (let entry of prestigeClassIndex) { if (entry.name !== "") { sbcConfig.prestigeClassNames.push(entry) } }
 
-    let featsIndex = await game.packs.get("pf1.feats").getIndex()
+    let featsIndex = await game.packs.get("pf1.feats").index
     for (let entry of featsIndex) { if (entry.name !== "") { sbcConfig.feats.push(entry.name) } }
 
-    let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").getIndex()
+    let weaponIndex = await game.packs.get("pf1.weapons-and-ammo").index
     for (let entry of weaponIndex) { if (entry.name !== "") { sbcConfig.weapons.push(entry.name) } }
 
-    let armorsIndex = await game.packs.get("pf1.armors-and-shields").getIndex()
+    let armorsIndex = await game.packs.get("pf1.armors-and-shields").index
     for (let entry of armorsIndex) { if (entry.name !== "") { sbcConfig.armors.push(entry.name) } }
 
     // Escaping "+", as some items include that in the name (e.g. "Headband of Alluring Charisma +2")
-    let itemIndex = await game.packs.get("pf1.items").getIndex()
+    let itemIndex = await game.packs.get("pf1.items").index
     for (let entry of itemIndex) { if (entry.name !== "") { sbcConfig.items.push(entry.name.replace(/(\+)/g, "\\+")) } }
 
-    let classAbilitiesIndex = await game.packs.get("pf1.class-abilities").getIndex()
+    let classAbilitiesIndex = await game.packs.get("pf1.class-abilities").index
     for (let entry of classAbilitiesIndex) { if (entry.name !== "") { sbcConfig["class-abilities"].push(entry.name) } }
 
 }
@@ -104,6 +119,24 @@ sbcConfig.armors = []
 sbcConfig.items = []
 sbcConfig.skills = []
 sbcConfig["class-abilities"] = []
+
+sbcConfig.compendiumsToBeIndexed = [
+    "pf1.classes",
+    "pf1.mythicpaths",
+    "pf1.commonbuffs",
+    "pf1.spells",
+    "pf1.feats",
+    "pf1.items",
+    "pf1.armors-and-shields",
+    "pf1.weapons-and-ammo",
+    "pf1.racialhd",
+    "pf1.races",
+    "pf1.class-abilities",
+    "pf1.monster-templates",
+    "pf1.conditions",
+    "pf1.skills",
+
+]
 
 /* ------------------------------------ */
 /* Weapons, Attacks and Armor     		*/

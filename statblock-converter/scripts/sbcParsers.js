@@ -1107,10 +1107,19 @@ export async function parseDefense(data, startLine) {
             }
 
             // Parse Resistances
+            /*
             if (!parsedSubCategories["resist"]) {
                 if (lineContent.search(/(Resist\b.*)/i) !== -1) {
                     let parserResist = sbcMapping.map.defense.resist
                     let resistances = lineContent.match(/(?:Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
+                    parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
+                }
+            }
+            */
+            if (!parsedSubCategories["resist"]) {
+                if (lineContent.search(/(?<!Defensive Abilities\b\s*)(Resist\b.*)/i) !== -1) {
+                    let parserResist = sbcMapping.map.defense.resist
+                    let resistances = lineContent.match(/(?<!Defensive Abilities\b\s*)(Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
                     parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
                 }
             }
@@ -1138,7 +1147,7 @@ export async function parseDefense(data, startLine) {
             if (!parsedSubCategories["defensiveAbilities"]) {
                 if (lineContent.search(/Defensive Abilities\b/i) !== -1) {
                     let parserDefensiveAbilities = sbcMapping.map.defense.defensiveAbilities
-                    let defensiveAbilities = lineContent.match(/(?:Defensive Abilities\b\s*)([\s\S]*?)(?=$|\bDR\b|\bImmune\b|\bResist\b|\bSR\b|\bWeakness\b)/i)[1].replace(/\s*[,;]+/g,",").replace(/(,\s*$)/, "").trim()
+                    let defensiveAbilities = lineContent.match(/(?:Defensive Abilities\b\s*)([\s\S]*?)(?=$|\bDR\b|\bImmune\b|\bResist\b(?!\s\blife\b)|\bSR\b|\bWeakness\b)/i)[1].replace(/\s*[,;]+/g,",").replace(/(,\s*$)/, "").trim()
                     sbcData.notes.defense.defensiveAbilities = defensiveAbilities
                     parsedSubCategories["defensiveAbilities"] = await parserDefensiveAbilities.parse(defensiveAbilities, line+startLine, "class-abilities")
                 }
@@ -1790,9 +1799,9 @@ export async function parseOffense(data, startLine) {
 
             // Parse Base Speed
             if (!parsedSubCategories["landSpeed"]) {
-                if (lineContent.search(/^Speed\s*/i) !== -1) {
+                if (lineContent.search(/^(Speed|Spd)\s*/i) !== -1) {
                     let parserLandSpeed = sbcMapping.map.offense.speed
-                    let landSpeed = lineContent.match(/^Speed\s*($|[^,]*)/i)[1].trim()
+                    let landSpeed = lineContent.match(/^(?:Speed|Spd)\s*($|[^,]*)/i)[1].trim()
 
                     parsedSubCategories["landSpeed"] = await parserLandSpeed.parse(landSpeed, "land", line+startLine)
                 }
@@ -2182,9 +2191,12 @@ class attacksParser extends sbcParserBase {
 
                 // Attacks
                 let attacks = attackGroups[i]
+
                 // Split the attacks into single attacks
                 // attacks = attacks.split(/,/g);
-                attacks = attacks.split(/(?:[^0-9]),(?:[^0-9])/g)
+                //attacks = attacks.split(/(?:[^0-9]),(?:[^0-9])/g)
+                attacks = sbcUtils.sbcSplit(attacks)
+
                 let attackKeys = Object.keys(attacks)
         
                 // Loop over all attacks in the attackGroup
@@ -2224,7 +2236,7 @@ class attacksParser extends sbcParserBase {
                     let weaponSpecial = "-"
                     let critRange = 20
                     let critMult = 2
-                    let attackEffects = ""
+                    let attackEffects = []
                     let mwkWeapon = false
                     let numberOfIterativeAttacks = 0
                     let attackNotes = ""
@@ -2331,6 +2343,7 @@ class attacksParser extends sbcParserBase {
                         
                     // If the attack has damage dice
                     if (attack.match(/\d+d\d+/) !== null) {
+
                         // NumberOfDamageDice and DamageDie
                         if (attack.match(/\d+d\d+/) !== null) {
                             numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1]
@@ -2368,7 +2381,7 @@ class attacksParser extends sbcParserBase {
                         // If there is just a specialEffect in parenthesis
                         let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
                         attackNotes += " (" + specialEffect + ")"
-                        attackEffects += specialEffect
+                        attackEffects.push(specialEffect)
                     } else {
                         // If there are neither damage dice nor special effects in parenthesis
                         sbcConfig.options.debug && sbcUtils.log("Kind of embarrasing, but this should never happen.")
@@ -2426,7 +2439,7 @@ class attacksParser extends sbcParserBase {
                                 "type": "attack"
                             },
                             "attackName": sbcUtils.capitalize(attackName),
-                            "attackNotes": attackNotes,
+                            "attackNotes": [attackNotes],
                             "attackParts": [],
                             "attackType": "weapon",
                             "damage": {
@@ -2437,7 +2450,8 @@ class attacksParser extends sbcParserBase {
                             "duration": {
                                 "units": "inst"
                             },
-                            "effectNotes": attackEffects.join(", "),
+                            //"effectNotes": attackEffects.join(", "),
+                            "effectNotes": attackEffects,
                             "primaryAttack": false,
                             "range": {
                                 "units": attackRangeUnits,
@@ -2556,7 +2570,7 @@ class attacksParser extends sbcParserBase {
                                 
                                 // If the weapon has special properties, add that to the attackNotes
                                 if (weaponSpecial !== "-") {
-                                    attackNotes += "\nWeapon Qualities: [" + weaponSpecial + "]"
+                                    attackNotes += ", Weapon Qualities: [" + weaponSpecial + "]"
                                 }
                             }
                         }
@@ -2627,8 +2641,8 @@ class attacksParser extends sbcParserBase {
                     )
 
                     // Push attackNotes and effectNotes
-                    newAttack.data.data.attackNotes = attackNotes;
-                    newAttack.data.data.effectNotes = sbcUtils.makeValueRollable(attackEffects.join("\n"))
+                    newAttack.data.data.attackNotes = [attackNotes]
+                    newAttack.data.data.effectNotes = attackEffects
 
                     sbcData.characterData.items.push(newAttack)
                 }
@@ -2836,123 +2850,126 @@ class spellBooksParser extends sbcParserBase {
                             spellDC = spell.match(/(?:DC\s*)(\d+)/)[1]
                         }
 
-                        let searchEntity = {
-                            "name": spellName,
-                            "type": "spell"
-                        }
+                        if (spellName !== "") {
 
-                        let compendium = "pf1.spells"
-        
-                        // If the input is found in one of the compendiums, generate an entity from that
-                        let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
+                            let searchEntity = {
+                                "name": spellName,
+                                "type": "spell"
+                            }
 
-                        // otherwise overwrite "entity" with a placeholder
-                        if (entity === null) {
-                            entity = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
-                        }
+                            let compendium = "pf1.spells"
+            
+                            // If the input is found in one of the compendiums, generate an entity from that
+                            let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
 
-                        // Edit the entity to match the data given in the statblock
-                        entity.data.data.spellbook = spellBookType
+                            // otherwise overwrite "entity" with a placeholder
+                            if (entity === null) {
+                                entity = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
+                            }
 
-                        // Set the spellLevel
-                        if (spellLevel !== -1) {
-                            entity.data.data.level = +spellLevel
-                        }
+                            // Edit the entity to match the data given in the statblock
+                            entity.data.data.spellbook = spellBookType
 
-                        // Set the spellDC
-                        // This is the offset for the dc, not the total!
+                            // Set the spellLevel
+                            if (spellLevel !== -1) {
+                                entity.data.data.level = +spellLevel
+                            }
 
-                        let spellDCOffset = 0
-                        // Calculate the DC in the Actor
-                        let spellCastingAbility = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].ability
-                        let spellCastingAbilityModifier = sbcData.characterData.actorData.data.data.abilities[spellCastingAbility].mod
-                        let spellDCInActor = 10 + +entity.data.data.level + +spellCastingAbilityModifier
+                            // Set the spellDC
+                            // This is the offset for the dc, not the total!
 
-                        spellDCOffset =  +spellDC - +spellDCInActor
+                            let spellDCOffset = 0
+                            // Calculate the DC in the Actor
+                            let spellCastingAbility = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].ability
+                            let spellCastingAbilityModifier = sbcData.characterData.actorData.data.data.abilities[spellCastingAbility].mod
+                            let spellDCInActor = 10 + +entity.data.data.level + +spellCastingAbilityModifier
+
+                            spellDCOffset =  +spellDC - +spellDCInActor
 
 
-                        if (spellDC !== -1) {
-                            entity.data.data.save.dc = spellDCOffset.toString()
-                        }
+                            if (spellDC !== -1) {
+                                entity.data.data.save.dc = spellDCOffset.toString()
+                            }
 
-                        // Set the spells uses / preparation
-                        // where SLAs can be cast a number of times per X per sla
-                        // and spontaneous spells of a given spellLevel can be cast a total of X times per day
-                        //
+                            // Set the spells uses / preparation
+                            // where SLAs can be cast a number of times per X per sla
+                            // and spontaneous spells of a given spellLevel can be cast a total of X times per day
+                            //
 
-                        // Initialize some values for the row
-                        if (!spellRowIsInitialized) {
-                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = 0
-                            spellRowIsInitialized = true
-                        }
-                        
-
-                        // Do not count Constant and At Will spells towards spell slot totals
-                        if (!isAtWill && !isConstant && !isCantrip) {
+                            // Initialize some values for the row
+                            if (!spellRowIsInitialized) {
+                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = 0
+                                spellRowIsInitialized = true
+                            }
                             
-                            // Spell-Like Abilities can be cast a number of times per day each
-                            if (spellsPerXTotal !== -1 && spellBookType === "spelllike") {
 
-                                entity.data.data.uses.max = +spellsPerXTotal
-                                entity.data.data.uses.value = +spellsPerXTotal
-                                entity.data.data.uses.per = spellsPerX
-        
-                                // Change the spellbook for SLAs to prepared as long as the sheet does not support them correctly
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spontaneous = false
-        
-                                entity.data.data.preparation.maxAmount = +spellsPerXTotal
-                                entity.data.data.preparation.preparedAmount = +spellsPerXTotal
-        
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = +spellsPerXTotal
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max = +spellsPerXTotal
-                            } 
-        
-                            // Spells Known can be cast a number of times per day in total for the given spellRow
-                            if (spellsPerXTotal !== -1 && spellCastingType === "spontaneous" && spellBookType !== "spelllike") {
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = +spellsPerXTotal
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max = +spellsPerXTotal
+                            // Do not count Constant and At Will spells towards spell slot totals
+                            if (!isAtWill && !isConstant && !isCantrip) {
+                                
+                                // Spell-Like Abilities can be cast a number of times per day each
+                                if (spellsPerXTotal !== -1 && spellBookType === "spelllike") {
+
+                                    entity.data.data.uses.max = +spellsPerXTotal
+                                    entity.data.data.uses.value = +spellsPerXTotal
+                                    entity.data.data.uses.per = spellsPerX
+            
+                                    // Change the spellbook for SLAs to prepared as long as the sheet does not support them correctly
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spontaneous = false
+            
+                                    entity.data.data.preparation.maxAmount = +spellsPerXTotal
+                                    entity.data.data.preparation.preparedAmount = +spellsPerXTotal
+            
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = +spellsPerXTotal
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max = +spellsPerXTotal
+                                } 
+            
+                                // Spells Known can be cast a number of times per day in total for the given spellRow
+                                if (spellsPerXTotal !== -1 && spellCastingType === "spontaneous" && spellBookType !== "spelllike") {
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base = +spellsPerXTotal
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max = +spellsPerXTotal
+                                }
+            
+                                // Spells Prepared can be cast a according to how often they are prepared
+                                if (spellCastingType === "prepared") {
+
+                                    // WIP: BUILD A CHECK FOR MULTIPLE PREPARATIONS OF THE SAME SPELL
+            
+                                    entity.data.data.preparation.maxAmount = 1
+                                    entity.data.data.preparation.preparedAmount = 1
+            
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base++
+                                    sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max++
+            
+                                }
+
                             }
-        
-                            // Spells Prepared can be cast a according to how often they are prepared
-                            if (spellCastingType === "prepared") {
-
-                                // WIP: BUILD A CHECK FOR MULTIPLE PREPARATIONS OF THE SAME SPELL
-        
-                                entity.data.data.preparation.maxAmount = 1
-                                entity.data.data.preparation.preparedAmount = 1
-        
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].base++
-                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+entity.data.data.level].max++
-        
+                            
+                            // Set At Will for spells marked as "at will" and for cantrips
+                            if (isAtWill || entity.data.data.level === 0) {
+                                entity.data.data.atWill = true
                             }
 
+                            
+
+                            // Change SpellName to reflect constant spells
+                            if (isConstant) {
+                                let tempName = "Constant: " + entity.data.name
+                                entity.data.name = tempName
+                                entity.data.data.atWill = true
+                            }
+
+                            // Set data for domain spells
+                            if (isDomainSpell) {
+
+                                entity.data.data.domain = true
+                                entity.data.data.slotCost = 1
+
+                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].base -= 1
+                                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].max -= 1
+                            }
+
+                            sbcData.characterData.items.push(entity)
                         }
-                        
-                        // Set At Will for spells marked as "at will" and for cantrips
-                        if (isAtWill || entity.data.data.level === 0) {
-                            entity.data.data.atWill = true
-                        }
-
-                        
-
-                        // Change SpellName to reflect constant spells
-                        if (isConstant) {
-                            let tempName = "Constant: " + entity.data.name
-                            entity.data.name = tempName
-                            entity.data.data.atWill = true
-                        }
-
-                        // Set data for domain spells
-                        if (isDomainSpell) {
-
-                            entity.data.data.domain = true
-                            entity.data.data.slotCost = 1
-
-                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].base -= 1
-                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell"+spellLevel].max -= 1
-                        }
-
-                        sbcData.characterData.items.push(entity)
 
                     }
                 } else {
@@ -3098,7 +3115,13 @@ export async function parseStatistics(data, startLine) {
                 if (lineContent.search(/\bCMB\b/i) !== -1) {
                     let parserCmb = sbcMapping.map.statistics.cmb
                     let cmbRaw = lineContent.match(/(?:CMB\b)(.*)(?=\bCMD)/i)[1].trim()
-                    let cmb = cmbRaw.match(/([\+\-]?\d+)/)[0]
+
+                    let cmb = 0
+
+                    if (cmbRaw.match(/(\d+)/) !== null) {
+                        cmb = cmbRaw.match(/([\+\-]?\d+)/)[0]
+                    }
+
                     let cmbContext = sbcUtils.parseSubtext(cmbRaw)[1]
 
                     sbcData.characterData.conversionValidation.attributes["cmb"] = +cmb
@@ -3113,7 +3136,14 @@ export async function parseStatistics(data, startLine) {
                 if (lineContent.search(/\bCMD\b/i) !== -1) {
                     let parserCmd = sbcMapping.map.statistics.cmd
                     let cmdRaw = lineContent.match(/(?:CMD\b)(.*)/i)[1].trim()
-                    let cmd = cmdRaw.match(/(\d+)/)[0]
+
+                    // Check if CMD is "-"
+                    let cmd = 0
+
+                    if (cmdRaw.match(/(\d+)/) !== null) {
+                        cmd = cmdRaw.match(/(\d+)/)[0]
+                    }
+                    
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
                     sbcData.characterData.actorData.data.data.attributes.cmdNotes = cmdContext
@@ -3776,7 +3806,7 @@ class gearParser extends sbcParserBase {
                     // WIP
                     // Edit May 2021: Why WIP?
                     // Check in custom compendiums
-                    entity = await sbcUtils.findEntityInCompendium(null, gear)
+                    entity = await sbcUtils.findEntityInCompendium(itemCompendium, gear)
                 }
 
                 if (entity && Object.keys(entity).length !== 0) {
@@ -4401,7 +4431,7 @@ export async function checkFlags() {
 export async function createEmbeddedDocuments() {
 
     try {
-    
+
         sbcData.characterData.actorData.data.items = await sbcData.characterData.items.map(i => i.toObject(false))
         
     } catch (err) {
@@ -4410,9 +4440,6 @@ export async function createEmbeddedDocuments() {
         let error = new sbcError(1, "Parse", errorMessage)
         sbcData.errors.push(error)
         sbcData.parsedInput.success = false
-
-        throw err
-
         return false
 
     }

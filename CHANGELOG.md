@@ -1,5 +1,15 @@
 # Change Log
 
+2021_07_08 - v3.3.1
+*  **Added support for `findInCompendia()`, a PF1 system function, that greatly improves the loading times of SBC** (#469,#470)
+*  **Fixed brokeness under PF1 0.78.14** (#475)
+*  Added support for landspeeds denoted by "Spd" instead of "Speed" (#476)
+*  Fixed an error which prevented CMD and CMB of "-" to be parsed (#474)
+*  Fixed an error in the parsing of attackgroups which lead to incorrectly separated attacks (#468)
+*  Fixed attack parsing for attacks without damage (#473)
+*  Fixed an error, where defensive abilities that included the keyword "resist" were not parsed correctly (#467)
+*  Fixed an error in spell parsing, where sometimes sbc tried to create empty spells (#465)
+
 2021_06_01 - v3.3.0
 *  **Updated SBC to work with FoundryVTT 8.x (#425)**
 *  Fixed a bug where custom compendia were not correctly searched for specific equipment types (#444)

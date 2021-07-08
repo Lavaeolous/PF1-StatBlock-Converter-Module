@@ -10,7 +10,7 @@ export class sbcSettings {
     }
 
     // Updates the array of custom compendia, which is used to find items, feats, etc. with a higher priority then the pf1.compendia
-    static updateCustomCompendiums (isInitializing = false) {
+    static async updateCustomCompendiums (isInitializing = false) {
         sbcConfig.options.debug && sbcUtils.log("Updating custom compendiums")
 
         let customCompendiums = game.settings.get(sbcConfig.modData.mod, "customCompendiums")
@@ -51,6 +51,16 @@ export class sbcSettings {
                     let info = "sbc-pf1 | Added the following compendiums to sbc (" + validCompendiums.toString() + ")"
                     ui.notifications.info(info)
                     sbcConfig.options.debug && sbcUtils.log(info)
+                    customCompendiums = validCompendiums
+                }
+            }
+
+            // Create an index for each (custom) compendium
+            if (customCompendiums.length > 0) {
+                for (let i=0; i<customCompendiums.length; i++) {
+                    let customCompendium = customCompendiums[i].trim()
+                    let customPack = await game.packs.get(customCompendium)
+                    if (!customPack.indexed) await customPack.getIndex();
                 }
             }
             
@@ -207,7 +217,10 @@ export const registerSettings = function () {
 
     game.settings.register(sbcConfig.modData.mod, "customCompendiums", {
         name: "Custom Compendiums",
-        hint: "Select custom compendiums to be included in the conversion process, separated by comma or semicolon. Default: NONE (Format: <scope>.<compendiumName>, e.g. 'world.myFeats). You can check available compendiums by entering 'game.packs' into the console",
+        hint: `
+            Select custom compendiums to be included in the conversion process, separated by comma or semicolon. Default: NONE
+            You can check available compendiums by entering 'game.packs' into the console (F12)
+            The following system-specific compendiums are hardcoded: pf1.races, pf1.racialhd, pf1.classes, pf1.feats, pf1.weapons-and-ammo, pf1.armors-and-shields, pf1.items, pf1.class-abilities, pf1.spells`,
         default: "",
         scope: "world",
         type: String,
