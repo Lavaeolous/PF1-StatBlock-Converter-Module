@@ -516,7 +516,7 @@ class classesParser extends sbcParserBase {
                     }
 
                     let classLevel = 0
-                    if (classInput.match(/(\d+)/)[0]) {
+                    if (classInput.match(/(\d+)/)?.[0]) {
                         classLevel = classInput.match(/(\d+)/)[0]
                     }
 
