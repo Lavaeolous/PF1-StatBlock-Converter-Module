@@ -124,6 +124,10 @@ Hooks.once("init", async function() {
         }
     },true);
     */
+	
+	window.SBC = {
+		sbcApp, sbcUtils, sbcConfig, sbcData, sbcSettings, sbcInputDialog
+	}
    
     
 });
