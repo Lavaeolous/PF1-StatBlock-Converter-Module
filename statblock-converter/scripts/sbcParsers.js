@@ -2311,8 +2311,8 @@ class attacksParser extends sbcParserBase {
                     }
 
                     // attackName
-                    if (attack.match(/(\b[a-zA-Z*]+)(?:[ +0-9(/]+\(*)/) !== null) {
-                        attackName = attack.match(/(\b[a-zA-Z *]+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "")
+                    if (attack.match(/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/) !== null) {
+                        attackName = attack.match(/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "").trim()
                         
                         // Special ActionType for swarmAttacks
                         if (attackName.search(/\bSwarm\b/i) !== -1) {
@@ -2414,7 +2414,7 @@ class attacksParser extends sbcParserBase {
                     */
                                       
                     let newAttack = new Item({
-                        "name": sbcUtils.capitalize(attackName),
+                        "name": sbcUtils.capitalize(attackName) || "undefined",
                         "type": "attack",
                         "hasAction": "true",
                         "hasAttack": "true",
