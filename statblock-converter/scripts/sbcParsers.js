@@ -3435,7 +3435,7 @@ class skillsParser extends sbcParserBase {
                         skillContext = tempSkill[2][1]
                     }
 
-                    for (let j=0; j<subSkills.length; j++) {
+                    for (let j=0; j<knowledgeSubSkills.length; j++) {
                         let knowledgeSubSkill = knowledgeSubSkills[j].trim()
                         let newSkill = skillName + " (" + knowledgeSubSkill + ") " + skillModifier
                         skills.push(newSkill)
