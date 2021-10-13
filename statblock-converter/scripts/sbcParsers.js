@@ -2467,21 +2467,21 @@ class attacksParser extends sbcParserBase {
 
                     let secondaryNaturalAttackPenalty = 0
 
-                    if (attackName.search(naturalAttacksPattern) !== -1) {
+                    if (naturalAttacksPattern.test(attackName)) {
 
-                        let tempNaturalAttackName = attackName.match(naturalAttacksPattern)[1]
+                        let tempNaturalAttackName = attackName.match(naturalAttacksPattern)[1];
 
-                        let tempNaturalAttack = sbcContent.naturalAttacks[tempNaturalAttackName.replace(/s$/,"")]
+                        let tempNaturalAttack = sbcContent.naturalAttacks[tempNaturalAttackName.replace(/s$/,"").toLowerCase()];
 
-                        newAttack.data.data.attackType = "natural"
-                        newAttack.data.data.primaryAttack = tempNaturalAttack.primaryAttack
+                        newAttack.data.data.attackType = "natural";
+                        newAttack.data.data.primaryAttack = tempNaturalAttack.primaryAttack;
                         
                         // If its a secondary attack, give it a malus of 5
                         if (!newAttack.data.data.primaryAttack) {
-                            secondaryNaturalAttackPenalty = 5
+                            secondaryNaturalAttackPenalty = 5;
                         }
 
-                        newAttack.data.img = tempNaturalAttack.img
+                        newAttack.data.img = tempNaturalAttack.img;
 
                     }
 
