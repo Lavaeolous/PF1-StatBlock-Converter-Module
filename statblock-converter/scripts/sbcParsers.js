@@ -2203,7 +2203,7 @@ class attacksParser extends sbcParserBase {
                 for (let j = 0; j < attackKeys.length; j++) {
 
                     /* ------------------------------------ */
-                    /* [1] PARSE THE ATTACK DATA	    	*/
+                    /* [1] PARSE THE ATTACK DATA            */
                     /* ------------------------------------ */
 
                     // DIFFERENT ATTACK FORMATS
@@ -2338,7 +2338,7 @@ class attacksParser extends sbcParserBase {
                     }
                     
                     /* ------------------------------------ */
-                    /* Damage Calculation		        	*/
+                    /* Damage Calculation                    */
                     /* ------------------------------------ */
                         
                     // If the attack has damage dice
@@ -2390,7 +2390,7 @@ class attacksParser extends sbcParserBase {
                     
 
                     /* ------------------------------------ */
-                    /* [2] CREATE AN ATTACK WITH THAT DATA	*/
+                    /* [2] CREATE AN ATTACK WITH THAT DATA    */
                     /* ------------------------------------ */
 
                     /*
@@ -4264,23 +4264,27 @@ class specialAbilityParser extends sbcParserBase {
 
             } else {
 
-                // (2) If no abilityType is found, things start to get fuzzy,
+                // (2) If no abilityType is found, things aren't solvable.
                 //     Sometimes the name will be anything up to the first word which first letter is lowercase
                 //     Other times the name will include an "of" or "the" with a lower letter, which will break the name finding
-                //     So, try to find the first word starting with a lowercase letter, check if its one of the keywords [of, the, is, etc.]
-                //     And put that into the name
+                //     Sometimes, the name isn't present because this line is actually part of the previous ability.
+                //     Removing this code until WIP: split abilities by titles instead of by line
 
                 //let patternFindStartOfDescription = new RegExp("(^\\w*)(?:\\s)(?!is|the|of)(\\b[a-z]+\\b)", "")
                 //let patternFindStartOfDescription = new RegExp("(?:^[a-zA-Z]+?\\s+)([a-z]?)", "")
-                let patternFindStartOfDescription = new RegExp("((?:[A-Z][a-z]*)*\\s*(?:of|the|is)*\\s*(?:[A-Z][a-z]*)[a-z])", "")
+                /* let patternFindStartOfDescription = new RegExp("((?:[A-Z][a-z]*)*\\s*(?:of|the|is)*\\s*(?:[A-Z][a-z]*)[a-z])", "")
                 let indexOfStartOfDescription = 0
 
                 if (value.match(patternFindStartOfDescription) !== null) {
                     indexOfStartOfDescription = value.match(patternFindStartOfDescription)[0].length
                 }
 
+
                 specialAbilityName = value.slice(0,indexOfStartOfDescription).trim()
                 specialAbilityDesc = value.slice(indexOfStartOfDescription).trim()
+				*/
+				specialAbilityName = `Special Ability (${line})`;
+				specialAbilityDesc = value.trim();
 
                 let errorMessage = `There may be some issues here. Please check the preview!`
                 let error = new sbcError(3, "Parse/Special Abilties", errorMessage, line)
@@ -4290,7 +4294,7 @@ class specialAbilityParser extends sbcParserBase {
 
             // Create a placeholder for the special ability using the data found
             let specialAbility = {
-                "name": specialAbilityName,
+                "name": specialAbilityName || "Special Ability",
                 "specialAbilityType": specialAbilityType,
                 "type": "classFeat",
                 "desc": specialAbilityDesc

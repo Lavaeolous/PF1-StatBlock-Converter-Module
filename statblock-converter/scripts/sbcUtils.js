@@ -6,6 +6,8 @@ export class sbcUtils {
     static openingBrackets = ['(', '[', '{'];
     static closingBrackers = [')', ']', '}'];
     static matchingClosingBrackets = {'(': ')', '[' : ']', '{': '}'};
+	static uncapitals = ["a", "an", "the", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "for", "from", "of", "on", "to", "with", "without"];
+	
 
     static async createTempActor () {
 
@@ -19,7 +21,7 @@ export class sbcUtils {
     }
 
     /* ------------------------------------ */
-    /* Resetting and Updating   			*/
+    /* Resetting and Updating               */
     /* ------------------------------------ */
 
     static resetData () {
@@ -344,7 +346,7 @@ export class sbcUtils {
         // If the input is NOT found in any of the given compendiums, create a placeholder
 
         let entityData = {
-            "name": input.name ? input.name : null,
+            "name": input.name ? input.name : "undefined",
             "type": input.type ? input.type : null,
             
             // Creature-related
@@ -1071,12 +1073,16 @@ export class sbcUtils {
         return output;
     }
     
-    // WIP:
-    // MAYBE CHANGE THIS TO KEEP WORDS LIKE "of" LOWER CASE
     static capitalize (string) {
-        return string.toLowerCase().replace(/^\w|\s\w/g, function (letter) {
-            return letter.toUpperCase();
-        })
+        if (!string) return "";
+        let words = string.split(/ +/).map((el, idx, arr) => {
+            if (idx == 0 || idx == arr.length - 1)
+                return el.substring(0, 1).toUpperCase() + el.substring(1);
+            if (this.uncapitals.includes(el))
+                return el;
+            return el.substring(0, 1).toUpperCase() + el.substring(1);    
+        });
+        return words.join(" ");
     }
 
     static camelize(text) {
