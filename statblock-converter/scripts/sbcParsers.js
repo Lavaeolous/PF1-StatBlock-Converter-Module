@@ -1199,9 +1199,9 @@ class acTypesParser extends sbcParserBase {
             let patternAcTypes = new RegExp("(" + sbcConfig.armorBonusTypes.join("\\b|\\b") + ")", "gi")
 
             for (let i=0; i<foundAcTypes.length; i++) {
-                let foundAc = foundAcTypes[i].trim()
-                let foundAcType = foundAc.match(patternAcTypes)[0]
-                let foundAcTypeValue = foundAc.replace(foundAcType, "").trim()
+                let foundAc = foundAcTypes[i].trim();
+                let foundAcType = foundAc.match(patternAcTypes)[0];
+                let foundAcTypeValue = foundAc.replace(foundAcType, "").trim();
 
                 switch (foundAcType.toLowerCase()) {
                     case "natural":
@@ -1884,7 +1884,7 @@ export async function parseOffense(data, startLine) {
                     parsedSubCategories["specialAttacks"] = await parserSpecialAttacks.parse(specialAttacks, line+startLine)
                 }
             }
-
+                    
             // Parse Spell-Like Abilities
             if (!parsedSubCategories["spellLikeAbilities"]) {
                 /* Collate all lines that are part of the Spell-Like Abilities,
@@ -1942,7 +1942,7 @@ export async function parseOffense(data, startLine) {
                      * like "spells prepared" or "spells known"
                      * set endOfSpellLikeAbilitiesFound to true
                      */ 
-                    if (/Spells|Extracts (?:Prepared|Known)/gi.test(lineContent)) {
+                    if (/Spells|Extracts (?:Prepared|Known)|Psychic Magic/gi.test(lineContent)) {
                         endOfSpellLikeAbilitiesFound = true
                     }
 
@@ -1955,6 +1955,44 @@ export async function parseOffense(data, startLine) {
 
                 }
                 
+            }
+            
+            // Parse Psychic Magic
+            if (!parsedSubCategories["psychicMagic"]) {
+                // Psychic Magic contains a header and a single line after about its pool
+                if (/^Psychic\s+Magic\b\s*/i.test(lineContent)) {
+                    
+                    currentSpellBook = spellBooksFound
+                    startIndexOfSpellBooks[currentSpellBook] = line
+                    spellBooksFound += 1
+
+                    sbcData.notes.offense.hasSpellcasting = true
+
+                    let casterLevel = 0
+                    let concentrationBonus = 0
+
+                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
+                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
+                    }
+
+                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
+                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
+                    }
+                    
+                    // Push the line into the array holding the raw data for Spell-Like Abilities
+                    rawSpellBooks[spellBooksFound] = {
+                        "firstLine": lineContent,
+                        "spells": [],
+                        "spellCastingType": "points",
+                        "spellCastingClass": "_hd",
+                        "casterLevel": casterLevel,
+                        "concentrationBonus": concentrationBonus,
+                        "spellBookType": "tertiary"
+                    }
+
+                    rawSpellBooks[spellBooksFound].spells.push(data[line+1]);
+                    line++;
+                }
             }
 
             // Parse Spells Prepared
@@ -2044,7 +2082,7 @@ export async function parseOffense(data, startLine) {
                      * set endOfSpellBookFound to true
                      */
 
-                    if (/Spells|Extracts (?:Prepared|Known)/gi.test(lineContent)) {
+                    if (/Spells|Extracts (?:Prepared|Known)|Psychic Magic/gi.test(lineContent)) {
                         endOfSpellBookFound[spellBooksFound] = true
                     }
 
@@ -2137,12 +2175,15 @@ class speedParser extends sbcParserBase {
                 sbcData.characterData.conversionValidation.attributes[type] = +speed
                 sbcData.characterData.actorData.data.data.attributes.speed[type].base = +speed
 
+                // TODO: Allow abbreviations
                 let flyManeuverabilitiesPattern = new RegExp("(" + Object.values(CONFIG["PF1"].flyManeuverabilities).join("\\b|\\b") + ")", "i")
 
                 if (input.length > 1) {
                     if (type === "fly") {
-                        let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)[1]
-                        sbcData.characterData.actorData.data.data.attributes.speed.fly.maneuverability = flyManeuverability
+                        let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)?.[1];
+                        if (flyManeuverability) {
+                            sbcData.characterData.actorData.data.data.attributes.speed.fly.maneuverability = flyManeuverability;
+                        }
                         if (input[2]) {
                             speedContext = input[2]
                         }
@@ -2756,6 +2797,21 @@ class spellBooksParser extends sbcParserBase {
                 sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spontaneous = true
                 sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spellPreparationMode = "spontaneous"
             }
+            
+            if (spellCastingType == "points") {
+                altNameSuffix = "Psyched";
+                mergeObject(sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType],
+                {
+                    spontaneous: false,
+                    spellPreparationMode: "spontaneous",
+                    spellPoints: {
+                        useSystem: true,
+                        maxFormula: "0",
+                        max: 0,
+                    },
+                    ability: sbcData.characterData.actorData.data.data.abilities.int.value >= sbcData.characterData.actorData.data.data.abilities.cha.value ? "int" : "cha",
+                });
+            }
 
             // WIP: Check for special cases Arcanist and Red Mantis Assassin
             /*
@@ -2769,12 +2825,16 @@ class spellBooksParser extends sbcParserBase {
                 spellsOrExtracts = "Extracts"
             }
 
-            if (spellBookType !== "spelllike") {
-                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].class = spellCastingClass.toLowerCase()
-                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = sbcUtils.capitalize(spellCastingClass) + " " + spellsOrExtracts + " " + altNameSuffix
+            if (spellBookType == "spelllike") {
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = "Spell-like Abilities";
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].arcaneSpellFailure = false;
+            } else if (spellCastingType == "points") {
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = "Psychic Magic";
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].arcaneSpellFailure = false;
+                spellCastingType = "spontaneous";
             } else {
-                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = "Spell-like Abilities"
-                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].arcaneSpellFailure = false
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].class = spellCastingClass.toLowerCase();
+                sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].altName = sbcUtils.capitalize(spellCastingClass) + " " + spellsOrExtracts + " " + altNameSuffix;
             }
 
             /* Parse the spell rows
@@ -2796,36 +2856,43 @@ class spellBooksParser extends sbcParserBase {
                 switch (spellCastingType) {
                     case "prepared":
                         if (spellRow.match(/(^\d)/) !== null) {
-                            spellLevel = spellRow.match(/(^\d)/)[1]
-                            isSpellRow = true
+                            spellLevel = spellRow.match(/(^\d)/)[1];
+                            isSpellRow = true;
                         }
                         break
                     case "spontaneous":
-                        if (spellRow.match(/^(\d+)(?!\/(?:day|week|month|year))/) !== null) {
-                            spellLevel = spellRow.match(/^(\d+)(?!\/(?:day|week|month|year))/)[1]
-                            isSpellRow = true
+                        if (/^(\d+)\s*\bPE\b/.test(spellRow)) {
+                            let PE = spellRow.match(/^(\d+)\s*\bPE\b/)[1];
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spellPoints.maxFormula = PE;
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spellPoints.max = +PE;
+                            sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spellPoints.value = +PE;
+                            isSpellRow = true;
                         }
-                        if (spellRow.match(/(\d+)(?:\/(?:day|week|month|year))/) !== null) {
-                            spellsPerXTotal = spellRow.match(/(\d+)(?:\/(?:day|week|month|year))/)[1]
-                            isSpellRow = true
+                        else if (/^(\d+)(?!\/(?:day|week|month|year))/.test(spellRow)) {
+                            spellLevel = spellRow.match(/^(\d+)(?!\/(?:day|week|month|year))/)[1];
+                            isSpellRow = true;
                         }
-                        if (spellRow.match(/\/([a-zA-Z]*)\)*\-/) !== null) {
-                            spellsPerX = spellRow.match(/(?:\d+)\/([a-zA-Z]*)\)*\-/)[1]
+                        else if (/(\d+)(?:\/(?:day|week|month|year))/.test(spellRow)) {
+                            spellsPerXTotal = spellRow.match(/(\d+)(?:\/(?:day|week|month|year))/)[1];
+                            isSpellRow = true;
                         }
-                        break
+                        else if (/\/([a-zA-Z]*)\)*\-/.test(spellRow)) {
+                            spellsPerX = spellRow.match(/(?:\d+)\/([a-zA-Z]*)\)*\-/)[1];
+                        }
+                        break;
                     default:
-                        break
+                        break;
                 }
 
                 // Check for "at will" and "constant"
-                if (spellRow.match(/(Constant)/i) !== null) {
-                    isConstant = true
-                    isSpellRow = true
+                if (/(Constant)/i.test(spellRow)) {
+                    isConstant = true;
+                    isSpellRow = true;
                 }
 
-                if (spellRow.match(/(At will)/i) !== null) {
-                    isAtWill = true
-                    isSpellRow = true
+                if (/(At will)/i.test(spellRow)) {
+                    isAtWill = true;
+                    isSpellRow = true;
                 }
 
                 if (isSpellRow) {
@@ -2853,6 +2920,11 @@ class spellBooksParser extends sbcParserBase {
 
                         if (spell.search(/\bDC\b/) !== -1) {
                             spellDC = spell.match(/(?:DC\s*)(\d+)/)[1]
+                        }
+                        
+                        let spellPE = -1;
+                        if (/\bPE\b/.test(spell)) {
+                            spellPE = spell.match(/(\d+)\s*(?:PE)/)[1];
                         }
 
                         if (spellName !== "") {
@@ -2894,6 +2966,11 @@ class spellBooksParser extends sbcParserBase {
 
                             if (spellDC !== -1) {
                                 entity.data.data.save.dc = spellDCOffset.toString()
+                            }
+                            
+                            // Set the spellPE
+                            if (spellPE !== -1) {
+                                entity.data.data.spellPoints.cost = "" + spellPE;
                             }
 
                             // Set the spells uses / preparation
