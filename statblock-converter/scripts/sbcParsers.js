@@ -218,7 +218,7 @@ export async function parseBase(data, startLine) {
 
             // Parse Challenge Rating
             if (!parsedSubCategories["cr"]) {
-                if (lineContent.search(/\s*CR\s*/) !== -1) {
+                if (/\s*CR\s*/.test(lineContent)) {
                     let parserCR = sbcMapping.map.base.cr
                     let cr = lineContent.match(/\s*CR\s*(\d+\/*\d*|-)/)[1].trim()
 
@@ -232,7 +232,7 @@ export async function parseBase(data, startLine) {
 
             // Parse Mythic Rank (uses notesParser, as mr currently is not supported by FVTT PF1)
             if (!parsedSubCategories["mr"]) {
-                if (lineContent.search(/\s*MR\s*/) !== -1) {
+                if (/\s*MR\s*/.test(lineContent)) {
                     let parserMR = sbcMapping.map.base.mr
                     let mr = lineContent.match(/\s*MR\s*(\d+)/)[1].trim()
                     parsedSubCategories["mr"] = await parserMR.parse(mr, line)
@@ -243,7 +243,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse Source (uses notesParser, the source has no separate field in FVTT PF1)
                 if (!parsedSubCategories["source"]) {
-                    if (lineContent.search(/^Source/) !== -1) {
+                    if (/^Source/.test(lineContent)) {
                         let parserSource = sbcMapping.map.base.source
                         let source = lineContent.match(/^Source\s+(.*)/)[1].trim()
                         parsedSubCategories["source"] = await parserSource.parse(source, line)
@@ -252,7 +252,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse XP 
                 if (!parsedSubCategories["xp"]) {
-                    if (lineContent.search(/^XP/) !== -1) {
+                    if (/^XP/.test(lineContent)) {
                         let parserXP = sbcMapping.map.base.xp
                         let xp = lineContent.match(/^XP\s+([\d,.]*)/)[1].replace(/\.,/g,"").trim()
                         sbcData.notes.base.xp = xp
@@ -265,7 +265,7 @@ export async function parseBase(data, startLine) {
                 if (!parsedSubCategories["gender"]) {
                     let patternGender = new RegExp("(\\bmale\\b|\\bfemale\\b)", "i")
                     
-                    if (lineContent.search(patternGender) !== -1) {
+                    if (patternGender.test(lineContent)) {
                         let gender = lineContent.match(patternGender)[1]
                         let parserGender = sbcMapping.map.base.gender
                         parsedSubCategories["gender"] = await parserGender.parse(gender, line)
@@ -278,11 +278,11 @@ export async function parseBase(data, startLine) {
                     let patternOtherRaces = new RegExp("(" + sbcContent.otherRaces.join("\\b|\\b") + ")", "i")
                     
                     // Check, if it's one of the supported or any other known races
-                    if (lineContent.search(patternRace) !== -1) {
+                    if (patternRace.test(lineContent)) {
                         let race = lineContent.match(patternRace)[1]
                         let parserRace = sbcMapping.map.base.race
                         parsedSubCategories["race"] = await parserRace.parse(race, line)
-                    } else if (lineContent.search(patternOtherRaces) !== -1) {
+                    } else if (patternOtherRaces.test(lineContent)) {
                         let race = lineContent.match(patternOtherRaces)[1]
                         let parserRace = sbcMapping.map.base.race
                         parsedSubCategories["race"] = await parserRace.parse(race, line)
@@ -305,7 +305,7 @@ export async function parseBase(data, startLine) {
                     if (!isAlignmentLine && !isSourceLine) {
                         let patternClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + "\\b|\\b" + sbcConfig.prestigeClassNames.join("\\b|\\b") + "\\b|\\b" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(.*)", "gi")
 
-                        if (lineContent.search(patternClasses) !== -1) {
+                        if (patternClasses.test(lineContent)) {
                             // Take everything from the first class found up until the end of line
                             let classes = lineContent.match(patternClasses)[0]
                             let parserClasses = sbcMapping.map.base.classes
@@ -318,7 +318,7 @@ export async function parseBase(data, startLine) {
                 // Parse Alignment
                 if (!parsedSubCategories["alignment"]) {
                     
-                    if (lineContent.search(patternAlignment) !== -1) {
+                    if (patternAlignment.test(lineContent)) {
                         let parserAlignment = sbcMapping.map.base.alignment
                         let alignment = lineContent.match(patternAlignment)[1].trim()
                         sbcData.notes.base.alignment = alignment
@@ -329,7 +329,7 @@ export async function parseBase(data, startLine) {
                 // Parse Size and Space / Token Size
                 if (!parsedSubCategories["size"]) {
                     let patternSize = new RegExp("(" + Object.values(CONFIG.PF1.actorSizes).join("\\b|\\b") + ")", "i")
-                    if (lineContent.search(patternSize) !== -1 && lineContent.search(patternAlignment) !== -1) {
+                    if (patternSize.test(lineContent) && patternAlignment.test(lineContent)) {
                         let parserSize = sbcMapping.map.base.size
                         let size = lineContent.match(patternSize)[1].trim()
                         sbcData.notes.base.size = size
@@ -353,7 +353,7 @@ export async function parseBase(data, startLine) {
                 // Parse Creature Type and Subtype, but only when they are found after a size declaration
                 if (!parsedSubCategories["creatureType"]) {
                     let patternCreatureType = new RegExp("(?:" + Object.values(CONFIG.PF1.actorSizes).join("\\b|\\b") + ")\\s*(" + Object.values(CONFIG.PF1.creatureTypes).join("\\b.*|\\b") + ")", "i")
-                    if (lineContent.search(patternCreatureType) !== -1) {
+                    if (patternCreatureType.test(lineContent)) {
                         let creatureType = lineContent.match(patternCreatureType)[1]
                         let parserCreatureType = sbcMapping.map.base.creatureType
                         parsedSubCategories["creatureType"] = await parserCreatureType.parse(creatureType, line)
@@ -362,7 +362,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse Initiative
                 if (!parsedSubCategories["init"]) {
-                    if (lineContent.search(/^Init\b/i) !== -1) {
+                    if (/^Init\b/i.test(lineContent)) {
                         let parserInit = sbcMapping.map.base.init
                         let init = lineContent.match(/(?:Init\s*)(\+\d+|-\d+|\d+)/)[1].trim()
                         sbcData.characterData.conversionValidation.attributes["init"] = +init
@@ -372,7 +372,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse Senses
                 if (!parsedSubCategories["senses"]) {
-                    if (lineContent.search(/\bSenses\b/i) !== -1) {
+                    if (/\bSenses\b/i.test(lineContent)) {
                         let parserSenses = sbcMapping.map.base.senses
                         let senses = lineContent.match(/(?:\bSenses\b\s*)(.*?)(?:\n|$|\s*Aura)/igm)[0].replace(/\bSenses\b\s*|\s*Aura\b/g,"")
                         parsedSubCategories["senses"] = await parserSenses.parse(senses, line)
@@ -381,7 +381,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse Aura
                 if (!parsedSubCategories["aura"]) {
-                    if (lineContent.search(/\bAura\b/i) !== -1) {
+                    if (/\bAura\b/i.test(lineContent)) {
                         let parserAura = sbcMapping.map.base.aura
                         let aura = lineContent.match(/(?:\bAura\b\s*)(.*)/igm)[0].replace(/\s*Aura\b/g,"")
                         parsedSubCategories["aura"] = await parserAura.parse(aura, line)
@@ -1023,7 +1023,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Normal AC
             if (!parsedSubCategories["acNormal"]) {
-                if (lineContent.search(/^AC\s*(\d+)/) !== -1) {
+                if (/^AC\s*(\d+)/.test(lineContent)) {
                     let parserAcNormal = sbcMapping.map.defense.acNormal
                     let acNormal = lineContent.match(/^AC\s*(\d+)/i)[1].trim()
 
@@ -1035,7 +1035,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Touch AC
             if (!parsedSubCategories["acTouch"]) {
-                if (lineContent.search(/Touch\s*(\d+)/i) !== -1) {
+                if (/Touch\s*(\d+)/i.test(lineContent)) {
                     let parserAcTouch = sbcMapping.map.defense.acTouch
                     let acTouch = lineContent.match(/Touch\s*(\d+)/i)[1].trim()
 
@@ -1047,7 +1047,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Flat-footed AC
             if (!parsedSubCategories["acFlatFooted"]) {
-                if (lineContent.search(/flat-footed\s*(\d+)/i) !== -1) {
+                if (/flat-footed\s*(\d+)/i.test(lineContent)) {
                     let parserAcFlatFooted = sbcMapping.map.defense.acFlatFooted
                     let acFlatFooted = lineContent.match(/flat-footed\s*(\d+)/i)[1].trim()
 
@@ -1059,7 +1059,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse AC Types
             if (!parsedSubCategories["acTypes"]) {
-                if (lineContent.search(/^(?:AC[^\(]*[\(])([^\)]*)/i) !== -1) {
+                if (/^(?:AC[^\(]*[\(])([^\)]*)/i.test(lineContent)) {
                     let parserAcTypes = sbcMapping.map.defense.acTypes
                     let acTypes = lineContent.match(/^(?:AC[^\(]*[\(])([^\)]*)/i)[1].trim()
 
@@ -1071,7 +1071,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse HP and HD
             if (!parsedSubCategories["hp"]) {
-                if (lineContent.search(/^(?:HP)(.*)/i) !== -1) {
+                if (/^(?:HP)(.*)/i.test(lineContent)) {
                     let parserHp = sbcMapping.map.defense.hp
                     let hp = lineContent.match(/^(?:HP)(.*)/i)[1].trim()
 
@@ -1081,7 +1081,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Saves
             if (!parsedSubCategories["saves"]) {
-                if (lineContent.search(/^(Fort\b.*)/i) !== -1) {
+                if (/^(Fort\b.*)/i.test(lineContent)) {
                     let parserSaves = sbcMapping.map.defense.saves
                     let saves = lineContent.match(/^(Fort.*)/i)[1].trim()
                     parsedSubCategories["saves"] = await parserSaves.parse(saves, line+startLine)
@@ -1090,7 +1090,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Damage Reduction
             if (!parsedSubCategories["dr"]) {
-                if (lineContent.search(/(\bDR\b)/i) !== -1) {
+                if (/(\bDR\b)/i.test(lineContent)) {
                     let parserDr = sbcMapping.map.defense.dr
                     let dr = lineContent.match(/(?:\bDR\b\s*)([^;,]*)/i)[1].trim()
                     parsedSubCategories["dr"] = await parserDr.parse(dr, line+startLine)
@@ -1099,7 +1099,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Immunities
             if (!parsedSubCategories["immune"]) {
-                if (lineContent.search(/(Immune\b.*)/i) !== -1) {
+                if (/(Immune\b.*)/i.test(lineContent)) {
                     let parserImmune = sbcMapping.map.defense.immune
                     let immunities = lineContent.match(/(?:Immune)([\s\S]*?)(?=$|Resist|SR|Weakness)/i)[1].trim()
                     parsedSubCategories["immune"] = await parserImmune.parse(immunities, line+startLine)
@@ -1109,7 +1109,7 @@ export async function parseDefense(data, startLine) {
             // Parse Resistances
             /*
             if (!parsedSubCategories["resist"]) {
-                if (lineContent.search(/(Resist\b.*)/i) !== -1) {
+                if (/(Resist\b.*)/i.test(lineContent)) {
                     let parserResist = sbcMapping.map.defense.resist
                     let resistances = lineContent.match(/(?:Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
                     parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
@@ -1117,7 +1117,7 @@ export async function parseDefense(data, startLine) {
             }
             */
             if (!parsedSubCategories["resist"]) {
-                if (lineContent.search(/(?<!Defensive Abilities\b\s*)(Resist\b.*)/i) !== -1) {
+                if (/(?<!Defensive Abilities\b\s*)(Resist\b.*)/i.test(lineContent)) {
                     let parserResist = sbcMapping.map.defense.resist
                     let resistances = lineContent.match(/(?<!Defensive Abilities\b\s*)(Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
                     parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
@@ -1126,7 +1126,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Weaknesses / Vulnerabilities
             if (!parsedSubCategories["weakness"]) {
-                if (lineContent.search(/(Weakness.*)/i) !== -1) {
+                if (/(Weakness.*)/i.test(lineContent)) {
                     let parserWeakness = sbcMapping.map.defense.weakness
                     let weaknesses = lineContent.match(/(?:Weaknesses|Weakness)([\s\S]*?)(?=$|Resist|Immune|SR)/i)[1].trim()
                     parsedSubCategories["weakness"] = await parserWeakness.parse(weaknesses, line+startLine)
@@ -1135,7 +1135,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Spell Resistance
             if (!parsedSubCategories["sr"]) {
-                if (lineContent.search(/(\bSR\b.*)/i) !== -1) {
+                if (/(\bSR\b.*)/i.test(lineContent)) {
                     let parserSr = sbcMapping.map.defense.sr
                     let sr = lineContent.match(/(?:\bSR\b\s*)([^;,]*)/i)[1].trim()
                     parsedSubCategories["sr"] = await parserSr.parse(sr, line+startLine)
@@ -1145,7 +1145,7 @@ export async function parseDefense(data, startLine) {
 
             // Parse Defensive Abilities
             if (!parsedSubCategories["defensiveAbilities"]) {
-                if (lineContent.search(/Defensive Abilities\b/i) !== -1) {
+                if (/Defensive Abilities\b/i.test(lineContent)) {
                     let parserDefensiveAbilities = sbcMapping.map.defense.defensiveAbilities
                     let defensiveAbilities = lineContent.match(/(?:Defensive Abilities\b\s*)([\s\S]*?)(?=$|\bDR\b|\bImmune\b|\bResist\b(?!\s\blife\b)|\bSR\b|\bWeakness\b)/i)[1].replace(/\s*[,;]+/g,",").replace(/(,\s*$)/, "").trim()
                     sbcData.notes.defense.defensiveAbilities = defensiveAbilities
@@ -1796,54 +1796,53 @@ export async function parseOffense(data, startLine) {
 
         try {
             let lineContent = data[line]
-
-            // Parse Base Speed
-            if (!parsedSubCategories["landSpeed"]) {
-                if (lineContent.search(/^(Speed|Spd)\s*/i) !== -1) {
+            
+            if (/^(Speed|Spd)\s*/i.test(lineContent)) {
+                if (!parsedSubCategories["landSpeed"]) {
                     let parserLandSpeed = sbcMapping.map.offense.speed
                     let landSpeed = lineContent.match(/^(?:Speed|Spd)\s*($|[^,]*)/i)[1].trim()
 
                     parsedSubCategories["landSpeed"] = await parserLandSpeed.parse(landSpeed, "land", line+startLine)
                 }
-            }
+                
+                // Parse Swim Speed
+                if (!parsedSubCategories["swimSpeed"]) {
+                    if (/\bSwim\s*/i.test(lineContent)) {
+                        let parserSwimSpeed = sbcMapping.map.offense.speed
+                        let swimSpeed = lineContent.match(/\bSwim\s*($|[^,]*)/i)[1].trim()
 
-            // Parse Swim Speed
-            if (!parsedSubCategories["swimSpeed"]) {
-                if (lineContent.search(/\bSwim\s*/i) !== -1) {
-                    let parserSwimSpeed = sbcMapping.map.offense.speed
-                    let swimSpeed = lineContent.match(/\bSwim\s*($|[^,]*)/i)[1].trim()
-
-                    parsedSubCategories["swimSpeed"] = await parserSwimSpeed.parse(swimSpeed, "swim", line+startLine)
+                        parsedSubCategories["swimSpeed"] = await parserSwimSpeed.parse(swimSpeed, "swim", line+startLine)
+                    }
                 }
-            }
 
-            // Parse Climb Speed
-            if (!parsedSubCategories["climbSpeed"]) {
-                if (lineContent.search(/\bClimb\s*/i) !== -1) {
-                    let parserClimbSpeed = sbcMapping.map.offense.speed
-                    let climbSpeed = lineContent.match(/\bClimb\s*($|[^,]*)/i)[1].trim()
+                // Parse Climb Speed
+                if (!parsedSubCategories["climbSpeed"]) {
+                    if (/\bClimb\s*/i.test(lineContent)) {
+                        let parserClimbSpeed = sbcMapping.map.offense.speed
+                        let climbSpeed = lineContent.match(/\bClimb\s*($|[^,]*)/i)[1].trim()
 
-                    parsedSubCategories["climbSpeed"] = await parserClimbSpeed.parse(climbSpeed, "climb", line+startLine)
+                        parsedSubCategories["climbSpeed"] = await parserClimbSpeed.parse(climbSpeed, "climb", line+startLine)
+                    }
                 }
-            }
 
-            // Parse Burrow Speed
-            if (!parsedSubCategories["burrowSpeed"]) {
-                if (lineContent.search(/\bBurrow\s*/i) !== -1) {
-                    let parserBurrowSpeed = sbcMapping.map.offense.speed
-                    let burrowSpeed = lineContent.match(/\bBurrow\s*($|[^,]*)/i)[1].trim()
+                // Parse Burrow Speed
+                if (!parsedSubCategories["burrowSpeed"]) {
+                    if (/\bBurrow\s*/i.test(lineContent)) {
+                        let parserBurrowSpeed = sbcMapping.map.offense.speed
+                        let burrowSpeed = lineContent.match(/\bBurrow\s*($|[^,]*)/i)[1].trim()
 
-                    parsedSubCategories["burrowSpeed"] = await parserBurrowSpeed.parse(burrowSpeed, "burrow", line+startLine)
+                        parsedSubCategories["burrowSpeed"] = await parserBurrowSpeed.parse(burrowSpeed, "burrow", line+startLine)
+                    }
                 }
-            }
 
-            // Parse Fly Speed
-            if (!parsedSubCategories["flySpeed"]) {
-                if (lineContent.search(/\bFly\s*/i) !== -1) {
-                    let parserFlySpeed = sbcMapping.map.offense.speed
-                    let flySpeed = lineContent.match(/\bFly\s*($|[^,]*)/i)[1].trim()
+                // Parse Fly Speed
+                if (!parsedSubCategories["flySpeed"]) {
+                    if (/\bFly\s*/i.test(lineContent)) {
+                        let parserFlySpeed = sbcMapping.map.offense.speed
+                        let flySpeed = lineContent.match(/\bFly\s*($|[^,]*)/i)[1].trim()
 
-                    parsedSubCategories["flySpeed"] = await parserFlySpeed.parse(flySpeed, "fly", line+startLine)
+                        parsedSubCategories["flySpeed"] = await parserFlySpeed.parse(flySpeed, "fly", line+startLine)
+                    }
                 }
             }
 
@@ -1852,7 +1851,7 @@ export async function parseOffense(data, startLine) {
 
             // Parse Melee Attacks
             if (!parsedSubCategories["melee"]) {
-                if (lineContent.search(/^Melee\s*/i) !== -1) {
+                if (/^Melee\s*/i.test(lineContent)) {
                     let parserMelee = sbcMapping.map.offense.attacks
                     let melee = lineContent.match(/^Melee\s*(.*)/i)[1].trim()
 
@@ -1864,7 +1863,7 @@ export async function parseOffense(data, startLine) {
 
             // Parse Ranged Attacks
             if (!parsedSubCategories["ranged"]) {
-                if (lineContent.search(/^Ranged\s*/i) !== -1) {
+                if (/^Ranged\s*/i.test(lineContent)) {
                     let parserRanged = sbcMapping.map.offense.attacks
                     let ranged = lineContent.match(/^Ranged\s*(.*)/i)[1].trim()
 
@@ -1876,7 +1875,7 @@ export async function parseOffense(data, startLine) {
 
             // Parse Special Attacks
             if (!parsedSubCategories["specialAttacks"]) {
-                if (lineContent.search(/^Special\s+Attacks\b\s*/i) !== -1) {
+                if (/^Special\s+Attacks\b\s*/i.test(lineContent)) {
                     let parserSpecialAttacks = sbcMapping.map.offense.specialAttacks
                     let specialAttacks = lineContent.match(/^Special\s+Attacks\s*(.*)/i)[1].trim()
 
@@ -1896,7 +1895,7 @@ export async function parseOffense(data, startLine) {
                  */
                 
                 // Start with the line containing the keyword, CL and other base info
-                if (lineContent.search(/^Spell-Like\s+Abilities\b\s*/i) !== -1) {
+                if (/^Spell-Like\s+Abilities\b\s*/i.test(lineContent)) {
 
                     spellLikeAbilitiesFound = true
 
@@ -1943,7 +1942,7 @@ export async function parseOffense(data, startLine) {
                      * like "spells prepared" or "spells known"
                      * set endOfSpellLikeAbilitiesFound to true
                      */ 
-                    if (lineContent.search(/Spells|Extracts (?:Prepared|Known)/gi) !== -1) {
+                    if (/Spells|Extracts (?:Prepared|Known)/gi.test(lineContent)) {
                         endOfSpellLikeAbilitiesFound = true
                     }
 
@@ -1968,7 +1967,7 @@ export async function parseOffense(data, startLine) {
                  */
                 
                 // Start with the line containing the keyword, CL and other base info
-                if (lineContent.search(/Spells|Extracts (?:Prepared|Known)\b\s*/i) !== -1) {
+                if (/Spells|Extracts (?:Prepared|Known)\b\s*/i.test(lineContent)) {
 
                     currentSpellBook = spellBooksFound
                     startIndexOfSpellBooks[currentSpellBook] = line
@@ -2045,7 +2044,7 @@ export async function parseOffense(data, startLine) {
                      * set endOfSpellBookFound to true
                      */
 
-                    if (lineContent.search(/Spells|Extracts (?:Prepared|Known)/gi) !== -1) {
+                    if (/Spells|Extracts (?:Prepared|Known)/gi.test(lineContent)) {
                         endOfSpellBookFound[spellBooksFound] = true
                     }
 
@@ -2126,8 +2125,14 @@ class speedParser extends sbcParserBase {
 
                 sbcData.notes.offense.speed = rawInput
 
-                let speed = input[0].match(/(\d+)/)[1]
-                let speedContext = ""
+                let speed = input[0].match(/(\d+)/)?.[1];
+                let speedContext = "";
+                
+                if (speed == null) {
+                    let errorMessage = "Failed to parse " + value + " as Speed of type " + type + ".";
+                    let error = new sbcError(2, "Parse/Offense", errorMessage, line);
+                    sbcData.errors.push(error);
+                }
 
                 sbcData.characterData.conversionValidation.attributes[type] = +speed
                 sbcData.characterData.actorData.data.data.attributes.speed[type].base = +speed
@@ -2157,13 +2162,13 @@ class speedParser extends sbcParserBase {
 
         } catch (err) {
 
-            let errorMessage = "Failed to parse " + value + " as Speed of type " + type + "."
-            let error = new sbcError(1, "Parse/Offense", errorMessage, line)
-            sbcData.errors.push(error)
+            let errorMessage = "Failed to parse " + value + " as Speed of type " + type + ".";
+            let error = new sbcError(1, "Parse/Offense", errorMessage, line);
+            sbcData.errors.push(error);
 
-            throw err
+            throw err;
 
-            return false
+            return false;
 
         }
 
@@ -3044,7 +3049,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Abilities
             if (!parsedSubCategories["abilities"]) {
-                if (lineContent.search(/(?:(Str|Dex|Con|Int|Wis|Cha)\s*(\d+|-))/i) !== -1) {
+                if (/(?:(Str|Dex|Con|Int|Wis|Cha)\s*(\d+|-))/i.test(lineContent)) {
                     let abilities = lineContent.match(/((Str|Dex|Con|Int|Wis|Cha)\s*(\d+|-))/gi)
                     
                     for (let i=0; i<abilities.length; i++) {
@@ -3102,7 +3107,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Base Attack
             if (!parsedSubCategories["bab"]) {
-                if (lineContent.search(/^Base Atk\b/i) !== -1) {
+                if (/^Base Atk\b/i.test(lineContent)) {
                     let parserBab = sbcMapping.map.statistics.bab
                     let bab = lineContent.match(/(?:Base Atk\b\s*)([\+\-]?\d+)/ig)[0].replace(/Base Atk\b\s*/i,"")
                     //sbcData.characterData.conversionValidation.attributes["bab"] = +bab
@@ -3112,7 +3117,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse CMB
             if (!parsedSubCategories["cmb"]) {
-                if (lineContent.search(/\bCMB\b/i) !== -1) {
+                if (/\bCMB\b/i.test(lineContent)) {
                     let parserCmb = sbcMapping.map.statistics.cmb
                     let cmbRaw = lineContent.match(/(?:CMB\b)(.*)(?=\bCMD)/i)[1].trim()
 
@@ -3133,7 +3138,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse CMD
             if (!parsedSubCategories["cmd"]) {
-                if (lineContent.search(/\bCMD\b/i) !== -1) {
+                if (/\bCMD\b/i.test(lineContent)) {
                     let parserCmd = sbcMapping.map.statistics.cmd
                     let cmdRaw = lineContent.match(/(?:CMD\b)(.*)/i)[1].trim()
 
@@ -3156,7 +3161,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Feats
             if (!parsedSubCategories["feats"]) {
-                if (lineContent.search(/^Feats\b/i) !== -1) {
+                if (/^Feats\b/i.test(lineContent)) {
                     let parserFeats = sbcMapping.map.statistics.feats
                     let feats = lineContent.match(/(?:Feats\b\s*)(.*)/i)[1].replace(/\s*[,;]+/g,",").trim()
                     sbcData.notes.statistics.feats = feats
@@ -3166,7 +3171,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Skills
             if (!parsedSubCategories["skills"]) {
-                if (lineContent.search(/^Skills\b/i) !== -1) {
+                if (/^Skills\b/i.test(lineContent)) {
                     let parserSkills = sbcMapping.map.statistics.skills
                     let skills = lineContent.match(/(?:Skills\b\s*)(.*)/i)[1].replace(/\s*[,;]+/g,",").trim()
                     sbcData.notes.statistics.skills = skills
@@ -3176,7 +3181,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Languages
             if (!parsedSubCategories["languages"]) {
-                if (lineContent.search(/^Languages\b/i) !== -1) {
+                if (/^Languages\b/i.test(lineContent)) {
                     let parserLanguages = sbcMapping.map.statistics.languages
                     let languages = lineContent.match(/(?:Languages\b\s*)(.*)/i)[1].replace(/\s*[,;]+/g,",").trim()
                     sbcData.notes.statistics.languages = languages
@@ -3186,7 +3191,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse SQ
             if (!parsedSubCategories["sq"]) {
-                if (lineContent.search(/^SQ\b/i) !== -1) {
+                if (/^SQ\b/i.test(lineContent)) {
                     let parserSQ = sbcMapping.map.statistics.sq
                     let sqs = lineContent.match(/(?:SQ\b\s*)(.*)/i)[1].replace(/\s*[,;]+\s*/g,",").trim()
                     parsedSubCategories["sq"] = await parserSQ.parse(sqs, startLine + line)
@@ -3195,7 +3200,7 @@ export async function parseStatistics(data, startLine) {
 
             // Parse Gear
             if (!parsedSubCategories["gear"]) {
-                if (lineContent.search(/(Combat Gear|Other Gear|Gear)\b/i) !== -1) {
+                if (/(Combat Gear|Other Gear|Gear)\b/i.test(lineContent)) {
                     let parserGear = sbcMapping.map.statistics.gear
                     // Combat Gear, Other Gear, Gear
                     let gear = lineContent.replace(/(Combat Gear|Other Gear|Gear)/g, "").replace(/[,;]+/g,",").trim()
@@ -3899,7 +3904,7 @@ export async function parseTactics(data, startLine) {
 
             // Parse Before Combat
             if (!parsedSubCategories["beforeCombat"]) {
-                if (lineContent.search(/(Before Combat)/i) !== -1) {
+                if (/(Before Combat)/i.test(lineContent)) {
                     let beforeCombat = {
                         "name": "Before Combat",
                         "entry": lineContent.match(/^(?:Before Combat)([\s\S]*?)(?=$|During Combat|Morale|Base Statistics)/i)[1]                       
@@ -3911,7 +3916,7 @@ export async function parseTactics(data, startLine) {
 
             // Parse During Combat
             if (!parsedSubCategories["duringCombat"]) {
-                if (lineContent.search(/(During Combat)/i) !== -1) {
+                if (/(During Combat)/i.test(lineContent)) {
                     let duringCombat = {
                         "name": "During Combat",
                         "entry": lineContent.match(/^(?:During Combat)([\s\S]*?)(?=$|Morale|Base Statistics)/i)[1]                       
@@ -3923,7 +3928,7 @@ export async function parseTactics(data, startLine) {
 
             // Parse Morale
             if (!parsedSubCategories["morale"]) {
-                if (lineContent.search(/(Morale)/i) !== -1) {
+                if (/(Morale)/i.test(lineContent)) {
                     let morale = {
                         "name": "Morale",
                         "entry": lineContent.match(/^(?:Morale)([\s\S]*?)(?=$|Base Statistics)/i)[1]                       
@@ -3935,7 +3940,7 @@ export async function parseTactics(data, startLine) {
 
             // Parse Base Statistics
             if (!parsedSubCategories["baseStatistics"]) {
-                if (lineContent.search(/(Base Statistics)/i) !== -1) {
+                if (/(Base Statistics)/i.test(lineContent)) {
                     let baseStatistics = {
                         "name": "Base Statistics",
                         "entry": lineContent.match(/^(?:Base Statistics)([\s\S]*?)$/i)[1]                       
@@ -4042,7 +4047,7 @@ export async function parseEcology(data, startLine) {
 
             // Parse Environment
             if (!parsedSubCategories["environment"]) {
-                if (lineContent.search(/(Environment)/i) !== -1) {
+                if (/(Environment)/i.test(lineContent)) {
                     let environment = {
                         "name": "Environment",
                         "entry": lineContent.match(/^(?:Environment)([\s\S]*?)(?=$|Organization|Treasure)/i)[1]                       
@@ -4054,7 +4059,7 @@ export async function parseEcology(data, startLine) {
 
             // Parse Organization
             if (!parsedSubCategories["organization"]) {
-                if (lineContent.search(/(Organization)/i) !== -1) {
+                if (/(Organization)/i.test(lineContent)) {
                     let organization = {
                         "name": "Organization",
                         "entry": lineContent.match(/(?:Organization)([\s\S]*?)(?=$|Treasure)/i)[1]                    
@@ -4066,7 +4071,7 @@ export async function parseEcology(data, startLine) {
 
             // Parse Treasure
             if (!parsedSubCategories["treasure"]) {
-                if (lineContent.search(/(Treasure)/i) !== -1) {
+                if (/(Treasure)/i.test(lineContent)) {
                     let treasure = {
                         "name": "Treasure",
                         "entry": lineContent.match(/(?:Treasure)([\s\S]*?)$/i)[1]                     
@@ -4282,9 +4287,9 @@ class specialAbilityParser extends sbcParserBase {
 
                 specialAbilityName = value.slice(0,indexOfStartOfDescription).trim()
                 specialAbilityDesc = value.slice(indexOfStartOfDescription).trim()
-				*/
-				specialAbilityName = `Special Ability (${line})`;
-				specialAbilityDesc = value.trim();
+                */
+                specialAbilityName = `Special Ability (${line})`;
+                specialAbilityDesc = value.trim();
 
                 let errorMessage = `There may be some issues here. Please check the preview!`
                 let error = new sbcError(3, "Parse/Special Abilties", errorMessage, line)
