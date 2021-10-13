@@ -3406,7 +3406,13 @@ class skillsParser extends sbcParserBase {
 
             for (let i=0; i<skills.length; i++) {
 
-                let rawSkill = skills[i]
+                let rawSkill = skills[i];
+                
+                if (rawSkill.match(/[+-]\s*\d+(?![^(]*\))/g)?.length > 1) {
+                    let missedCommas = rawSkill.split(/(?<=[-+]\d+) /);
+                    rawSkill = missedCommas.splice(0, 1)[0];
+                    skills.push(...missedCommas);
+                }
 
                 // Check, if the rawSkill contains "racial modifiers"
                 // And skip to the end of the array as we do not need these
@@ -3430,7 +3436,7 @@ class skillsParser extends sbcParserBase {
                 ]
 
                 // Check if there are multiple subskills for knowledge
-                if (rawSkill.search(/knowledge|perform/i) !== -1 && rawSkill.search(/,/g) !== -1) {
+                if (rawSkill.search(/knowledge|perform/i) !== -1 && rawSkill.search(/,|\band\b|&/g) !== -1) {
                     // If there are, generate new skills and push them to the array of skills
 
                     let tempSkill = sbcUtils.parseSubtext(rawSkill)
@@ -3442,7 +3448,7 @@ class skillsParser extends sbcParserBase {
                         skillContext = tempSkill[2][1]
                     }
 
-                    let subSkills = tempSkill[1].split(/,/g)
+                    let subSkills = tempSkill[1].split(/,|\band\b|&/g)
 
                     for (let j=0; j<subSkills.length; j++) {
                         let subSkill = subSkills[j].trim()
@@ -3547,10 +3553,10 @@ class skillsParser extends sbcParserBase {
 
                 try {
 
-                    let skillName = skill[0].replace(/[\+\-]\d*/g, "").trim()
-                    let skillTotal = skill[0].replace(skillName, "").trim()
-                    let subSkill = ""
-                    let skillContext = ""
+                    let skillName = skill[0].replace(/[+-]\s*\d+/g, "").trim();
+                    let skillTotal = skill[0].replace(skillName, "").replace(/\s/g,"");
+                    let subSkill = "";
+                    let skillContext = "";
 
                     // Check, if there is a subskill
                     if (skill[1]) {
