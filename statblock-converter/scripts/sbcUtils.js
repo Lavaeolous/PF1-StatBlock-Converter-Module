@@ -927,9 +927,9 @@ export class sbcUtils {
         if (tempInput.search(/,|;/g) !== -1) {
 
             // Check if there are parenthesis including commas in the input
-            if (tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\))+?/gi) !== null) {
+            if (tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(]+?\))+?/gi) !== null) {
                 // Get the input with parenthesis and commas inside the parenthesis
-                let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(.]+?\)[^,]*)+?/gi)
+                let itemsWithCommasInParenthesis = tempInput.match(/([^,;]+\([^(]+?(?:,|;)[^(]+?\)[^,]*)+?/gi)
                 let itemsWithCommasInParenthesisKeys = Object.keys(itemsWithCommasInParenthesis)
                 
                 for (let i=0; i<itemsWithCommasInParenthesisKeys.length; i++) {
