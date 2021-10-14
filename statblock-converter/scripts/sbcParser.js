@@ -123,10 +123,10 @@ export class sbcParser {
                 let categoryIndexPositions = {}
                 for (let i=1; i<availableCategories.length; i++) {
 
-                    let categoryPattern = new RegExp("^\\b" + availableCategories[i] + "\\b","i")
+                    let categoryPattern = new RegExp("^\\b" + availableCategories[i] + "\\b\\s*(?:\\r?\\n|$)","i")
                     sbcData.preparedInput.data.filter(function(item, index){
 
-                        if (item.search(categoryPattern) !== -1) {
+                        if (categoryPattern.test(item) && categoryIndexPositions[availableCategories[i]] == null) {
                             categoryIndexPositions[availableCategories[i]] = index
                         }
 
