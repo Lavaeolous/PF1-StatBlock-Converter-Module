@@ -253,11 +253,11 @@ export async function parseBase(data, startLine) {
                 // Parse XP 
                 if (!parsedSubCategories["xp"]) {
                     if (/^XP/.test(lineContent)) {
-                        let parserXP = sbcMapping.map.base.xp
-                        let xp = lineContent.match(/^XP\s+([\d,.]*)/)[1].replace(/\.,/g,"").trim()
-                        sbcData.notes.base.xp = xp
+                        let parserXP = sbcMapping.map.base.xp;
+                        let xp = lineContent.match(/^XP\s+([\d,.]*)/)?.[1].replace(/\.,/g,"").trim() ?? "0";
+                        sbcData.notes.base.xp = xp;
                         // We just save the xp into our notes, as foundry calculates them automatically
-                        parsedSubCategories["xp"] = await parserXP.parse(xp, line)
+                        parsedSubCategories["xp"] = await parserXP.parse(xp, line);
                     }
                 }
 
