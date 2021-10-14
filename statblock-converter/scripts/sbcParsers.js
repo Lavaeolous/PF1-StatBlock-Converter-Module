@@ -1515,34 +1515,47 @@ class savesParser extends sbcParserBase {
 
         try {
 
-            let input = sbcUtils.parseSubtext(value)
-            let saveContext = ""
-
-            if (input[1]) {
-                saveContext = input[1]
+            let input = value;
+            let saveContext = "";
+            
+            // Unparenthesized semicolon
+            if (/;(?![^(]*\))/.test(input)) {
+                [input, saveContext] = input.split(/;(?![^(]*\))/);
             }
-
-            if (input[0].search(/;/) !== -1) {
-                saveContext = input[0].split(/;/)[1]
+            
+            let saves = sbcUtils.sbcSplit(input).map(sbcUtils.parseSubtext);
+            
+            for (let k = 0; k < saves.length; k++) {
+                let save = 0, saveType;
+                if (/(?:Fort\s*[\+]?)(\-?\d+)/i.test(saves[k][0])) {
+                    save = saves[k][0].match(/(?:Fort\s*[\+]?)(\-?\d+)/i)[1];
+                    saveType = "fort";
+                }
+                else if (/(?:Ref\s*[\+]?)(\-?\d+)/i.test(saves[k][0])) {
+                    save = saves[k][0].match(/(?:Ref\s*[\+]?)(\-?\d+)/i)[1];
+                    saveType = "ref";
+                }
+                else if (/(?:Will\s*[\+]?)(\-?\d+)/i.test(saves[k][0])) {
+                    save = saves[k][0].match(/(?:Will\s*[\+]?)(\-?\d+)/i)[1];
+                    saveType = "will";
+                }
+                if (!saveType) {
+                    let errorMessage = "Failed to parse " + saves[k].join("") + " as Saves.";
+                    let error = new sbcError(2, "Parse/Defense", errorMessage, line);
+                    sbcData.errors.push(error);
+                }
+                else {
+                    sbcData.characterData.conversionValidation.attributes[saveType] = save;
+                    sbcData.notes.defense[saveType + "Save"] = save;
+                    if (saves[k][1]) {
+                        saveContext += (saveContext ? "\n" : "") + saveType.substring(0,1).toUpperCase() + saveType.substring(1) + ": " + saves[k][1];
+                    }
+                }
             }
-
-            // Separate the Saves
-            let saves = input[0]
-
-            let fortSave = saves.match(/(?:Fort\s*[\+]?)(\-?\d+)/i)[1]
-            let refSave = saves.match(/(?:Ref\s*[\+]?)(\-?\d+)/i)[1]
-            let willSave = saves.match(/(?:Will\s*[\+]?)(\-?\d+)/i)[1]
-
-            sbcData.characterData.conversionValidation.attributes["fort"] = fortSave
-            sbcData.notes.defense["fortSave"] = fortSave
-            sbcData.characterData.conversionValidation.attributes["ref"] = refSave
-            sbcData.notes.defense["refSave"] = refSave
-            sbcData.characterData.conversionValidation.attributes["will"] = willSave
-            sbcData.notes.defense["willSave"] = willSave
 
             // Check if there are context notes for the saves
-            if (saveContext !== "") {                
-                sbcData.characterData.actorData.data.data.attributes.saveNotes = saveContext
+            if (saveContext) {                
+                sbcData.characterData.actorData.data.data.attributes.saveNotes = saveContext.trim();
             }
 
             return true
