@@ -381,7 +381,7 @@ export async function parseBase(data, startLine) {
 
                 // Parse Aura
                 if (!parsedSubCategories["aura"]) {
-                    if (/\bAura\b/i.test(lineContent)) {
+                    if (/^Aura\b/i.test(lineContent)) {
                         let parserAura = sbcMapping.map.base.aura
                         let aura = lineContent.match(/(?:\bAura\b\s*)(.*)/igm)[0].replace(/\s*Aura\b/g,"")
                         parsedSubCategories["aura"] = await parserAura.parse(aura, line)
@@ -894,10 +894,8 @@ class auraParser extends sbcParserBase {
         sbcConfig.options.debug && sbcUtils.log("Trying to parse " + value + " as aura")
 
         try {
-
             sbcData.notes.aura = value
             
-            //let auras = value.split(/(?:[^\.])(,)/)
             let auras = sbcUtils.sbcSplit(value)
 
             for (let i=0; i<auras.length; i++) {
@@ -914,25 +912,25 @@ class auraParser extends sbcParserBase {
                     let actionType = null
                     let auraEffect = ""
         
-                    // Name = Everything before the opening parenthesis
-                    auraName = auraInput.replace(/(\(.*\))/,"").trim()
+                    // Name = Everything before the opening parenthesis or first number
+                    auraName = auraInput.replace(/(\(.*\)|\d.*)/,"").trim();
 
                     // Range = Numbers before ".ft"
-                    if (auraInput.search(/([^(,;]+)(?:ft.)/i) !== -1) {
-                        auraRange = auraInput.match(/([^(,;]+)(?:ft.)/)[1].trim()
+                    if (/([^(,;a-zA-Z]+)(?:ft.)/i.test(auraInput)) {
+                        auraRange = auraInput.match(/([^(,;a-zA-Z]+)(?:ft.)/)[1].trim();
                     }
                     // DC = Number after "DC"
-                    if (auraInput.search(/\bDC\b/) !== -1) {
+                    if (/\bDC\b/.test(auraInput)) {
                         //auraDC = auraInput.match(/(?:DC\s*)([^)(,;]+)/)[1].trim()
                         auraDC = auraInput.match(/(?:DC\s*)(\d+)/)[1]
                         actionType = "save"
 
                         // auraDCNotes, e.g. negates, halfs
-                        if (auraInput.match(/(?:DC\s*\d+\s*)([^)(,;0-9]+)/) !== null) {
+                        if (/(?:DC\s*\d+\s*)([^)(,;0-9]+)/.test(auraInput)) {
                             auraDCNotes = auraInput.match(/(?:DC\s*\d+\s*)([^)(,;0-9]+)/)[1]
                         }
 
-                        if (auraInput.match(/([^)(,;]+)(?:DC\s*\d+)/) !== null) {
+                        if (/([^)(,;]+)(?:DC\s*\d+)/.test(auraInput)) {
                             auraSaveType = auraInput.match(/([^)(,;]+)(?:DC\s*\d+)/)[1].trim().toLowerCase()
                         }
                         
