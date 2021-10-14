@@ -1201,7 +1201,7 @@ class acTypesParser extends sbcParserBase {
             for (let i=0; i<foundAcTypes.length; i++) {
                 let foundAc = foundAcTypes[i].trim();
                 let foundAcType = foundAc.match(patternAcTypes)[0];
-                let foundAcTypeValue = foundAc.replace(foundAcType, "").trim();
+                let foundAcTypeValue = foundAc.match(/[+-]\d+/)?.[0] ?? 0;
 
                 switch (foundAcType.toLowerCase()) {
                     case "natural":
