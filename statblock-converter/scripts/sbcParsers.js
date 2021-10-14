@@ -2304,9 +2304,12 @@ class attacksParser extends sbcParserBase {
                                 
                     // Search for Touch or Ranged Touch
                     if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
-                        let specialAttackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1]
-                        attackNotes += specialAttackType + "\n"
-                        attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "")
+                        let specialAttackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
+                        attackNotes += specialAttackType + "\n";
+                        attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
+						//No valid name remaining
+						if (!/[a-z](?![^(]*\))/i.test(attack))
+							attackName = "Attack " + (j + 1);
                     }
                              
                     // Check if its Melee or Ranged
@@ -2368,7 +2371,7 @@ class attacksParser extends sbcParserBase {
                     }
 
                     // attackName
-                    if (attack.match(/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/) !== null) {
+                    if (/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/.test(attack) && !attackName) {
                         attackName = attack.match(/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "").trim()
                         
                         // Special ActionType for swarmAttacks
