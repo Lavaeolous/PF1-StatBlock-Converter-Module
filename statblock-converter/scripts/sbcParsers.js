@@ -303,7 +303,7 @@ export async function parseBase(data, startLine) {
                     let isSourceLine = lineContent.match(/^(Source)\s*/)
 
                     if (!isAlignmentLine && !isSourceLine) {
-                        let patternClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + "\\b|\\b" + sbcConfig.prestigeClassNames.join("\\b|\\b") + "\\b|\\b" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(.*)", "gi")
+                        let patternClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + "\\b|\\b" + sbcConfig.prestigeClassNames.join("\\b|\\b") + "\\b|\\b" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(?![^(]*\\))(.*)", "gi")
 
                         if (patternClasses.test(lineContent)) {
                             // Take everything from the first class found up until the end of line
