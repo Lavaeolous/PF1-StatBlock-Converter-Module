@@ -1198,10 +1198,10 @@ class acTypesParser extends sbcParserBase {
 
             for (let i=0; i<foundAcTypes.length; i++) {
                 let foundAc = foundAcTypes[i].trim();
-                let foundAcType = foundAc.match(patternAcTypes)[0];
+                let foundAcType = foundAc.match(patternAcTypes)?.[0].toLowerCase();
                 let foundAcTypeValue = foundAc.match(/[+-]\d+/)?.[0] ?? 0;
 
-                switch (foundAcType.toLowerCase()) {
+                switch (foundAcType) {
                     case "natural":
                         sbcData.characterData.actorData.data.data.attributes.naturalAC = foundAcTypeValue
                         break
