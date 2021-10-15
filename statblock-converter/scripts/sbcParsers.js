@@ -1745,31 +1745,37 @@ class srParser extends sbcParserBase {
 
         try {
 
-            let rawInput = value.replace(/(^[,;\s]*|[,;\s]*$)/g, "")
-            let input = sbcUtils.parseSubtext(rawInput)
+            let rawInput = value.replace(/(^[,;\s]*|[,;\s]*$)/g, "");
+            let input = sbcUtils.parseSubtext(rawInput);
+            
+            let srTotal = input[0];
+            let srContext = "";
 
-            let srTotal = input[0]
-            let srContext = ""
-
-            if (input[1]){
-                srContext = input[1]
-                sbcData.characterData.actorData.data.data.attributes.srNotes = srContext
+            
+            if (input[1]) {
+                srContext = input[1];
+                sbcData.characterData.actorData.data.data.attributes.srNotes = srContext;
+            }
+            else if (/\s*([-+]?\d+)\s+(.*)/.test(srTotal)) {
+                [srTotal, srContext] = srTotal.split(/\s*([-+]?\d+)\s+(.*)/).slice(1);
+                sbcData.characterData.actorData.data.data.attributes.srNotes = srContext;
             }
 
-            sbcData.characterData.actorData.data.data.attributes.sr.total = srTotal
-            sbcData.characterData.actorData.data.data.attributes.sr.formula = srTotal.toString()
 
-            return true
+            sbcData.characterData.actorData.data.data.attributes.sr.total = srTotal;
+            sbcData.characterData.actorData.data.data.attributes.sr.formula = srTotal.toString();
+
+            return true;
 
         } catch (err) {
 
-            let errorMessage = "Failed to parse " + value + " as Spell Resistance."
-            let error = new sbcError(1, "Parse/Defense", errorMessage, line)
-            sbcData.errors.push(error)
+            let errorMessage = "Failed to parse " + value + " as Spell Resistance.";
+            let error = new sbcError(1, "Parse/Defense", errorMessage, line);
+            sbcData.errors.push(error);
 
-            throw err
+            throw err;
 
-            return false
+            return false;
 
         }
 
@@ -2307,9 +2313,9 @@ class attacksParser extends sbcParserBase {
                         let specialAttackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
                         attackNotes += specialAttackType + "\n";
                         attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
-						//No valid name remaining
-						if (!/[a-z](?![^(]*\))/i.test(attack))
-							attackName = "Attack " + (j + 1);
+                        //No valid name remaining
+                        if (!/[a-z](?![^(]*\))/i.test(attack))
+                            attackName = "Attack " + (j + 1);
                     }
                              
                     // Check if its Melee or Ranged
