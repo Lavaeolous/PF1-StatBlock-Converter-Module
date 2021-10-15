@@ -14,46 +14,47 @@ import { initMapping } from "./sbcParsers.js";
 import { sbcData } from "./sbcData.js";
 
 /* ------------------------------------ */
-/* sbc                          		*/
+/* sbc                                  */
 /* ------------------------------------ */
 
 export class sbcApp {
 
     static async startSBC () {
         sbcConfig.options.debug && sbcUtils.log("Opening the input dialog")
-        await sbcInputDialog.renderInputDialog()
-
+        await sbcInputDialog.renderInputDialog();
+        
+        Hooks.callAll("sbc.started");
     }
 
     /* ------------------------------------ */
-    /* Reset and re-initialize sbc      	*/
+    /* Reset and re-initialize sbc          */
     /* ------------------------------------ */
 
     static async resetSBC() {
-        sbcConfig.options.debug && sbcUtils.log("Reset")
+        sbcConfig.options.debug && sbcUtils.log("Reset");
 
         // Reset data
-        sbcUtils.resetData()
+        sbcUtils.resetData();
 
         // Reset errorLogging
-        sbcUtils.resetErrorLog()
+        sbcUtils.resetErrorLog();
 
         // Reset input
-        sbcUtils.resetInput()
+        sbcUtils.resetInput();
 
         // Reset preview
-        sbcUtils.resetPreview()
+        sbcUtils.resetPreview();
 
         // Reset flags
-        sbcUtils.resetFlags()
+        sbcUtils.resetFlags();
 
         // Initialize sbc again
-        await this.initializeSBC()
+        await this.initializeSBC();
         
     }
 
     /* ------------------------------------ */
-    /* Initialize sbc                      	*/
+    /* Initialize sbc                          */
     /* ------------------------------------ */
 
     static async initializeSBC() {
@@ -102,13 +103,13 @@ export class sbcApp {
             }
         }
         
-
+        Hooks.callAll("sbc.reset");
     }
 
 }
 
 /* ------------------------------------ */
-/* Hooks            					*/
+/* Hooks                                */
 /* ------------------------------------ */
 
 // Run when Foundry gets initialized
@@ -124,10 +125,10 @@ Hooks.once("init", async function() {
         }
     },true);
     */
-	
-	window.SBC = {
-		sbcApp, sbcUtils, sbcConfig, sbcData, sbcSettings, sbcInputDialog
-	}
+    
+    window.SBC = {
+        sbcApp, sbcUtils, sbcConfig, sbcData, sbcSettings, sbcInputDialog
+    }
    
     
 });

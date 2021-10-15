@@ -6,8 +6,8 @@ export class sbcUtils {
     static openingBrackets = ['(', '[', '{'];
     static closingBrackers = [')', ']', '}'];
     static matchingClosingBrackets = {'(': ')', '[' : ']', '{': '}'};
-	static uncapitals = ["a", "an", "the", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "for", "from", "of", "on", "to", "with", "without"];
-	
+    static uncapitals = ["a", "an", "the", "for", "and", "nor", "but", "or", "yet", "so", "at", "around", "by", "after", "for", "from", "of", "on", "to", "with", "without"];
+    
 
     static async createTempActor () {
 
@@ -896,7 +896,9 @@ export class sbcUtils {
                 "img": "systems/pf1/icons/skills/yellow_36.jpg"
             })
 
-            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject(false)])
+            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject(false)]);
+            
+            Hooks.callAll("sbc.validated", actor);
             
         } catch (err) {
 
