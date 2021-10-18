@@ -3842,10 +3842,12 @@ class gearParser extends sbcParserBase {
             let weaponCompendium = "pf1.weapons-and-ammo"
             let armorCompendium = "pf1.armors-and-shields"
             let itemCompendium = "pf1.items"
+            let spellCompendium = "pf1.spells";
 
             let patternSupportedWeapons = new RegExp("(" + sbcConfig.weapons.join("\\b|\\b") + ")", "gi")
             let patternSupportedArmors = new RegExp("(" + sbcConfig.armors.join("\\b|\\b") + ")", "gi")
             let patternSupportedItems = new RegExp("(" + sbcConfig.items.join("\\b|\\b") + ")", "gi")
+            let patternSupportedSpells = /(potion|wand|scroll)s?\s+of\s+(.+)/i;
             let patternGold = new RegExp("^(\\d+[\\.,]*\\d*\\s+)(?:PP|GP|SP|CP)", "i")
     
             let gears = sbcUtils.sbcSplit(value)
@@ -3871,34 +3873,34 @@ class gearParser extends sbcParserBase {
 
                 let gearKeys = Object.keys(gear)
                 
-                if (gearText.search(/^\+/) !== -1) {
+                if (/^\+/.test(gearText)) {
                     gear.enhancementValue = +gearText.match(/(\d+)/)[1].trim()
                 }
 
-                if (gearText.search(/(masterwork|mwk)/) !== -1) {
+                if (/(masterwork|mwk)/.test(gearText)) {
                     gear.mwk = true
                 }
                 
                 let entity = {}
 
-                if (gearText.search(patternSupportedWeapons) !== -1) {
+                if (patternSupportedWeapons.test(gearText)) {
                     // If the input is a weapon in one of the compendiums
                     gear.type = "weapon"
                     entity = await sbcUtils.findEntityInCompendium(weaponCompendium, gear)
 
-                } else if (gearText.search(patternSupportedArmors) !== -1) {
+                } else if (patternSupportedArmors.test(gearText)) {
 
                     // If the input is a armor in one of the compendiums
                     gear.type = "equipment"
                     entity = await sbcUtils.findEntityInCompendium(armorCompendium, gear)
                     
-                } else if (gearText.search(patternSupportedItems) !== -1) {
+                } else if (patternSupportedItems.test(gearText)) {
 
                     // If the input is a item in one of the compendiums
                     gear.type = "loot"
                     entity = await sbcUtils.findEntityInCompendium(itemCompendium, gear)   
                     
-                } else if (gearText.search(patternGold) !== -1) {
+                } else if (patternGold.test(gearText)) {
 
                     // If the input is Money
                     gear.name = "Money Pouch"
@@ -3910,6 +3912,24 @@ class gearParser extends sbcParserBase {
                         "cp": splitInput[0].search(/\bCP\b/i) !== -1 ? +splitInput[0].match(/(\d+)(?:\s*CP)/i)[1] : 0
                     }
 
+                } else if (patternSupportedSpells.test(gearText)) {
+                    gear.type = "consumable";
+                    
+                    let namePattern = gearText.match(patternSupportedSpells);
+                    let consumableType = namePattern[1]?.toLowerCase();
+                    let spellName = namePattern[2];
+                    let charges = gearSubtext?.match(/\d+/)?.[0] ?? (/wand/i.test(consumableType) ? 50 : 1);
+                    
+                    entity = await sbcUtils.findEntityInCompendium(spellCompendium, {name: spellName});
+                    if (entity) {
+                        entity = await game.pf1.documents.ItemPF.toConsumable(entity.toObject(), consumableType);
+                        if (consumableType == "wand")
+                            entity.data.uses.value = parseInt(charges);
+                        else
+                            entity.data.quantity = parseInt(charges);
+                        gear.rawName = entity.name;
+                        entity = await Item.create(entity, {temporary: true});
+                    }
                 } else {
                     // WIP
                     // Edit May 2021: Why WIP?
