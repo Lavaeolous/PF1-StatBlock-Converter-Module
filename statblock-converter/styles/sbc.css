@@ -263,12 +263,12 @@
     padding: 5px;
     padding-right: 10px;
     font-family: monospace;
+}
 
-    mark {
-        color: transparent;
-        background-color: rgba(255,255,0,1);
-        padding-right: 20px;
-    }
+.sbcHighlights mark {
+    color: transparent;
+    background-color: rgba(255,255,0,1);
+    padding-right: 20px;
 }
 
 .spellBook span:first-child {
