@@ -5,7 +5,7 @@ import { sbcUtils } from "./sbcUtils.js"
 import { sbcData, sbcError } from "./sbcData.js"
 
 /* ------------------------------------ */
-/* sbcInputDialog						*/
+/* sbcInputDialog                        */
 /* Create a modal dialog with           */
 /* an input, preview and error area.    */
 /* Input is saved in a raw format and   */
@@ -45,7 +45,7 @@ export class sbcInputDialog extends Application {
     }
 
     /* ------------------------------------ */
-    /* eventListeners						*/
+    /* eventListeners                        */
     /* ------------------------------------ */
 
     activateListeners(html) {
@@ -53,7 +53,7 @@ export class sbcInputDialog extends Application {
         super.activateListeners(html);
 
         /* ------------------------------------ */
-        /* ActorType Toggle						*/
+        /* ActorType Toggle                        */
         /* ------------------------------------ */
         let actorTypeToggle = $(".actorTypeToggle")
         
@@ -78,6 +78,7 @@ export class sbcInputDialog extends Application {
                 sbcConfig.options.actorReady = true
                 sbcUtils.updatePreview()
                 sbcUtils.updateErrorArea()
+                Hooks.callAll("sbc.inputParsed");
             } else {
 
             }
@@ -86,7 +87,7 @@ export class sbcInputDialog extends Application {
         })
 
         /* ------------------------------------ */
-        /* Input Area (with delay)				*/
+        /* Input Area (with delay)                */
         /* ------------------------------------ */
 
         // Get the input from the textArea
@@ -111,9 +112,10 @@ export class sbcInputDialog extends Application {
 
                 // if the input could successly be parsed, generate a new preview
                 if (sbcData.parsedInput.success) {
-                    sbcUtils.updatePreview()
-                    sbcUtils.updateErrorArea()
-                    sbcConfig.options.actorReady = true
+                    sbcUtils.updatePreview();
+                    sbcUtils.updateErrorArea();
+                    sbcConfig.options.actorReady = true;
+                    Hooks.callAll("sbc.inputParsed");
                     
                 } else {
                     // The input could not be parsed
@@ -143,7 +145,7 @@ export class sbcInputDialog extends Application {
         })
 
         /* ------------------------------------ */
-        /* Import Button						*/
+        /* Import Button                        */
         /* ------------------------------------ */
 
         // Get the input from the textArea when sbcImportButton is clicked
@@ -168,9 +170,8 @@ export class sbcInputDialog extends Application {
 
 
                         // Conversion Validation
-                        await sbcUtils.conversionValidation(newActor[0].id)
+                        await sbcUtils.conversionValidation(newActor[0].id);
                         
-                        //await newActor.update({})
                         //await newActor.update({})
         
                         sbcInputDialog.sbcInputDialogInstance.close()
@@ -211,7 +212,7 @@ export class sbcInputDialog extends Application {
 }
 
 /* ------------------------------------ */
-/* Input Delay  						*/
+/* Input Delay                          */
 /* ------------------------------------ */
 function _debounce(callback, wait) {
     let timeout;
