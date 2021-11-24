@@ -14,8 +14,8 @@ https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/dow
 # Compatibility
 
 **Version 3.3 and upwards of SBC:**
-* GameSystem: [PF1 0.78.14](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 0.8.6-0.8.8
+* GameSystem: [PF1 0.79.8](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 0.8.6-0.8.9
 
 **Version 3.2.2 of SBC (see releases, no longer developed):**
 * GameSystem: [PF1 0.77.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
@@ -40,7 +40,6 @@ SBC creates a mostly complete Actor (PC or NPC) with embedded documents for feat
 *  See Issues. If you find anythings thats not noted there, please let me know.
 
 # To Do
-*  Optimize loading times, as currently the search for items in compendia is taking forever
 *  Fix bugs
 
 # Contact

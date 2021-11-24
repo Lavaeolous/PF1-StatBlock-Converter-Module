@@ -1,5 +1,14 @@
 # Change Log
 
+2021_11_24 - v3.3.2
+*  **Merge Request** from `dmrickey`
+*  Add specificity to mark style override, to prevent incompatibilities to other modules using the `<mark></mark>` tag.
+
+*  **Merge Request** from `JustNoon`
+*  Too many to note here in full, so see https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/pull/489 for all the details
+*  Sanitizing, adding fallbacks, refactoring, changing RegEx searches to tests, etc.
+*  A lot of work, thats very much appreciated! Thanks a lot Noon!
+
 2021_07_08 - v3.3.1
 *  **Added support for `findInCompendia()`, a PF1 system function, that greatly improves the loading times of SBC** (#469,#470)
 *  **Fixed brokeness under PF1 0.78.14** (#475)

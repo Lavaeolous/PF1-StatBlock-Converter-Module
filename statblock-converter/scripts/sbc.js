@@ -2,7 +2,8 @@
  * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
  *
  * Author: Lavaeolous
- * Version: 3.3.1
+ * Additional Authors: Noon
+ * Version: 3.3.2
  *
  */
 
