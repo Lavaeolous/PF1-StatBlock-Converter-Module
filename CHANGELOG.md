@@ -1,5 +1,13 @@
 # Change Log
 
+2021_12_21 - v3.3.3
+*  Updated compatibility to FoundryVTT v9 stable
+*  Fixed a minor bug where brightSight and mineSight was parsed as string instead of int (#494)
+*  Disabled pre-indexing of all compendiums at start, as it seems it's no longer needed (#493)
+*  Rearranged the order of compendia to search through with `findInCompendia()` so that customCompendia get searched first (again?) (#496)
+*  Fixed a bug where the toggle for prototypeToken vision settings was ignored (#495)
+*  Fixed improper tag creation for classes/racialHD (e.g. for `magical beast` and `monstrous humanoid`) (#482)
+
 2021_11_24 - v3.3.2
 *  **Merge Request** from `dmrickey`
 *  Add specificity to mark style override, to prevent incompatibilities to other modules using the `<mark></mark>` tag.

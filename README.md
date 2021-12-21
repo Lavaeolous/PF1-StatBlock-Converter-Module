@@ -13,13 +13,13 @@ https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/dow
 ```
 # Compatibility
 
-**Version 3.3 and upwards of SBC:**
-* GameSystem: [PF1 0.79.8](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 0.8.6-0.8.9
+**Version 3.3.3 and upwards of SBC:**
+* GameSystem: [PF1 0.80.1](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 9 Build 238
 
-**Version 3.2.2 of SBC (see releases, no longer developed):**
-* GameSystem: [PF1 0.77.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 0.7.8-0.7.9
+**Version 3.3.2 of SBC (see releases, no longer developed):**
+* GameSystem: [PF1 0.79.10](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+* FoundryVTT: 0.8.6-0.8.9
 
 # How to Use
 1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).

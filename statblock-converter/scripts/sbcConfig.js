@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.3.2",
+    "version": "3.3.3",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -65,6 +65,8 @@ sbcConfig.initializeConfig = async function () {
 
     // Create an index for each pf1 system compendium
     // Get the names of all available compendiums
+    
+    /*
     let packKeys = Array.from(game.packs.keys())
     for (let i=0; i<packKeys.length; i++) {
         
@@ -77,6 +79,7 @@ sbcConfig.initializeConfig = async function () {
 
         } 
     }
+    */
 
     let raceIndex = await game.packs.get("pf1.races").index
     for (let entry of raceIndex) { if (entry.name !== "") { sbcConfig.races.push(entry.name) } }

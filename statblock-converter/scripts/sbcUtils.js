@@ -315,17 +315,26 @@ export class sbcUtils {
 
         if (customCompendiumSettings !== "") {
             customCompendiums = customCompendiumSettings.split(/[,;]/g)
-            searchableCompendiums = searchableCompendiums.concat(customCompendiums)
+            searchableCompendiums = customCompendiums.concat(searchableCompendiums)
         }
                 
         let searchResult = {}
         let foundEntity = {}
+
+        console.log("searchableCompendiums:")
+        console.log(searchableCompendiums)
         
         let searchOptions = {
             "packs" : searchableCompendiums
         }
 
+        console.log("input")
+        console.log(input)
+
         searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
+
+        console.log("searchResult")
+        console.log(searchResult)
 
         if (searchResult !== false) {
             let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name

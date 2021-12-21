@@ -56,6 +56,7 @@ export class sbcSettings {
             }
 
             // Create an index for each (custom) compendium
+            /*
             if (customCompendiums.length > 0) {
                 for (let i=0; i<customCompendiums.length; i++) {
                     let customCompendium = customCompendiums[i].trim()
@@ -63,6 +64,8 @@ export class sbcSettings {
                     if (!customPack.indexed) await customPack.getIndex();
                 }
             }
+            */
+            
             
         } else {
             customCompendiums = validCompendiums
@@ -308,6 +311,7 @@ export const initializeSettings = async function () {
     sbcConfig.options.defaultActorType = game.settings.get(sbcConfig.modData.mod, "defaultActorType")
     sbcConfig.options.inputDelay = game.settings.get(sbcConfig.modData.mod, "inputDelay")
     sbcConfig.options.tokenSettings.disposition = +game.settings.get(sbcConfig.modData.mod, "disposition")
+    sbcConfig.options.tokenSettings.vision = game.settings.get(sbcConfig.modData.mod, "vision")
     sbcConfig.options.tokenSettings.displayName = +game.settings.get(sbcConfig.modData.mod, "displayName")
     sbcConfig.options.tokenSettings.displayBars = +game.settings.get(sbcConfig.modData.mod, "displayBars")
     sbcConfig.options.customFolder = game.settings.get(sbcConfig.modData.mod, "importFolder")

@@ -1,11 +1,8 @@
 export class sbcContent {
 
     static "otherRaces" = [
-        
         "Jotund Troll",
         "Troll"
-        
-
     ]
 
     static "additionalSenses" = [

@@ -684,7 +684,7 @@ class creatureTypeParser extends sbcParserBase {
             let compendium = "pf1.racialhd"
             let creatureTypeItem = await sbcUtils.findEntityInCompendium(compendium, creatureType, line)
             creatureTypeItem.data.data.useCustomTag = true
-            creatureTypeItem.data.data.tag = creatureType.name
+            creatureTypeItem.data.data.tag = game.pf1.utils.createTag(creatureType.name)
 
             // Set flags for the conversion
             switch (creatureType.name.toLowerCase()) {
@@ -792,7 +792,7 @@ class sensesParser extends sbcParserBase {
                             break
                         case "darkvision":
                             let darkvisionRange = value.match(/\d+/)[0]
-                            sbcData.characterData.actorData.data.token.brightSight = darkvisionRange
+                            sbcData.characterData.actorData.data.token.brightSight = +darkvisionRange
                             senseFeatName = searchSense + " " + darkvisionRange + "ft."
                             senseImagePath = "systems/pf1/icons/skills/shadow_12.jpg"
                             break
