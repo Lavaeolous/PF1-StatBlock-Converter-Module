@@ -328,12 +328,12 @@ export async function parseBase(data, startLine) {
 
                 // Parse Size and Space / Token Size
                 if (!parsedSubCategories["size"]) {
-                    let patternSize = new RegExp("(" + Object.values(CONFIG.PF1.actorSizes).join("\\b|\\b") + ")", "i")
+                    let patternSize = new RegExp("(" + Object.values(sbcConfig.const.actorSizes).join("\\b|\\b") + ")", "i")
                     if (patternSize.test(lineContent) && patternAlignment.test(lineContent)) {
                         let parserSize = sbcMapping.map.base.size
                         let size = lineContent.match(patternSize)[1].trim()
                         sbcData.notes.base.size = size
-                        let actorSize = sbcUtils.getKeyByValue(CONFIG.PF1.actorSizes, size)
+                        let actorSize = sbcUtils.getKeyByValue(sbcConfig.const.actorSizes, size)
 
                         // Values derived from Size
                         let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
@@ -352,10 +352,11 @@ export async function parseBase(data, startLine) {
 
                 // Parse Creature Type and Subtype, but only when they are found after a size declaration
                 if (!parsedSubCategories["creatureType"]) {
-                    let patternCreatureType = new RegExp("(?:" + Object.values(CONFIG.PF1.actorSizes).join("\\b|\\b") + ")\\s*(" + Object.values(CONFIG.PF1.creatureTypes).join("\\b.*|\\b") + ")", "i")
+                    let patternCreatureType = new RegExp("(?:" + Object.values(sbcConfig.const.actorSizes).join("\\b|\\b") + ")\\s*(" + Object.values(sbcConfig.const.creatureTypes).join("\\b.*|\\b") + ")", "i")
                     if (patternCreatureType.test(lineContent)) {
                         let creatureType = lineContent.match(patternCreatureType)[1]
                         let parserCreatureType = sbcMapping.map.base.creatureType
+
                         parsedSubCategories["creatureType"] = await parserCreatureType.parse(creatureType, line)
                     }
                 }
@@ -671,6 +672,10 @@ class creatureTypeParser extends sbcParserBase {
 
             let tempCreatureType = sbcParsing.parseSubtext(value)
 
+            // Localization
+            let creatureTypeKey = sbcUtils.getKeyByValue(sbcConfig.const.creatureTypes, tempCreatureType[0])
+            let localizedCreatureType = CONFIG.PF1.creatureTypes[creatureTypeKey]
+
             let creatureType = {
                 "name": tempCreatureType[0],
                 "type": "racial",
@@ -682,6 +687,7 @@ class creatureTypeParser extends sbcParserBase {
             }
 
             let compendium = "pf1.racialhd"
+            // Always search the english compendia for entries, so use the english creatureType instead of the localized one
             let creatureTypeItem = await sbcUtils.findEntityInCompendium(compendium, creatureType, line)
             creatureTypeItem.data.data.useCustomTag = true
             creatureTypeItem.data.data.tag = game.pf1.utils.createTag(creatureType.name)
@@ -696,7 +702,8 @@ class creatureTypeParser extends sbcParserBase {
             }
 
             if (creatureType.subTypes !== "") {
-                creatureTypeItem.data.name = sbcUtils.capitalize(creatureType.name) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")"
+                //creatureTypeItem.data.name = sbcUtils.capitalize(creatureType.name) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")"
+                creatureTypeItem.data.name = sbcUtils.capitalize(localizedCreatureType) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")"
             }
 
             sbcData.notes.creatureType = creatureTypeItem.data.name
@@ -727,7 +734,7 @@ class creatureTypeParser extends sbcParserBase {
                 let camelizedCreatureType = sbcUtils.camelize(creatureType.name)
                 
                 let race = {
-                    "name": "Race: " + sbcUtils.capitalize(creatureType.name),
+                    "name": sbcUtils.capitalize(localizedCreatureType),
                     "type": "race",
                     "creatureType": camelizedCreatureType,
                     "subTypes": subTypesArray,
@@ -2389,8 +2396,22 @@ class attacksParser extends sbcParserBase {
                     }
                     
                     // attackModifier
-                    if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\(*)/) !== null) {
-                        inputAttackModifier = attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]+\(*)/)[1]
+                    if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]*\(*)/) !== null) {
+
+                        // Prefer matches that are not at the start and are followed by a parenthesis
+                        if (attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/) !== null) {
+                            inputAttackModifier = attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/)[1]
+                        } else if (attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/) !== null) {
+                            // Otherwise try to get just an attackModifier, e.g. for attacks without damage
+                            inputAttackModifier = attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/)[1]
+                        } else {
+                            // If nothing is found, fail gracefully
+                            let errorMessage = "Failed to find a useable attack modifier"
+                            let error = new sbcError(1, "Parse/Offense", errorMessage, line)
+                            sbcData.errors.push(error)
+                        }
+                        
+                        
                         attackNotes += inputAttackModifier                        
                     }
                         
@@ -3296,15 +3317,21 @@ export async function parseStatistics(data, startLine) {
             }
 
             // Parse Gear
-            if (!parsedSubCategories["gear"]) {
+            //if (!parsedSubCategories["gear"]) {
                 if (/(Combat Gear|Other Gear|Gear)\b/i.test(lineContent)) {
                     let parserGear = sbcMapping.map.statistics.gear
                     // Combat Gear, Other Gear, Gear
-                    let gear = lineContent.replace(/(Combat Gear|Other Gear|Gear)/g, "").replace(/[,;]+/g,",").trim()
-                    sbcData.notes.statistics.gear = gear
+                    let gear = lineContent.replace(/(Combat Gear|Other Gear|Gear)/g, "").replace(/[,;]+/g,",").replace(/[,;]$/, "").trim()
+
+                    if (!sbcData.notes.statistics.gear) {
+                        sbcData.notes.statistics.gear = gear
+                    } else {
+                        sbcData.notes.statistics.gear += gear
+                    }
+                    
                     parsedSubCategories["gear"] = await parserGear.parse(gear, startLine + line)
                 }
-            }
+            //}
 
         } catch (err) {
             

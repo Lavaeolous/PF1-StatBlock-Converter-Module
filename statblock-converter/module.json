@@ -1,18 +1,32 @@
 {
-    "name": "pf1-statblock-converter",
-    "title": "sbc | PF1 Stackblock Converter",
-    "description": "Convert Pathfinder 1. Edition Statblocks into working NPC or PC Actors",
-    "version": "3.3.3",
-    "author": "Lavaeolous",
-    "systems": ["pf1"],
-    "esmodules": ["./scripts/sbc.js"],
-    "styles": ["./styles/sbc.css"],
-    "templates": ["./templates/sbcModal.html", "./templates/sbcPreview"],
-    "packs": [],
-    "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
-    "bugs": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues",
-    "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.3/module.json",
-    "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.3/3.3.3_statblock-converter.zip",
-    "minimumCoreVersion": "9",
-    "compatibleCoreVersion": "9"
+  "name": "pf1-statblock-converter",
+  "title": "sbc | PF1 Stackblock Converter",
+  "description": "Convert Pathfinder 1. Edition Statblocks into working NPC or PC Actors",
+  "author": "Lavaeolous",
+  "authors": [],
+  "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
+  "bugs": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues",
+  "flags": {},
+  "version": "3.3.4",
+  "minimumCoreVersion": "9",
+  "compatibleCoreVersion": "9",
+  "scripts": [],
+  "esmodules": [
+    "./scripts/sbc.js"
+  ],
+  "styles": [
+    "./styles/sbc.css"
+  ],
+  "languages": [],
+  "packs": [],
+  "system": [
+    "pf1"
+  ],
+  "dependencies": [],
+  "socket": false,
+  "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.4/module.json",
+  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.4/3.3.4_statblock-converter.zip",
+  "protected": false,
+  "coreTranslation": false,
+  "library": false
 }

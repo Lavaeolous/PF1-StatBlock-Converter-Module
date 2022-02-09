@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.3.3",
+    "version": "3.3.4",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -16,6 +16,32 @@ sbcConfig.const = {
     "lineheight": 20,
     "crFractions": { "1/8" : 0.125, "1/6" : 0.1625, "1/4": 0.25, "1/3": 0.3375, "1/2": 0.5 },
     "actorType": { 0 : "npc", 1 : "character" },
+    "actorSizes": {
+        "col": "Colossal",
+        "dim": "Diminutive",
+        "fine": "Fine",
+        "grg": "Gargantuan",
+        "huge": "Huge",
+        "lg": "Large",
+        "med": "Medium",
+        "sm": "Small",
+        "tiny": "Tiny"
+    },
+    "creatureTypes": {
+        "aberratio": "Aberration",
+        "animal": "Animal",
+        "construct": "Construct",
+        "dragon": "Dragon",
+        "fey": "Fey",
+        "humanoid": "Humanoid",
+        "magicalBeast": "Magical Beast",
+        "monstrousHumanoid": "Monstrous Humanoid",
+        "ooze": "Ooze",
+        "outsider": "Outsider",
+        "plant": "Plant",
+        "undead": "Undead",
+        "vermin": "Vermin"
+    },
     "tokenBarAttributes": [
         "attributes.hp",
         "spells.spellbooks.primary.spellPoints",
