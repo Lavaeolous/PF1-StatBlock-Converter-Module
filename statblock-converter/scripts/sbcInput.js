@@ -102,7 +102,7 @@ export class sbcInputDialog extends Application {
             sbcData.input = inputArea.val().trim()
             sbcUtils.resetFlags()
 
-            sbcUtils.resetCharacterData()
+            await sbcUtils.resetCharacterData()
 
             // Check, if there is an input and try to parse that
             if (sbcData.input) {
@@ -162,18 +162,12 @@ export class sbcInputDialog extends Application {
 
                     try {
                         // Create a permanent actor using the data from the temporary one
-                        //let newActor = await Actor.create([sbcData.characterData.actorData.data])
 
-                        let newActor = await Actor.create([sbcData.characterData.actorData.data.toObject(false)])
-                        //await newActor.update({})
-                        //await newActor.update({})
-
+                        let newActor = await Actor.create(sbcData.characterData.actorData.data.toObject())
 
                         // Conversion Validation
-                        await sbcUtils.conversionValidation(newActor[0].id);
-                        
-                        //await newActor.update({})
-        
+                        await sbcUtils.conversionValidation(newActor.id);
+       
                         sbcInputDialog.sbcInputDialogInstance.close()
                         sbcApp.resetSBC()
                     } catch (err) {

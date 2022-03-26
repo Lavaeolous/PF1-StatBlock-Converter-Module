@@ -11,11 +11,11 @@ export class sbcUtils {
 
     static async createTempActor () {
 
-        let tempActor = Actor.create({
+        let tempActor = await Actor.create({
             name: "sbc | Actor Template",
             type: sbcConfig.const.actorType[sbcData.actorType],
             folder: sbcData.customFolderId
-        }, {temporary: true} )
+        }, {temporary: true})
 
         return tempActor
     }
@@ -39,7 +39,7 @@ export class sbcUtils {
         sbcData.parsedCategories = 1
     }
 
-    static resetCharacterData () {
+    static async resetCharacterData () {
 
         sbcData.characterData.items = []
         sbcData.characterData.spells = []
@@ -50,50 +50,68 @@ export class sbcUtils {
         sbcData.characterData.conversionValidation.skills = {}
 
         this.resetCategoryCounter()
-        this.resetTraits()
-        this.resetTokenData()
-        
+        await this.resetTraits()
+        await this.resetTokenData()
     }
 
-    static resetTraits() {
+    static async resetTraits() {
         // Reset traits
-        sbcData.characterData.actorData.data.data.traits.cres = ""
-        sbcData.characterData.actorData.data.data.traits.eres = ""
-        sbcData.characterData.actorData.data.data.traits.senses = ""
-        sbcData.characterData.actorData.data.data.traits.size = ""
-        sbcData.characterData.actorData.data.data.traits.stature = ""
-        sbcData.characterData.actorData.data.data.traits.dr = ""
-        sbcData.characterData.actorData.data.data.traits.regen = ""
-        sbcData.characterData.actorData.data.data.traits.fastHealing = ""
-        sbcData.characterData.actorData.data.data.traits.ci.custom = ""
-        sbcData.characterData.actorData.data.data.traits.ci.value = []
-        sbcData.characterData.actorData.data.data.traits.di.custom = ""
-        sbcData.characterData.actorData.data.data.traits.di.value = []
-        sbcData.characterData.actorData.data.data.traits.dv.custom = ""
-        sbcData.characterData.actorData.data.data.traits.dv.value = []
-        sbcData.characterData.actorData.data.data.traits.languages.custom = ""
-        sbcData.characterData.actorData.data.data.traits.languages.value = []
+        return sbcData.characterData.actorData.data.update({
+            data: {
+                traits: {
+                    cres: "",
+                    eres: "",
+                    eres: "",
+                    senses: "",
+                    size: "",
+                    stature: "",
+                    dr: "",
+                    regen: "",
+                    fastHealing: "",
+                    ci: {
+                        custom: "",
+                        value:[],
+                    },
+                    di: {
+                        custom: "",
+                        value:[],
+                    },
+                    dv: {
+                        custom: "",
+                        value:[],
+                    },
+                    languages: {
+                        custom: "",
+                        value:[],
+                    }
+                }
+            }
+        });
     }
 
-    static resetTokenData () {
-        sbcData.characterData.actorData.data.token.displayName = sbcConfig.options.tokenSettings.displayName
-        sbcData.characterData.actorData.data.token.vision = sbcConfig.options.tokenSettings.vision
-        sbcData.characterData.actorData.data.token.disposition = sbcConfig.options.tokenSettings.disposition
-        sbcData.characterData.actorData.data.token.displayBars = sbcConfig.options.tokenSettings.displayBars
-        sbcData.characterData.actorData.data.token.bar1 = sbcConfig.options.tokenSettings.bar1
-        sbcData.characterData.actorData.data.token.bar2 = sbcConfig.options.tokenSettings.bar2
-        sbcData.characterData.actorData.data.token.brightSight = 0
+    static async resetTokenData () {
+    	return sbcData.characterData.actorData.data.update({
+            token: {
+                displayName: sbcConfig.options.tokenSettings.displayName,
+                vision: sbcConfig.options.tokenSettings.vision,
+                disposition: sbcConfig.options.tokenSettings.disposition,
+                displayBars: sbcConfig.options.tokenSettings.displayBars,
+                bar1: sbcConfig.options.tokenSettings.bar1,
+                bar2: sbcConfig.options.tokenSettings.bar2,
+                brightSight: 0
+            }
+        })
     }
 
     static resetFlags () {
         sbcConfig.options.flags = {
-            "noStr": false,
-            "noDex": false,
-            "noCon": false,
-            "noInt": false,
-            "noWis": false,
-            "noCha": false,
-            "isUndead": false
+            noStr: false,
+            noDex: false,
+            noCon: false,
+            noInt: false,
+            noWis: false,
+            noCha: false,
+            isUndead: false
         }
     }
 
@@ -347,37 +365,36 @@ export class sbcUtils {
         }
 
         // Return the searchResult, which either is the found entity or an empty object
-        return foundEntity
-        
+    return foundEntity;
     }
 
     static async generatePlaceholderEntity (input, line = -1) {
         // If the input is NOT found in any of the given compendiums, create a placeholder
 
         let entityData = {
-            "name": input.name ? input.name : "undefined",
-            "type": input.type ? input.type : null,
+            name: input.name ? input.name : "undefined",
+            type: input.type ? input.type : null,
             
             // Creature-related
-            "creatureType": input.creatureType ? input.creatureType : null,
-            "subTypes": input.subTypes ? input.subTypes : null,
-            "img": input.img ? input.img : "systems/pf1/icons/skills/yellow_36.jpg",
+            creatureType: input.creatureType ? input.creatureType : null,
+            subTypes: input.subTypes ? input.subTypes : null,
+            img: input.img ? input.img : "systems/pf1/icons/skills/yellow_36.jpg",
             
             // Gear-related
-            "subtext": input.subtext ? input.subtext : null,
-            "currency": input.currency ? input.currency : null,
-            "enhancement": input.enhancement ? input.enhancement : null,
-            "mwk": input.mwk ? input.mwk : null,
+            subtext: input.subtext ? input.subtext : null,
+            currency: input.currency ? input.currency : null,
+            enhancement: input.enhancement ? input.enhancement : null,
+            mwk: input.mwk ? input.mwk : null,
             
             // Class-related
-            "wizardClass": input.wizardClass ? input.wizardClass : null,
-            "suffix": input.suffix ? input.suffix : null,
-            "archetype": input.archetype ? input.archetype : null,
-            "level": input.level ? input.level : null,
+            wizardClass: input.wizardClass ? input.wizardClass : null,
+            suffix: input.suffix ? input.suffix : null,
+            archetype: input.archetype ? input.archetype : null,
+            level: input.level ? input.level : null,
 
             // Ability-related
-            "specialAbilityType": input.specialAbilityType ? input.specialAbilityType : null,
-            "desc": input.desc ? input.desc : "sbc | Placeholder"
+            specialAbilityType: input.specialAbilityType ? input.specialAbilityType : null,
+            desc: input.desc ? input.desc : "sbc | Placeholder"
 
             // Spell-related
             // WIP
@@ -388,135 +405,131 @@ export class sbcUtils {
 
         switch (input.type) {
             case "container":
-                entity = new Item({
-                    "name": "Money Pouch: " + sbcUtils.capitalize(entityData.name),
-                    "type": "container",
-                    "data": {
-                        "description": {
-                            "value": "sbc | All currency carried was put into this container."
+                entity = await Item.create({
+                    name: "Money Pouch: " + sbcUtils.capitalize(entityData.name),
+                    type: "container",
+                    data: {
+                        description: {
+                            value: "sbc | All currency carried was put into this container."
                         },
-                        "currency": {
-                            "pp": entityData.currency.pp,
-                            "gp": entityData.currency.gp,
-                            "sp": entityData.currency.sp,
-                            "cp": entityData.currency.cp
+                        currency: {
+                            pp: entityData.currency.pp,
+                            gp: entityData.currency.gp,
+                            sp: entityData.currency.sp,
+                            cp: entityData.currency.cp
                         }
                     },
-                    "img": "systems/pf1/icons/items/inventory/pouch-sealed.jpg"
-                })
+                    img: "systems/pf1/icons/items/inventory/pouch-sealed.jpg"
+                }, {temporary:true})
                 break
             case "feats":
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": "feat",
-                    "data": {
-                        "description": {
-                            "value": "sbc | As " + entityData.name + " could not be found in any compendium, a placeholder was generated."
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: "feat",
+                    data: {
+                        description: {
+                            value: "sbc | As " + entityData.name + " could not be found in any compendium, a placeholder was generated."
                         },
                         
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
             case "race":
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": "race",
-                    "data": {
-                        "description": {
-                            "value": "sbc | As no playable race was found a placeholder was generated."
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: "race",
+                    data: {
+                        description: {
+                            value: "sbc | As no playable race was found a placeholder was generated."
                         },
-                        "creatureType": entityData.creatureType,
-                        "subTypes": entityData.subTypes
+                        creatureType: entityData.creatureType,
+                        subTypes: entityData.subTypes
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
             case "misc":
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": "feat",
-                    "data": {
-                        "description": {
-                            "value": entityData.desc
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: "feat",
+                    data: {
+                        description: {
+                            value: entityData.desc
                         },
-                        "featType": "misc"
+                        featType: "misc"
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
             case "attack":
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": "attack",
-                    "data": {
-                        "description": {
-                            "value": entityData.desc
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: "attack",
+                    data: {
+                        description: {
+                            value: entityData.desc
                         },
-                        "attackType": "misc"
+                        attackType: "misc"
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
             case "classFeat":
             case "class-abilities":
                 if (entityData.specialAbilityType !== null) {
-                    entity = new Item({
-                        "name": sbcUtils.capitalize(entityData.name),
-                        "abilityType": sbcUtils.capitalize(CONFIG['PF1'].abilityTypes[entityData.specialAbilityType].long),
-                        "abilityTypeShort": sbcUtils.capitalize(entityData.specialAbilityType),
-                        "type": "feat",
-                        "data": {
-                            "abilityType": entityData.specialAbilityType,
-                            "description": {
-                                "value": entityData.desc
+                    entity = await Item.create({
+                        name: sbcUtils.capitalize(entityData.name),
+                        type: "feat",
+                        data: {
+                            abilityType: entityData.specialAbilityType,
+                            description: {
+                                value: entityData.desc
                             },
-                            "featType": "classFeat"
+                            featType: "classFeat"
                         },
-                        "img": entityData.img
-                    })
+                        img: entityData.img
+                    }, {temporary:true})
                 } else {
-                    entity = new Item({
-                        "name": sbcUtils.capitalize(entityData.name),
-                        "abilityType": "",
-                        "abilityTypeShort": "",
-                        "type": "feat",
-                        "data": {
-                            "abilityType": "",
-                            "description": {
-                                "value": entityData.desc
+                    entity = await Item.create({
+                        name: sbcUtils.capitalize(entityData.name),
+                        type: "feat",
+                        data: {
+                            abilityType: "",
+                            description: {
+                                value: entityData.desc
                             },
-                            "featType": "classFeat"
+                            featType: "classFeat"
                         },
-                        "img": entityData.img
-                    })
+                        img: entityData.img
+                    }, {temporary:true})
                 }
                 break
             case "domains":
             case "mysteries":
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": "feat",
-                    "data": {
-                        "description": {
-                            "value": "sbc | As there is no dedicated field for " + entityData.type + ", this placeholder was created."
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: "feat",
+                    data: {
+                        description: {
+                            value: "sbc | As there is no dedicated field for " + entityData.type + ", this placeholder was created."
                         },
-                        "featType": "classFeat"
+                        featType: "classFeat"
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
             default:
-                entity = new Item({
-                    "name": sbcUtils.capitalize(entityData.name),
-                    "type": entityData.type,
-                    "data": {
-                        "description": {
-                            "value": "sbc | As " + entityData.name + " could not be found in any compendium, a placeholder was generated."
+                entity = await Item.create({
+                    name: sbcUtils.capitalize(entityData.name),
+                    type: entityData.type,
+                    data: {
+                        description: {
+                            value: "sbc | As " + entityData.name + " could not be found in any compendium, a placeholder was generated."
                         }
                     },
-                    "img": entityData.img
-                })
+                    img: entityData.img
+                }, {temporary:true})
                 break
         }
 
@@ -529,7 +542,7 @@ export class sbcUtils {
 
     static async conversionValidation(actorID) {
         sbcConfig.options.debug && console.groupCollapsed("sbc-pf1 | Conversion Validation")
-
+        
         try {
 
             const actor = await game.actors.get(actorID)
@@ -556,20 +569,12 @@ export class sbcUtils {
                 let differenceInConcentrationBonus = +concentrationBonusToValidate - +casterLevelToValidate + +spellCastingAbilityModifier
 
                 if (differenceInCasterLevel !== 0) {
-                    await actor.update({
-                        "data": {
-                            "attributes": {
-                                "spells": {
-                                    "spellbooks": {
-                                        [spellBookToValidate]: {
-                                            "cl": {
-                                                "formula": differenceInCasterLevel.toString()
-                                            },
-                                            "concentrationFormula": differenceInConcentrationBonus.toString()
-                                        }
-                                    }
-                                }
-                            }
+                    await actor.data.update({
+                        [`data.attributes.spells.spellbooks.${spellBookToValidate}`]: {
+                            cl: {
+                                formula: differenceInCasterLevel.toString()
+                            },
+                            concentrationFormula: differenceInConcentrationBonus.toString()
                         }
                     })
                 }
@@ -622,7 +627,7 @@ export class sbcUtils {
                         // If the item had changes relevant to the current attribute,
                         // add these to valueInItems
                         if (currentItemChange !== undefined) {
-                            valueInItems += +currentItemChange.formula                            
+                            valueInItems += +currentItemChange.formula
                         }
 
                     }
@@ -671,16 +676,6 @@ export class sbcUtils {
                         
                         difference = +totalInStatblock - +totalInActor
 
-                        await actor.update({
-                            "data": {
-                                "attributes": {
-                                    "hp": {
-                                        "value": +actor.data.data.attributes.hp.value - +difference
-                                    }
-                                }
-                            }
-                        })
-                        
                         break
                     case "acnormal":
                         totalInActor = actor.data.data.attributes.ac.normal.total
@@ -724,7 +719,7 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "savingThrows"
                         subTarget = attribute
-                        totalInActor = actor.data.data.attributes.savingThrows[attribute].total
+                        totalInActor = actor.data.data.attributes.savingThrows[attribute].total ?? 0
                         difference = +totalInStatblock - +totalInActor
                         break
                     default:
@@ -735,14 +730,14 @@ export class sbcUtils {
                 if (difference !== 0) {
 
                     let attributeChange = {
-                        "formula": difference.toString(),
-                        "modifier": modifier,
-                        "operator": "add",
-                        "priority": 0,
-                        "subTarget": subTarget,
-                        "target": target,
-                        "value": +difference,
-                        "id": randomID(8)
+                        formula: difference.toString(),
+                        modifier: modifier,
+                        operator: "add",
+                        priority: 0,
+                        subTarget: subTarget,
+                        target: target,
+                        value: +difference,
+                        id: randomID(8)
                     }
 
                     changes.push(attributeChange)
@@ -759,9 +754,9 @@ export class sbcUtils {
 
                 if (contextNoteToAdd !== "") {
                     let contextNote = {
-                        "subTarget": contextNoteType,
-                        "target": "misc",
-                        "text": contextNoteToAdd
+                        subTarget: contextNoteType,
+                        target: "misc",
+                        text: contextNoteToAdd
                     }
                     contextNotes.push(contextNote)
                 }
@@ -772,7 +767,7 @@ export class sbcUtils {
             // (1) Create skillContext Objects to add to the Buff
             // (2) Adjust for differences between calculated skillTotals and statblockTotals
             let skillKeys = Object.keys(conversionValidation.skills)
-
+            
             for (let i=0; i<skillKeys.length; i++) {
 
                 let skillKey = skillKeys[i]
@@ -786,10 +781,11 @@ export class sbcUtils {
                 let subTarget = ""
 
                 if (!skillSubKeys.includes("subSkills")) {
-                    skillModInActor = await actor.data.data.skills[skillKey].mod
+                    const skInfo = actor.getSkillInfo(skillKey);
+                    skillModInActor = skInfo.mod ?? 0
                     subTarget = "skill." + skillKey
                 } else {
-                    skillModInActor = await actor.data.data.skills[parentSkillKey].subSkills[skillKey].mod
+                    skillModInActor = actor.data.data.skills[parentSkillKey].subSkills[skillKey].mod
                     subTarget = "skill." + parentSkillKey + ".subSkills." + skillKey
 
                 }
@@ -798,9 +794,9 @@ export class sbcUtils {
                 if (skillToValidate.context !== "") {
                     let contextNote = skillToValidate.context
                     let skillContext = {
-                        "subTarget": subTarget,
-                        "target": "skill",
-                        "text": contextNote
+                        subTarget: subTarget,
+                        target: "skill",
+                        text: contextNote
                     }
                     contextNotes.push(skillContext)
                 }
@@ -811,14 +807,14 @@ export class sbcUtils {
                     
                     if (difference !== 0) {
                         let skillChange = {
-                            "formula": difference.toString(),
-                            "modifier": "untypedPerm",
-                            "operator": "add",
-                            "priority": 0,
-                            "subTarget": subTarget,
-                            "target": "skill",
-                            "value": +difference,
-                            "id": randomID(8)
+                            formula: difference.toString(),
+                            modifier: "untypedPerm",
+                            operator: "add",
+                            priority: 0,
+                            subTarget: subTarget,
+                            target: "skill",
+                            value: +difference,
+                            id: randomID(8)
                         }
                         changes.push(skillChange)
                     }
@@ -867,45 +863,31 @@ export class sbcUtils {
             }, { temporary : true })
             */
 
-            let conversionBuffItem = new Item({
-                "name": "sbc | Conversion Buff",
-                "type": "buff",
-                "data": {
-                    "description": {
-                        "value": `<h2>sbc | Conversion Buff</h2>
+            let conversionBuffItem = await Item.create({
+                name: "sbc | Conversion Buff",
+                type: "buff",
+                data: {
+                    description: {
+                        value: `<h2>sbc | Conversion Buff</h2>
                         This Buff was created by <strong>sbc</strong> to compensate for differences between the input and the values FoundryVTT calculates automatically.
                         <br><br>
                         Especially when the pathfinder system gets upgraded, entries in compendiums get updated or foundry changes in some way, this buff may become outdated.
                         <br><br>
                         For most mooks the conversion should more or less work, but for important NPCs or creatures it is adviced to double check the conversion manually.`
                     },
-                    "active": true,
-                    "buffType": "perm",
-                    "changeFlags": {
-                        "heavyArmorFullSpeed": false,
-                        "loseDexToAC": false,
-                        "mediumArmorFullSpeed": false,
-                        "noDex": false,
-                        "noEncumbrance": false,
-                        "noStr": false,
-                        "oneCha": false,
-                        "oneInt": false,
-                        "oneWis": false
-                    },
-                    "changes": changes,
-                    "contextNotes": contextNotes,
-                    "hideFromToken": true,
-                    "level": 0,
-                    "links": {children: Array(0)},
-                    "tag": "sbcConversionBuff",
-                    "tags": [],
-                    "useCustomTag": true,
-                    "uses": {value: 0, max: 0}
+                    active: true,
+                    buffType: "perm",
+                    changes: changes,
+                    contextNotes: contextNotes,
+                    hideFromToken: true,
+                    level: 0,
+                    tag: "sbcConversionBuff",
+                    useCustomTag: true,
                 },
-                "img": "systems/pf1/icons/skills/yellow_36.jpg"
-            })
+                img: "systems/pf1/icons/skills/yellow_36.jpg"
+            }, { temporary: true });
 
-            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject(false)]);
+            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject()]);
             
             Hooks.callAll("sbc.validated", actor);
             
