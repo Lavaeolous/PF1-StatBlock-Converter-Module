@@ -31,7 +31,7 @@ export class sbcApp {
     /* Reset and re-initialize sbc          */
     /* ------------------------------------ */
 
-    static async resetSBC() {
+    static async resetSBC(reinit=true) {
         sbcConfig.options.debug && sbcUtils.log("Reset");
 
         // Reset data
@@ -50,7 +50,7 @@ export class sbcApp {
         sbcUtils.resetFlags();
 
         // Initialize sbc again
-        await this.initializeSBC();
+        if (reinit) await this.initializeSBC();
         
     }
 
@@ -161,12 +161,5 @@ Hooks.on("renderActorDirectory", (app, html, data) => {
 
 // When the inputDialog gets closed, reset sbc
 Hooks.on("closesbcInputDialog", (app, html, data) => {
-    sbcApp.resetSBC()
+    sbcApp.resetSBC(false)
 })
-
-
-
-
-
-
-
