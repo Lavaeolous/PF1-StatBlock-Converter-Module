@@ -1908,6 +1908,10 @@ export async function parseOffense(data, startLine) {
                     parsedSubCategories["specialAttacks"] = await parserSpecialAttacks.parse(specialAttacks, line+startLine)
                 }
             }
+
+            // Spellcasting support functions
+            const getConcentrationBonus = (line) => line.match(/\b(Concentration\b|Conc\.)\s*\+(?<bonus>\d+)/i)?.groups.bonus;
+
                     
             // Parse Spell-Like Abilities
             if (!parsedSubCategories["spellLikeAbilities"]) {
@@ -1930,15 +1934,12 @@ export async function parseOffense(data, startLine) {
 
                     // Set casterLevel and concentrationBonus
                     let casterLevel = 0
-                    let concentrationBonus = 0
 
                     if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
                         casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
                     }
 
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
-                    }
+                    let concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
 
                     // Push the line into the array holding the raw data for Spell-Like Abilities
                     rawSpellBooks[spellBooksFound] = {
@@ -1993,16 +1994,12 @@ export async function parseOffense(data, startLine) {
                     sbcData.notes.offense.hasSpellcasting = true
 
                     let casterLevel = 0
-                    let concentrationBonus = 0
 
                     if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
                         casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
                     }
+                    const concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
 
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
-                    }
-                    
                     // Push the line into the array holding the raw data for Spell-Like Abilities
                     rawSpellBooks[spellBooksFound] = {
                         "firstLine": lineContent,
@@ -2043,7 +2040,7 @@ export async function parseOffense(data, startLine) {
 
                     let spellCastingType = "spontaneous"
                     let casterLevel = 0
-                    let concentrationBonus = 0
+                    let concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
                     let spellCastingClass = "hd"
                     let isAlchemist = false
 
@@ -2057,10 +2054,6 @@ export async function parseOffense(data, startLine) {
 
                     if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
                         casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
-                    }
-
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
                     }
 
                     let patternSupportedClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + ")", "gi")
