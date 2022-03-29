@@ -551,10 +551,12 @@ export class sbcUtils {
 
                 let spellCastingAbility = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].ability
                 let spellCastingAbilityModifier = actor.data.data.abilities[spellCastingAbility].mod
+                
+                const concentrationBonusOnActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].concentration.total;
 
                 let differenceInCasterLevel = +casterLevelToValidate - +casterLevelInActor
-                let differenceInConcentrationBonus = +concentrationBonusToValidate - +casterLevelToValidate + +spellCastingAbilityModifier
-
+                let differenceInConcentrationBonus = +concentrationBonusToValidate - concentrationBonusOnActor
+                
                 if (differenceInCasterLevel !== 0) {
                     await actor.update({
                         "data": {
