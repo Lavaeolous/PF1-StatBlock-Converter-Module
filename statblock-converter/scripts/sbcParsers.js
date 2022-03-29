@@ -3209,11 +3209,7 @@ export async function parseStatistics(data, startLine) {
                     let parserCmb = sbcMapping.map.statistics.cmb
                     let cmbRaw = lineContent.match(/(?:CMB\b)(.*)(?=\bCMD)/i)[1].trim()
 
-                    let cmb = 0
-
-                    if (cmbRaw.match(/(\d+)/) !== null) {
-                        cmb = cmbRaw.match(/([\+\-]?\d+)/)[0]
-                    }
+                    let cmb = cmbRaw.match(/([+-]?\d+)/)?.[0] ?? 0;
 
                     let cmbContext = sbcUtils.parseSubtext(cmbRaw)[1]
 
