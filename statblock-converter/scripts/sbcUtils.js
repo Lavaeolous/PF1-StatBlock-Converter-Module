@@ -556,6 +556,7 @@ export class sbcUtils {
 
             // Validate the spellBooks
             let spellBooksToValidate = Object.keys(conversionValidation.spellBooks)
+            const bookUpdates = {};
             for (let i=0; i<spellBooksToValidate.length; i++) {
                 let spellBookToValidate = spellBooksToValidate[i]
                 let casterLevelToValidate = conversionValidation.spellBooks[spellBookToValidate].casterLevel
@@ -569,16 +570,17 @@ export class sbcUtils {
                 let differenceInConcentrationBonus = +concentrationBonusToValidate - +casterLevelToValidate + +spellCastingAbilityModifier
 
                 if (differenceInCasterLevel !== 0) {
-                    await actor.data.update({
-                        [`data.attributes.spells.spellbooks.${spellBookToValidate}`]: {
-                            cl: {
-                                formula: differenceInCasterLevel.toString()
-                            },
-                            concentrationFormula: differenceInConcentrationBonus.toString()
-                        }
-                    })
+                    bookUpdates[`data.attributes.spells.spellbooks.${spellBookToValidate}`] = {
+                        cl: {
+                            formula: differenceInCasterLevel.toString()
+                        },
+                        concentrationFormula: differenceInConcentrationBonus.toString()
+                    }
                 }
+            }
 
+            if (!isObjectEmpty(bookUpdates)) {
+                await actor.update(bookUpdates);
             }
 
             // Get an array of all attributes that need to be validated
