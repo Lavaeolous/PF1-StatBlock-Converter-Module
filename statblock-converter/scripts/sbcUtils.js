@@ -90,7 +90,7 @@ export class sbcUtils {
     }
 
     static async resetTokenData () {
-    	return sbcData.characterData.actorData.data.update({
+        return sbcData.characterData.actorData.data.update({
             token: {
                 displayName: sbcConfig.options.tokenSettings.displayName,
                 vision: sbcConfig.options.tokenSettings.vision,
@@ -549,7 +549,7 @@ export class sbcUtils {
 
             const conversionValidation = sbcData.characterData.conversionValidation
 
-            let changes = []
+            const stage1changes = [], stage2changes = []
             let contextNotes = []
 
             let valueInAcTypes = 0
@@ -583,9 +583,60 @@ export class sbcUtils {
                 await actor.update(bookUpdates);
             }
 
+            // Validate ability scores first as they can have cascading effects
+            const abilityScoreKeys = ["str", "dex", "con", "int", "wis", "cha"];
+            for (let abl of abilityScoreKeys) {
+                const totalInActor = actor.data.data.abilities[abl].total
+                let totalInStatblock = conversionValidation.attributes[abl.capitalize()]
+                const difference = +totalInStatblock - +totalInActor
+                if (difference === 0) continue;
+                console.log(abl, { actor: totalInActor, statblock: totalInStatblock, difference });
+                console.log(conversionValidation.attributes);
+
+                if (difference !== 0) {
+
+                    let attributeChange = {
+                        formula: difference.toString(),
+                        modifier: "untypedPerm",
+                        operator: "add",
+                        priority: 0,
+                        subTarget: abl,
+                        target: "ability",
+                        value: +difference,
+                        id: randomID(8)
+                    }
+
+                    stage1changes.push(attributeChange)
+                }
+            }
+
+            // Stage 1 conversion buff to allow ability score cascading effects to not interfere with other corrections
+            // This might be better off as direct modification to the actor, however.
+            if (stage1changes.length) {
+                let conversionBuffItem1 = {
+                    name: "sbc | Conversion Buff (Setup)",
+                    type: "buff",
+                    data: {
+                        description: {
+                            value: `<h2>sbc | Conversion Buff</h2>
+                            See the final buff for full details.`
+                        },
+                        active: true,
+                        buffType: "perm",
+                        changes: stage1changes,
+                        hideFromToken: true,
+                        level: 0,
+                        tag: "sbcConversionBuff1",
+                        useCustomTag: true,
+                    },
+                    img: "systems/pf1/icons/skills/yellow_36.jpg"
+                };
+
+                await actor.createEmbeddedDocuments("Item", [conversionBuffItem1]);
+            }
+
             // Get an array of all attributes that need to be validated
-            let attributesToValidate = Object.keys(conversionValidation.attributes)
-            
+            let attributesToValidate = Object.keys(conversionValidation.attributes);
             // And push "acNormal", "acTouch" and "acFlatFooted" to the end of that array so it gets validated after the acTypes
             attributesToValidate.splice(attributesToValidate.indexOf("acNormal"),1)
             attributesToValidate.splice(attributesToValidate.indexOf("acTouch"),1)
@@ -644,13 +695,7 @@ export class sbcUtils {
                     case "int":
                     case "wis":
                     case "cha":
-                        totalInActor = actor.data.data.abilities[attribute.toLowerCase()].total
-                        if (totalInActor !== totalInStatblock) {
-                            difference = +totalInStatblock - +totalInActor
-                        }
-                        modifier = "untypedPerm"
-                        target = "ability"
-                        subTarget = attribute.toLowerCase()
+                        // Ignore here
                         break
                     case "cmd":
                     case "cmb":
@@ -742,7 +787,7 @@ export class sbcUtils {
                         id: randomID(8)
                     }
 
-                    changes.push(attributeChange)
+                    stage2changes.push(attributeChange)
                 }
 
             }
@@ -806,6 +851,7 @@ export class sbcUtils {
                 // (2) Adjust for differences between calculated skillTotals and statblockTotals
                 if (+skillToValidate.total !== +skillModInActor) {
                     let difference = +skillToValidate.total - +skillModInActor
+                    console.log(subTarget, skillToValidate.total, "-", skillModInActor, "=", difference);
                     
                     if (difference !== 0) {
                         let skillChange = {
@@ -818,7 +864,7 @@ export class sbcUtils {
                             value: +difference,
                             id: randomID(8)
                         }
-                        changes.push(skillChange)
+                        stage2changes.push(skillChange)
                     }
                     
                 }
@@ -865,8 +911,8 @@ export class sbcUtils {
             }, { temporary : true })
             */
 
-            let conversionBuffItem = await Item.create({
-                name: "sbc | Conversion Buff",
+            let conversionBuffItem2 = {
+                name: "sbc | Conversion Buff (Final)",
                 type: "buff",
                 data: {
                     description: {
@@ -879,17 +925,17 @@ export class sbcUtils {
                     },
                     active: true,
                     buffType: "perm",
-                    changes: changes,
+                    changes: stage2changes,
                     contextNotes: contextNotes,
                     hideFromToken: true,
                     level: 0,
-                    tag: "sbcConversionBuff",
+                    tag: "sbcConversionBuff2",
                     useCustomTag: true,
                 },
                 img: "systems/pf1/icons/skills/yellow_36.jpg"
-            }, { temporary: true });
+            };
 
-            await actor.createEmbeddedDocuments("Item", [conversionBuffItem.data.toObject()]);
+            await actor.createEmbeddedDocuments("Item", [conversionBuffItem2]);
             
             Hooks.callAll("sbc.validated", actor);
             
