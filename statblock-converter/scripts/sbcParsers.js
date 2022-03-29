@@ -4008,8 +4008,9 @@ class gearParser extends sbcParserBase {
                     let charges = gearSubtext?.match(/\d+/)?.[0] ?? (/wand/i.test(consumableType) ? 50 : 1);
                     
                     entity = await sbcUtils.findEntityInCompendium(spellCompendium, {name: spellName});
-                    if (entity) {
-                        entity = await game.pf1.documents.ItemPF.toConsumable(entity.toObject(), consumableType).toObject();
+					if (entity) {
+						const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
+                        entity = consumable.toObject();
                         if (consumableType == "wand")
                             entity.data.uses.value = parseInt(charges);
                         else
