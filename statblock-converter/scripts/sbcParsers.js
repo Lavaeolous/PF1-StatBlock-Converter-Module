@@ -4008,15 +4008,15 @@ class gearParser extends sbcParserBase {
                     let charges = gearSubtext?.match(/\d+/)?.[0] ?? (/wand/i.test(consumableType) ? 50 : 1);
                     
                     entity = await sbcUtils.findEntityInCompendium(spellCompendium, {name: spellName});
-					if (entity) {
-						const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
-                        entity = consumable.toObject();
+                    if (entity) {
+                        const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
                         if (consumableType == "wand")
-                            entity.data.uses.value = parseInt(charges);
+                            consumable.update({ "data.uses.value": parseInt(charges) });
                         else
-                            entity.data.quantity = parseInt(charges);
-                        gear.rawName = entity.name;
-                        entity = await Item.create(entity, {temporary: true});
+                            consumable.update({ "data.quantity": parseInt(charges) });
+                        gear.rawName = consumable.name;
+                        // Following is somewhat redundant re-creation
+                        entity = await Item.create(consumable.toObject(), {temporary: true});
                     }
                 } else {
                     // WIP
