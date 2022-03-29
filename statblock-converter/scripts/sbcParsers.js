@@ -3231,12 +3231,8 @@ export async function parseStatistics(data, startLine) {
                     let cmdRaw = lineContent.match(/(?:CMD\b)(.*)/i)[1].trim()
 
                     // Check if CMD is "-"
-                    let cmd = 0
+                    let cmd = cmdRaw.match(/(\d+)/)?.[0] ?? 0;
 
-                    if (cmdRaw.match(/(\d+)/) !== null) {
-                        cmd = cmdRaw.match(/(\d+)/)[0]
-                    }
-                    
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
                     sbcData.characterData.actorData.data.data.attributes.cmdNotes = cmdContext
