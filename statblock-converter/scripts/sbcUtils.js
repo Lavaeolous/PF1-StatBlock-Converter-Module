@@ -785,9 +785,9 @@ export class sbcUtils {
                     skillModInActor = skInfo.mod ?? 0
                     subTarget = "skill." + skillKey
                 } else {
-                    skillModInActor = actor.data.data.skills[parentSkillKey].subSkills[skillKey].mod
+                    const subSkillInfo = actor.getSkillInfo(`${parentSkillKey}.subSkills.${skillKey}`);
+                    skillModInActor = subSkillInfo.mod ?? 0
                     subTarget = "skill." + parentSkillKey + ".subSkills." + skillKey
-
                 }
 
                 // (1) Create skillContext Objects to add to the Buff
