@@ -3,11 +3,22 @@
   "title": "sbc | PF1 Stackblock Converter",
   "description": "Convert Pathfinder 1. Edition Statblocks into working NPC or PC Actors",
   "author": "Lavaeolous",
-  "authors": [],
+  "authors": [
+    {
+      "name": "Lavaeolous"
+    },
+    {
+      "name": "Noon"
+    },
+    {
+      "name": "mkahvi"
+    }
+  ],
+  
   "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
   "bugs": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues",
   "flags": {},
-  "version": "3.3.4",
+  "version": "3.3.5",
   "minimumCoreVersion": "9",
   "compatibleCoreVersion": "9",
   "scripts": [],
