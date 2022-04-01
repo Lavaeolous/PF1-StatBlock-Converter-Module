@@ -35,7 +35,7 @@ export class sbcParser {
             .replace(/⅙/gm, "1/6")
             .replace(/⅛/gm, "1/8")
             // Remove Source Superscript (e.g. ^APG, ^UE)
-            .replace(/(APG\b|ACG\b|UE\b|UM\b|HA\b|OA\b|ISWG\b|B\b)/gm, "")
+            .replace(/(APG\b|ACG\b|UE\b|UM\b|HA\b|OA\b|ISWG\b|[^CM]B\b)/gm, "")
             // Replace common Skill shorthands and misswordings
             .replace(/\bEnter Choice\b/igm, "any one")
             .replace(/Arcane/igm, "Arcana")

@@ -1929,6 +1929,11 @@ export async function parseOffense(data, startLine) {
                     parsedSubCategories["specialAttacks"] = await parserSpecialAttacks.parse(specialAttacks, line+startLine)
                 }
             }
+
+            // Spellcasting support functions
+            const getCasterLevel = (line) => line.match(/\bCL\b\s*(?<cl>\d+)/i)?.groups.cl;
+            const getConcentrationBonus = (line) => line.match(/\b(Concentration\b|Conc\.)\s*\+(?<bonus>\d+)/i)?.groups.bonus;
+
                     
             // Parse Spell-Like Abilities
             if (!parsedSubCategories["spellLikeAbilities"]) {
@@ -1950,16 +1955,8 @@ export async function parseOffense(data, startLine) {
                     startIndexOfSpellLikeAbilities = line
 
                     // Set casterLevel and concentrationBonus
-                    let casterLevel = 0
-                    let concentrationBonus = 0
-
-                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
-                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
-                    }
-
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
-                    }
+                    let casterLevel = casterLevel = getCasterLevel(lineContent) ?? 0;
+                    let concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
 
                     // Push the line into the array holding the raw data for Spell-Like Abilities
                     rawSpellBooks[spellBooksFound] = {
@@ -2013,17 +2010,9 @@ export async function parseOffense(data, startLine) {
 
                     sbcData.notes.offense.hasSpellcasting = true
 
-                    let casterLevel = 0
-                    let concentrationBonus = 0
+                    const casterLevel = getCasterLevel(lineContent) ?? 0;
+                    const concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
 
-                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
-                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
-                    }
-
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
-                    }
-                    
                     // Push the line into the array holding the raw data for Spell-Like Abilities
                     rawSpellBooks[spellBooksFound] = {
                         firstLine: lineContent,
@@ -2063,41 +2052,22 @@ export async function parseOffense(data, startLine) {
                     // Set spellCastingClass (hd is default)
 
                     let spellCastingType = "spontaneous"
-                    let casterLevel = 0
-                    let concentrationBonus = 0
+                    let casterLevel = getCasterLevel(lineContent) ?? 0;
+                    let concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
                     let spellCastingClass = "hd"
-                    let isAlchemist = false
+                    let isAlchemist = /Extracts/i.test(lineContent);
 
-                    if (lineContent.match(/Extracts/i) !== null) {
-                        isAlchemist = true
-                    }
-
-                    if (lineContent.match(/prepared/i) !== null) {
+                    if (/prepared/i.test(lineContent)) {
                         spellCastingType = "prepared"
-                    }
-
-                    if (lineContent.match(/\bCL\b\s*(\d+)/i) !== null) {
-                        casterLevel = lineContent.match(/\bCL\b\s*(\d+)/i)[1]
-                    }
-
-                    if (lineContent.match(/\bConcentration\b\s*\+(\d+)/i) !== null) {
-                        concentrationBonus = lineContent.match(/\bConcentration\b\s*\+(\d+)/i)[1]
                     }
 
                     let patternSupportedClasses = new RegExp("(" + sbcConfig.classes.join("\\b|\\b") + ")", "gi")
                     let patternPrestigeClasses = new RegExp("(" + sbcConfig.prestigeClassNames.join("\\b|\\b") + ")(.*)", "gi")
                     let patternWizardClasses = new RegExp("(" + sbcContent.wizardSchoolClasses.join("\\b|\\b") + ")(.*)", "gi")
 
-                    if (lineContent.match(patternSupportedClasses) !== null) {
-                        spellCastingClass = lineContent.match(patternSupportedClasses)[0]
-                    }
-
-                    if (lineContent.match(patternPrestigeClasses) !== null) {
-                        spellCastingClass = lineContent.match(patternPrestigeClasses)[0]
-                    }
-
-                    if (lineContent.match(patternWizardClasses) !== null) {
-                        spellCastingClass = lineContent.match(patternWizardClasses)[0]
+                    let castingClass = lineContent.match(patternSupportedClasses) ?? lineContent.match(patternPrestigeClasses) ?? lineContent.match(patternWizardClasses);
+                    if (castingClass !== null) {
+                        spellCastingClass = castingClass[0]
                     }
 
                     // Push the line into the array holding the raw data for spellBook
@@ -3291,11 +3261,7 @@ export async function parseStatistics(data, startLine) {
                     let parserCmb = sbcMapping.map.statistics.cmb
                     let cmbRaw = lineContent.match(/(?:CMB\b)(.*)(?=\bCMD)/i)[1].trim()
 
-                    let cmb = 0
-
-                    if (cmbRaw.match(/(\d+)/) !== null) {
-                        cmb = cmbRaw.match(/([\+\-]?\d+)/)[0]
-                    }
+                    let cmb = cmbRaw.match(/([+-]?\d+)/)?.[0] ?? 0;
 
                     let cmbContext = sbcUtils.parseSubtext(cmbRaw)[1]
 
@@ -3313,12 +3279,8 @@ export async function parseStatistics(data, startLine) {
                     let cmdRaw = lineContent.match(/(?:CMD\b)(.*)/i)[1].trim()
 
                     // Check if CMD is "-"
-                    let cmd = 0
+                    let cmd = cmdRaw.match(/(\d+)/)?.[0] ?? 0;
 
-                    if (cmdRaw.match(/(\d+)/) !== null) {
-                        cmd = cmdRaw.match(/(\d+)/)[0]
-                    }
-                    
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
                     sbcData.characterData.actorData.data.update({"data.attributes.cmdNotes": cmdContext})
