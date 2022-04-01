@@ -36,6 +36,7 @@ export class sbcInputDialog extends Application {
     static sbcInputDialogInstance = {}
     
     static async renderInputDialog() {
+        sbcApp.resetSBC(true);
  
         sbcInputDialog.sbcInputDialogInstance = new sbcInputDialog()
         sbcData.actorType = +sbcConfig.options.defaultActorType
@@ -174,7 +175,7 @@ export class sbcInputDialog extends Application {
                         await sbcUtils.conversionValidation(newActor.id);
        
                         sbcInputDialog.sbcInputDialogInstance.close()
-                        sbcApp.resetSBC()
+                        sbcApp.resetSBC(false)
                     } catch (err) {
                         throw err
                     }
