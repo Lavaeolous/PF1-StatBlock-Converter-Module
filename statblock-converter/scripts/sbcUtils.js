@@ -338,21 +338,12 @@ export class sbcUtils {
                 
         let searchResult = {}
         let foundEntity = {}
-
-        console.log("searchableCompendiums:")
-        console.log(searchableCompendiums)
         
         let searchOptions = {
             "packs" : searchableCompendiums
         }
 
-        console.log("input")
-        console.log(input)
-
         searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
-
-        console.log("searchResult")
-        console.log(searchResult)
 
         if (searchResult !== false) {
             let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
@@ -590,8 +581,6 @@ export class sbcUtils {
                 let totalInStatblock = conversionValidation.attributes[abl.capitalize()]
                 const difference = +totalInStatblock - +totalInActor
                 if (difference === 0) continue;
-                console.log(abl, { actor: totalInActor, statblock: totalInStatblock, difference });
-                console.log(conversionValidation.attributes);
 
                 if (difference !== 0) {
 
@@ -614,12 +603,14 @@ export class sbcUtils {
             // This might be better off as direct modification to the actor, however.
             if (stage1changes.length) {
                 let conversionBuffItem1 = {
-                    name: "sbc | Conversion Buff (Setup)",
+                    name: "sbc | Conversion Buff (Ability Scores)",
                     type: "buff",
                     data: {
                         description: {
-                            value: `<h2>sbc | Conversion Buff</h2>
-                            See the final buff for full details.`
+                            value: `<h2>sbc | Conversion Buff (Ability Scores)</h2>
+                            This Buff was created by <strong>sbc</strong> to compensate for differences between the statblock input and FoundryVTTs automatically calculated values.
+                            <br><br>
+                            As differences in ability scores can have cascading effects, these get handled first and in a separate conversion buff.`
                         },
                         active: true,
                         buffType: "perm",
@@ -851,7 +842,6 @@ export class sbcUtils {
                 // (2) Adjust for differences between calculated skillTotals and statblockTotals
                 if (+skillToValidate.total !== +skillModInActor) {
                     let difference = +skillToValidate.total - +skillModInActor
-                    console.log(subTarget, skillToValidate.total, "-", skillModInActor, "=", difference);
                     
                     if (difference !== 0) {
                         let skillChange = {
@@ -912,7 +902,7 @@ export class sbcUtils {
             */
 
             let conversionBuffItem2 = {
-                name: "sbc | Conversion Buff (Final)",
+                name: "sbc | Conversion Buff",
                 type: "buff",
                 data: {
                     description: {
@@ -978,7 +968,7 @@ export class sbcUtils {
                     let tempKey = itemsWithCommasInParenthesisKeys[i]
                     let tempItem = itemsWithCommasInParenthesis[tempKey].trim()
 
-                    let patternTempItem = new RegExp (tempItem.replace(/\(/g,"\\(").replace(/\)/g,"\\)").replace(/\+/g,"\\+"), "i")
+                    let patternTempItem = new RegExp (tempItem.replace(/\(/g,"\\(").replace(/\*/g,"\\*").replace(/\)/g,"\\)").replace(/\+/g,"\\+"), "i")
 
                     tempInput = tempInput.replace(patternTempItem, "").replace(/,\s*,/, ",").replace(/^,/, "").trim()
 

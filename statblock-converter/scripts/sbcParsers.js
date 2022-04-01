@@ -2500,27 +2500,7 @@ class attacksParser extends sbcParserBase {
                     /* ------------------------------------ */
                     /* [2] CREATE AN ATTACK WITH THAT DATA    */
                     /* ------------------------------------ */
-
-                    /*
-                    console.log("numberOfAttacks: " + numberOfAttacks)
-                    console.log("enhancementBonus: "+ enhancementBonus)
-                    console.log("attackName: "+ attackName)
-                    //console.log("attackModifier: "+ attackModifier)
-                    console.log("inputAttackModifier: "+ inputAttackModifier)
-                    console.log("numberOfDamageDice: "+ numberOfDamageDice)
-                    console.log("damageDie: "+ damageDie)
-                    console.log("damageBonus: "+ damageBonus)
-                    console.log("damageModifier: "+ damageModifier)
-                    console.log("defaultDamageType: "+ defaultDamageType)
-                    console.log("weaponSpecial: "+ weaponSpecial)
-                    console.log("critRange: "+ critRange)
-                    console.log("critMult: "+ critMult)
-                    console.log("attackEffects: "+ attackEffects)
-                    console.log("mwkWeapon: "+ mwkWeapon)
-                    console.log("numberOfIterativeAttacks: "+ numberOfIterativeAttacks)
-                    console.log("attackNotes: "+ attackNotes)
-                    */
-                                      
+              
                     let newAttack = await Item.create({
                         name: sbcUtils.capitalize(attackName) || "undefined",
                         type: "attack",
@@ -3926,10 +3906,10 @@ class gearParser extends sbcParserBase {
 
         try {
 
-            let weaponCompendium = "pf1.weapons-and-ammo"
-            let armorCompendium = "pf1.armors-and-shields"
-            let itemCompendium = "pf1.items"
-            let spellCompendium = "pf1.spells";
+            const weaponCompendium = "pf1.weapons-and-ammo"
+            const armorCompendium = "pf1.armors-and-shields"
+            const itemCompendium = "pf1.items"
+            const spellCompendium = "pf1.spells";
 
             let patternSupportedWeapons = new RegExp("(" + sbcConfig.weapons.join("\\b|\\b") + ")", "gi")
             let patternSupportedArmors = new RegExp("(" + sbcConfig.armors.join("\\b|\\b") + ")", "gi")
@@ -3945,7 +3925,7 @@ class gearParser extends sbcParserBase {
                 let input = gears[i].trim()
                 let splitInput = sbcUtils.parseSubtext(input)
                 let gearText = splitInput[0]
-                let gearSubtext = splitInput[1]
+                let gearSubtext = splitInput[1] 
 
                 let gear = {
                     type: "loot",
@@ -3971,24 +3951,25 @@ class gearParser extends sbcParserBase {
                 let entity = {}
 
                 if (patternSupportedWeapons.test(gearText)) {
+                    patternSupportedWeapons.lastIndex = 0
                     // If the input is a weapon in one of the compendiums
                     gear.type = "weapon"
                     entity = await sbcUtils.findEntityInCompendium(weaponCompendium, gear)
 
                 } else if (patternSupportedArmors.test(gearText)) {
-
+                    patternSupportedArmors.lastIndex = 0
                     // If the input is a armor in one of the compendiums
                     gear.type = "equipment"
                     entity = await sbcUtils.findEntityInCompendium(armorCompendium, gear)
                     
                 } else if (patternSupportedItems.test(gearText)) {
-
+                    patternSupportedItems.lastIndex = 0
                     // If the input is a item in one of the compendiums
                     gear.type = "loot"
                     entity = await sbcUtils.findEntityInCompendium(itemCompendium, gear)   
                     
                 } else if (patternGold.test(gearText)) {
-
+                    patternGold.lastIndex = 0
                     // If the input is Money
                     gear.name = "Money Pouch"
                     gear.type = "container"
@@ -4000,6 +3981,7 @@ class gearParser extends sbcParserBase {
                     }
 
                 } else if (patternSupportedSpells.test(gearText)) {
+                    patternSupportedSpells.lastIndex = 0
                     gear.type = "consumable";
                     
                     let namePattern = gearText.match(patternSupportedSpells);
@@ -4019,9 +4001,6 @@ class gearParser extends sbcParserBase {
                         entity = await Item.create(consumable.toObject(), {temporary: true});
                     }
                 } else {
-                    // WIP
-                    // Edit May 2021: Why WIP?
-                    // Check in custom compendiums
                     entity = await sbcUtils.findEntityInCompendium(itemCompendium, gear)
                 }
 
