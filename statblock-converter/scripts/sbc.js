@@ -51,7 +51,6 @@ export class sbcApp {
 
         // Initialize sbc again
         if (reinit) await this.initializeSBC();
-        
     }
 
     /* ------------------------------------ */
@@ -87,11 +86,14 @@ export class sbcApp {
             sbcData.actorType = 0
         }
 
-        
-        let sbcActor = await sbcUtils.createTempActor()
+        await this.reinitActor(); // Possibly excess initialization
 
+        Hooks.callAll("sbc.reset");
+    }
+
+    static async reinitActor() {
         sbcData.characterData = {
-            actorData: sbcActor,
+            actorData: await sbcUtils.createTempActor(),
             items: [],
             spells: [],
             abilityDescriptions: [],
@@ -103,10 +105,7 @@ export class sbcApp {
                 "spellBooks": {}
             }
         }
-        
-        Hooks.callAll("sbc.reset");
     }
-
 }
 
 /* ------------------------------------ */
