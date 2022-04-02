@@ -86,8 +86,6 @@ export class sbcApp {
             sbcData.actorType = 0
         }
 
-		await sbcUtils.reinitActor(); // Possibly excess initialization
-
         Hooks.callAll("sbc.reset");
     }
 }
