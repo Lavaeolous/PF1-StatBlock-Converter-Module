@@ -86,25 +86,9 @@ export class sbcApp {
             sbcData.actorType = 0
         }
 
-        await this.reinitActor(); // Possibly excess initialization
+		await sbcUtils.reinitActor(); // Possibly excess initialization
 
         Hooks.callAll("sbc.reset");
-    }
-
-    static async reinitActor() {
-        sbcData.characterData = {
-            actorData: await sbcUtils.createTempActor(),
-            items: [],
-            spells: [],
-            abilityDescriptions: [],
-            characterDescriptions: [],
-            conversionValidation: {
-                "context": {},
-                "attributes": {},
-                "skills": {},
-                "spellBooks": {}
-            }
-        }
     }
 }
 

@@ -1,3 +1,4 @@
+import { sbcApp } from "./sbc.js";
 import { sbcConfig } from "./sbcConfig.js"
 import { sbcData, sbcError, sbcErrorLevels } from "./sbcData.js"
 import { sbcMapping } from "./sbcParsers.js"
@@ -39,15 +40,24 @@ export class sbcUtils {
         sbcData.parsedCategories = 1
     }
 
-    static async resetCharacterData () {
+    static async reinitActor() {
+        sbcData.characterData = {
+            actorData: await sbcUtils.createTempActor(),
+            items: [],
+            spells: [],
+            abilityDescriptions: [],
+            characterDescriptions: [],
+            conversionValidation: {
+                "context": {},
+                "attributes": {},
+                "skills": {},
+                "spellBooks": {}
+            }
+        }
+    }
 
-        sbcData.characterData.items = []
-        sbcData.characterData.spells = []
-        sbcData.characterData.abilityDescriptions = []
-        sbcData.characterData.characterDescriptions = []
-        sbcData.characterData.conversionValidation.context = {}
-        sbcData.characterData.conversionValidation.attributes = {}
-        sbcData.characterData.conversionValidation.skills = {}
+    static async resetCharacterData() {
+        await this.reinitActor();
 
         this.resetCategoryCounter()
         await this.resetTraits()
