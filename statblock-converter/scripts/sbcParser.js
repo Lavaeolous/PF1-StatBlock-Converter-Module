@@ -36,12 +36,7 @@ export class sbcParser {
             .replace(/⅛/gm, "1/8")
             // Remove Source Superscript (e.g. ^APG, ^UE)
             .replace(/(APG\b|ACG\b|UE\b|UM\b|HA\b|OA\b|ISWG\b|[^CM]B\b)/gm, "")
-            // Replace common Skill shorthands and misswordings
-            .replace(/\bEnter Choice\b/igm, "any one")
-            .replace(/Arcane/igm, "Arcana")
-            .replace(/\bPer\./igm, "Perception")
-            .replace(/S\. Motive/igm, "Sense Motive")
-            .replace(/\bLing\./igm, "Linguistics")
+            
             // Replace ligatures
             .replace(/ﬂ/igm, "fl")
             .replace(/ﬁ/igm, "fi")

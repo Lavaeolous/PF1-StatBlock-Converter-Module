@@ -35,8 +35,8 @@
   ],
   "dependencies": [],
   "socket": false,
-  "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.4/module.json",
-  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.4/3.3.4_statblock-converter.zip",
+  "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.5/module.json",
+  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.3.5/3.3.5_statblock-converter.zip",
   "protected": false,
   "coreTranslation": false,
   "library": false

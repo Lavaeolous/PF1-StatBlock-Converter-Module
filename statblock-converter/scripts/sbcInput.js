@@ -24,7 +24,7 @@ export class sbcInputDialog extends Application {
         options.id = "sbcModal"
         options.template = "modules/pf1-statblock-converter/templates/sbcModal.html"
         options.width = 1600
-        options.height = 700
+        options.height = 800
         options.resizable = true
         options.classes = ["sbcModal"]
         options.popOut = true

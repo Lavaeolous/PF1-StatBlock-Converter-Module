@@ -342,6 +342,7 @@ export async function parseBase(data, startLine) {
                         // Values derived from Size
                         let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
                         let parserScale = new singleValueParser(["token.scale"], "number")
+
                         let space = CONFIG.PF1.tokenSizes[actorSize].w
                         let scale = CONFIG.PF1.tokenSizes[actorSize].scale
 
@@ -1930,6 +1931,54 @@ export async function parseOffense(data, startLine) {
                 }
             }
 
+            // Parse Space, Reach and Stature
+            if (!parsedSubCategories["spaceStature"]) {
+                if (/^Space\b.*\bReach\b/i.test(lineContent)) {
+                    // This may overwrite space and reach that was automatically derived by creature size,
+                    // which in theory should be fine, i guess
+                    let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
+                    let parserStature = new singleValueParser(["data.traits.stature"], "string")
+                    
+                    let space = +lineContent.match(/^Space\s*(\d+)/i)[1]
+                    let spaceInSquares = +Math.floor(+space/5)
+
+                    let reachInput = sbcUtils.parseSubtext(lineContent.match(/Reach(.*)/i)[1])
+                    
+                    let reach = ""
+                    let reachContext = ""
+
+                    console.log("reachINput: ")
+                    console.log(reachInput)
+
+                    if (reachInput[0])
+                        reach = reachInput[0].replace(/(\d+)(.*)/g, "$1").trim()
+
+                    if (reachInput[1])
+                        reachContext = reachInput[1].replace(/[\(\)]/g, "").trim()
+                    
+                    console.log("space: " + space)
+                    console.log("reach: " + reach)
+                    console.log("reachContext: " + reachContext)
+
+                    sbcData.notes.offense.space = space
+                    sbcData.notes.offense.reach = reach
+                    sbcData.notes.offense.reachContext = reachContext
+
+
+                    // Foundry PF1 actor has no field for "reach", so try to derive the "stature" from reach
+                    // In 90% of all cases this should be "tall"
+                    let stature = "tall"
+
+                    if (+reach < +space)
+                        stature = "long"
+
+                    parsedSubCategories["spaceReach"] = {
+                        space: await parserSpace.parse(spaceInSquares, line+startLine),
+                        stature: await parserStature.parse(stature, line+startLine)
+                    }
+                }
+            }
+
             // Spellcasting support functions
             const getCasterLevel = (line) => line.match(/\bCL\b\s*(?<cl>\d+)/i)?.groups.cl;
             const getConcentrationBonus = (line) => line.match(/\b(Concentration\b|Conc\.)\s*\+(?<bonus>\d+)/i)?.groups.bonus;
@@ -3453,7 +3502,13 @@ class skillsParser extends sbcParserBase {
 
             for (let i=0; i<skills.length; i++) {
 
-                let rawSkill = skills[i];
+                // Replace common Skill shorthands and misswordings
+                let rawSkill = skills[i]
+                    .replace(/\bEnter Choice\b/igm, "any one")
+                    .replace(/Arcane/igm, "Arcana")
+                    .replace(/\bPer\./igm, "Perception")
+                    .replace(/S\. Motive/igm, "Sense Motive")
+                    .replace(/\bLing\./igm, "Linguistics");
                 
                 if (rawSkill.match(/[+-]\s*\d+(?![^(]*\))/g)?.length > 1) {
                     let missedCommas = rawSkill.split(/(?<=[-+]\d+) /);
