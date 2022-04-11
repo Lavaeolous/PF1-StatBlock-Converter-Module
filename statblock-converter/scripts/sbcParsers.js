@@ -1955,7 +1955,7 @@ export async function parseOffense(data, startLine) {
                     startIndexOfSpellLikeAbilities = line
 
                     // Set casterLevel and concentrationBonus
-                    let casterLevel = casterLevel = getCasterLevel(lineContent) ?? 0;
+                    let casterLevel = getCasterLevel(lineContent) ?? 0;
                     let concentrationBonus = getConcentrationBonus(lineContent) ?? 0;
 
                     // Push the line into the array holding the raw data for Spell-Like Abilities
