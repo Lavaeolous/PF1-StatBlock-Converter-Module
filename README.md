@@ -11,15 +11,11 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 ```
 https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json
 ```
-# Compatibility
+# Compatibility - v3.3.6
 
-**Version 3.3.3 and upwards of SBC:**
-* GameSystem: [PF1 0.80.1](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 9 Build 238
+*  GameSystem: [PF1 0.80.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+*  FoundryVTT: 9 Build 269
 
-**Version 3.3.2 of SBC (see releases, no longer developed):**
-* GameSystem: [PF1 0.79.10](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
-* FoundryVTT: 0.8.6-0.8.9
 
 # How to Use
 1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).
@@ -35,7 +31,8 @@ If you find any errors or have a statblock that can't be converted at all, feel 
 SBC creates a mostly complete Actor (PC or NPC) with embedded documents for feats, spells and stuff like that. Most of the time the conversion will not be complete, as for example items and gear may be imported incorrectly or as placeholders. For most actors this will be fine, for critical and important NPCs, Bosses and PCs i strongly advise you to use sbc for the bulk, but check for errors carefully!
 
 # Known Bugs
-*  Depending on the size of the input and the number of custom compendia used, there may be **long** loading times!
+*  #522 - Imported Actors with Wildcard Token Images break the scene/map
+*  #521 - All Imports throw an error thats generated somewhere in the creation of creature type items
 *  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the preview area or console.
 *  See Issues. If you find anythings thats not noted there, please let me know.
 

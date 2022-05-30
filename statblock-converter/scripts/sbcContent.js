@@ -7,7 +7,6 @@ export class sbcContent {
 
     static "additionalSenses" = [
         "all-around vision",
-        "blindsense",
         "carrion sense",
         "deepsight",
         "deathwatch",
@@ -15,8 +14,6 @@ export class sbcContent {
         "greensight",
         "lifesense",
         "minesight",
-        "scent",
-        "see in darkness",
         "true seeing",
         "water sense"
     ]

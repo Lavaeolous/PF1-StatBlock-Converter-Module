@@ -17,7 +17,7 @@
             {{#if notes.base.size}}{{notes.base.size}} {{/if}}
             {{#if notes.creatureType}}{{notes.creatureType}} {{/if}}<br/>
             <strong>Init</strong> {{data.data.attributes.init.total}};
-            {{#if data.data.traits.senses}}<strong>Senses</strong> {{data.data.traits.senses}}; {{/if}}
+            {{#if notes.base.senses}}<strong>Senses</strong> {{notes.base.senses}}; {{/if}}
             {{#if notes.aura}}<strong>Aura</strong> {{notes.aura}}{{/if}}
         </div>
         <div style="break-inside: avoid;">
@@ -30,7 +30,7 @@
             {{#if data.data.traits.dr}}<strong>DR</strong> {{data.data.traits.dr}}{{/if}}
             {{#if notes.defense.immune}}<strong>Immune</strong> {{notes.defense.immune}}; {{/if}}
             {{#if notes.defense.resist}}<strong>Resist</strong> {{notes.defense.resist}}; {{/if}}
-            {{#if data.data.attributes.sr.total}}<strong>SR</strong> {{data.data.attributes.sr.total}}{{/if}}
+            {{#if data.data.attributes.sr.formula}}<strong>SR</strong> {{data.data.attributes.sr.formula}}{{/if}}
             {{#if data.data.attributes.srNotes}} ({{data.data.attributes.srNotes}}){{/if}}
             {{#if notes.defense.weakness}}<br/><strong>Weakness</strong> {{notes.defense.weakness}}{{/if}}
         </div>

@@ -686,7 +686,7 @@ class creatureTypeParser extends sbcParserBase {
         
         try {
 
-            let tempCreatureType = sbcParsing.parseSubtext(value)
+            let tempCreatureType = await sbcParsing.parseSubtext(value)
 
             // Localization
             let creatureTypeKey = sbcUtils.getKeyByValue(sbcConfig.const.creatureTypes, tempCreatureType[0])
@@ -698,6 +698,9 @@ class creatureTypeParser extends sbcParserBase {
                 subTypes: ""
             }
 
+            //console.log("creatureType for Search")
+            //console.log(creatureType)
+
             if (tempCreatureType.length > 1) {
                 creatureType.subTypes = tempCreatureType[1]
             }
@@ -705,12 +708,22 @@ class creatureTypeParser extends sbcParserBase {
             let compendium = "pf1.racialhd"
             // Always search the english compendia for entries, so use the english creatureType instead of the localized one
             let creatureTypeItem = await sbcUtils.findEntityInCompendium(compendium, creatureType, line)
-            creatureTypeItem.data.update({
+
+            
+            
+            
+            await creatureTypeItem.data.update({
                 data: {
                     tag: game.pf1.utils.createTag(creatureType.name),
                     useCustomTag: true,
                 }
             })
+            
+            //console.log("creatureTypeItem")
+            //console.log(creatureTypeItem)
+            
+
+            
 
             // Set flags for the conversion
             switch (creatureType.name.toLowerCase()) {
@@ -721,13 +734,17 @@ class creatureTypeParser extends sbcParserBase {
                     break
             }
 
+            
             if (creatureType.subTypes !== "") {
-                //creatureTypeItem.data.name = sbcUtils.capitalize(creatureType.name) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")"
-                creatureTypeItem.data.update({ name: sbcUtils.capitalize(localizedCreatureType) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")" })
+                await creatureTypeItem.data.update({ name: sbcUtils.capitalize(localizedCreatureType) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")" })
             }
+            
+            
 
             sbcData.notes.creatureType = creatureTypeItem.data.name
             sbcData.characterData.items.push(creatureTypeItem)
+
+            /*
 
             // Check, if there already is a race item for this creatureType
             let currentItems = sbcData.characterData.items
@@ -742,14 +759,18 @@ class creatureTypeParser extends sbcParserBase {
 
             // When no existing race item was found, create a placeholder to save creature type and subtype
             if (!raceFound) {
-
+                
                 let subTypesArray = []
-                creatureType.subTypes.split(/\s*,\s*/).map(function (elem) {
-                    let elemContainer = []
-                    elemContainer.push(elem)
-                    subTypesArray.push(elemContainer)
+                creatureType.subTypes.split(/\s*,\s*/
+                
+                /*).map(function (elem) {
+                    if (elem) {
+                        let elemContainer = []
+                        elemContainer.push(elem)
+                        subTypesArray.push(elemContainer)
+                    }
+                    
                 })
-
 
                 let camelizedCreatureType = sbcUtils.camelize(creatureType.name)
                 
@@ -766,6 +787,8 @@ class creatureTypeParser extends sbcParserBase {
                 
             }
 
+            */
+
             return true
 
         } catch (err) {
@@ -776,6 +799,7 @@ class creatureTypeParser extends sbcParserBase {
             return false
 
         }
+
         
     }
 }
@@ -792,83 +816,80 @@ class sensesParser extends sbcParserBase {
             
             let availableSenses = systemSupportedSenses.concat(sbcContent.additionalSenses)
 
-            let parserSenses = new singleValueParser(["data.traits.senses"], "string")
-            parserSenses.parse(value, line)
+            let customSenses = ""
 
+            // Search for matches
             for (let i=0; i<availableSenses.length; i++) {
 
                 let searchSense = availableSenses[i]
 
-                let senseFeatName = searchSense
-                let senseImagePath = ""
-                let senseAbilityType = "ex"
-
                 if (value.search(searchSense) !== -1) {
+
+                    if (sbcData.notes.base.senses === undefined) {
+                        sbcData.notes.base.senses = searchSense
+                    } else {
+                        sbcData.notes.base.senses += "; " + searchSense
+                    }
+
+                    let range = -1
+                    let rangeRegEx = new RegExp ("(?:" + searchSense + ")\\s(\\d+)", "")
 
                     switch (searchSense) {
 
+                        // Custom Senses
                         case "all-around vision":
-                            senseImagePath = "systems/pf1/icons/items/inventory/monster-eyes.jpg"
-                            break
-                        case "blindsight":
-                        case "blindsense":
-                            senseImagePath = "systems/pf1/icons/skills/light_01.jpg"
-                            break
                         case "carrion sense":
-                            senseImagePath = "systems/pf1/icons/skills/affliction_03.jpg"
+                        case "deathwatch":
+                        case "deepsight":
+                        case "dragon senses":
+                        case "greensight":
+                        case "lifesense":
+                        case "minesight":
+                        case "water sense":
+                            if (customSenses === "") {
+                                customSenses = searchSense
+                            } else {
+                                customSenses = customSenses.concat(";" + searchSense)
+                            }
+                            break
+
+                        // Range
+                        case "blindsight":
+                            range = value.match(rangeRegEx)[1]
+                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.bs": +range}) : null
+                            break
+                        case "blindsense":
+                            range = value.match(rangeRegEx)[1]
+                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.bse": +range}) : null
                             break
                         case "darkvision":
-                            let darkvisionRange = value.match(/\d+/)[0]
-                            sbcData.characterData.actorData.data.token.brightSight = +darkvisionRange
-                            senseFeatName = searchSense + " " + darkvisionRange + "ft."
-                            senseImagePath = "systems/pf1/icons/skills/shadow_12.jpg"
-                            break
-                        case "deathwatch":
-                            senseImagePath = "systems/pf1/icons/skills/shadow_01.jpg"
-                            break
-                        case "deepsight":
-                            senseImagePath = "systems/pf1/icons/skills/blue_17.jpg"
-                            break
-                        case "dragon senses":
-                            senseImagePath = "systems/pf1/icons/races/creature-types/dragon.png"
-                            break
-                        case "low-light":
-                            sbcData.characterData.actorData.data.token.flags = {
-                                "pf1.lowLightVision" : true
-                            }
-                            senseFeatName = searchSense + " Vision"
-                            senseImagePath = "systems/pf1/icons/skills/shadow_11.jpg"
-                            break
-                        case "lifesense":
-                            senseImagePath = "systems/pf1/icons/skills/blood_04.jpg"
-                            break
-                        case "greensight":
-                            senseImagePath = "systems/pf1/icons/skills/green_13.jpg"
-                            break
-                        case "minesight":
-                            let minesightRange = "90"
-                            sbcData.characterData.actorData.data.token.brightSight = minesightRange
-                            senseFeatName = searchSense + " " + minesightRange + "90ft."
-                            senseImagePath = "systems/pf1/icons/skills/shadow_12.jpg"
-                            break
-                        case "scent":
-                            senseImagePath = "systems/pf1/icons/skills/blue_29.jpg"
-                            break
-                        case "see in darkness":
-                            senseAbilityType = "su"
-                            senseImagePath = "systems/pf1/icons/skills/shadow_17.jpg"
+                            range = value.match(rangeRegEx)[1]
+                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.dv": +range}) : null
                             break
                         case "tremorsense":
-                            senseImagePath = "systems/pf1/icons/skills/violet_14.jpg"
+                            range = value.match(rangeRegEx)
+                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.ts": +range}) : null
+                            break
+
+                        // Yes/No Toggle
+                        case "scent":
+                            sbcData.characterData.actorData.data.update({"data.traits.senses.sc": true})
+                            break
+                        case "see in darkness":
+                            sbcData.characterData.actorData.data.update({"data.traits.senses.sid": true})
                             break
                         case "truesight":
                         case "true seeing":
-                            senseAbilityType = "su"
-                            senseImagePath = "systems/pf1/icons/skills/red_09.jpg"
+                            sbcData.characterData.actorData.data.update({"data.traits.senses.tr": true})
                             break
-                        case "water sense":
-                            senseImagePath = "systems/pf1/icons/skills/emerald_11.jpg"
+                        case "see invisibility":
+                            sbcData.characterData.actorData.data.update({"data.traits.senses.si": true})
                             break
+                        // For whatever reason lowlight is handled differently from the other toggles
+                        case "low-light":
+                            sbcData.characterData.actorData.data.update({"data.traits.senses.ll.enabled": true})
+                            break
+
                         default:
                             let errorMessage = "No match found for " + value + ". This definitily should not have happened. Sorry!"
                             let error = new sbcError(1, "Parse/Base", errorMessage, line)
@@ -876,24 +897,13 @@ class sensesParser extends sbcParserBase {
                             break
                     }
 
-                    // Create a new Item for parsed Senses
-                    let sense = await Item.create({
-                        name: "Sense: " + sbcUtils.capitalize(senseFeatName),
-                        type: "feat",
-                        data: {
-                            description: {
-                                value: sbcContent.descriptions.senses[searchSense]
-                            },
-                            featType: "racial",
-                            abilityType: senseAbilityType
-                        },
-                        img: senseImagePath
-                    }, { temporary : true })
-
-                    sbcData.characterData.items.push(sense)
-
                 }
 
+            }
+
+            // Set customSenses
+            if (customSenses !== "") {
+                sbcData.characterData.actorData.data.update({"data.traits.senses.custom": customSenses})
             }
 
             return true
@@ -903,8 +913,6 @@ class sensesParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as senses."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
 
             return false
 
@@ -1138,9 +1146,9 @@ export async function parseDefense(data, startLine) {
             }
             */
             if (!parsedSubCategories["resist"]) {
-                if (/(?<!Defensive Abilities\b\s*)(Resist\b.*)/i.test(lineContent)) {
+                if (/(\bResist\b.*)/i.test(lineContent)) {
                     let parserResist = sbcMapping.map.defense.resist
-                    let resistances = lineContent.match(/(?<!Defensive Abilities\b\s*)(Resist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
+                    let resistances = lineContent.match(/(?:\bResist\b)([\s\S]*?)(?=$|SR|Immune|Weakness)/i)[1].trim()
                     parsedSubCategories["resist"] = await parserResist.parse(resistances, line+startLine)
                 }
             }
@@ -1947,23 +1955,15 @@ export async function parseOffense(data, startLine) {
                     let reach = ""
                     let reachContext = ""
 
-                    console.log("reachINput: ")
-                    console.log(reachInput)
-
                     if (reachInput[0])
                         reach = reachInput[0].replace(/(\d+)(.*)/g, "$1").trim()
 
                     if (reachInput[1])
                         reachContext = reachInput[1].replace(/[\(\)]/g, "").trim()
-                    
-                    console.log("space: " + space)
-                    console.log("reach: " + reach)
-                    console.log("reachContext: " + reachContext)
 
                     sbcData.notes.offense.space = space
                     sbcData.notes.offense.reach = reach
                     sbcData.notes.offense.reachContext = reachContext
-
 
                     // Foundry PF1 actor has no field for "reach", so try to derive the "stature" from reach
                     // In 90% of all cases this should be "tall"
@@ -3135,7 +3135,7 @@ class spellBooksParser extends sbcParserBase {
 
                             // Change SpellName to reflect constant spells
                             if (isConstant) {
-                                entity.update({
+                                entity.data.update({
                                     name: "Constant: " + entity.data.name,
                                     data: {
                                         atWill: true
@@ -4010,12 +4010,12 @@ class gearParser extends sbcParserBase {
                     if (entity) {
                         const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
                         if (consumableType == "wand")
-                            consumable.update({ "data.uses.value": parseInt(charges) });
+                            consumable.data.uses.value = parseInt(charges);
                         else
-                            consumable.update({ "data.quantity": parseInt(charges) });
+                            consumable.data.quantity = parseInt(charges);
                         gear.rawName = consumable.name;
                         // Following is somewhat redundant re-creation
-                        entity = await Item.create(consumable.toObject(), {temporary: true});
+                        entity = await Item.create(consumable, {temporary: true});
                     }
                 } else {
                     entity = await sbcUtils.findEntityInCompendium(itemCompendium, gear)
@@ -4661,7 +4661,12 @@ export async function checkFlags() {
 export async function createEmbeddedDocuments() {
 
     try {
-        return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.data.toObject()) })
+
+        //console.log("ITEMS TO CREATE")
+        //console.log(sbcData.characterData.items)
+        //return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.data.toObject()) })
+        return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.toObject()) })
+    
     } catch (err) {
 
         let errorMessage = `Failed to create embedded entities (items, feats, etc.)`

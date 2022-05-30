@@ -1,5 +1,22 @@
 # Change Log
 
+2022_05_30 - v3.3.6
+*  Fixed an error with placeholders for non playable races (#527)
+*  Updated the parsing of senses to be compatible to the current pf1e system version (#525, #523)
+*  Fixed an error when parsing constant spells (#520)
+*  Fixed parsing of consumables (#519)
+*  Fixed parsing of Resistances and Spell Resistance (#518)
+
+2022_04_11 - v3.3.5
+*  Merged multiple important PRs from mkahvi (#514, #510, #509, #507) that fix a whole range of issues (#513, #511, #508, #506)
+*  Refactored string clean up for skills to only work in the skills section (Fixes #515)
+*  Escaped Asterisks (Fixed #505)
+*  Fixed an error that lead to every other item being parsed as placeholder because of weird ways pattern.test(input) changes the index of strings while searching (Fixes #504)
+
+2022_02_09 - v3.3.4
+* Fix for gear parsing, e.g. Combat Gear and Other Gear on separate lines (#488)
+* Fix for wrongly calculated BAB for attacks with enchanted weapons (#503)
+
 2021_12_21 - v3.3.3
 *  Updated compatibility to FoundryVTT v9 stable
 *  Fixed a minor bug where brightSight and mineSight was parsed as string instead of int (#494)
