@@ -121,7 +121,8 @@ export class sbcUtils {
             noInt: false,
             noWis: false,
             noCha: false,
-            isUndead: false
+            isUndead: false,
+            hasWeaponFinesse: false
         }
     }
 

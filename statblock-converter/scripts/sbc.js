@@ -3,7 +3,6 @@
  *
  * Author: Lavaeolous
  * Additional Authors: Noon, mkahvi
- * Version: 3.3.5
  *
  */
 

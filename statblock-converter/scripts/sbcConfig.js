@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.3.6",
+    "version": "3.4.0",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -82,7 +82,8 @@ sbcConfig.options = {
         "noInt": false,
         "noWis": false,
         "noCha": false,
-        "isUndead": false
+        "isUndead": false,
+        "hasWeaponFinesse": false
         
     }
 }
