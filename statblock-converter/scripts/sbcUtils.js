@@ -121,7 +121,8 @@ export class sbcUtils {
             noInt: false,
             noWis: false,
             noCha: false,
-            isUndead: false
+            isUndead: false,
+            hasWeaponFinesse: false
         }
     }
 
@@ -355,18 +356,20 @@ export class sbcUtils {
 
         searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
 
+        // Return the searchResult, which either is a clone of the found entity or null
         if (searchResult !== false) {
             let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
 
             let pack = await game.packs.get(packName)
             foundEntity = await pack.getDocument(searchResult.index._id)
 
+            let clone = await Item.create(foundEntity.data, {temporary: true})
+            return clone;
+
         } else {
-            foundEntity = null
+            return null
         }
 
-        // Return the searchResult, which either is the found entity or an empty object
-    return foundEntity;
     }
 
     static async generatePlaceholderEntity (input, line = -1) {
@@ -407,6 +410,7 @@ export class sbcUtils {
         switch (input.type) {
             case "container":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: "Money Pouch: " + sbcUtils.capitalize(entityData.name),
                     type: "container",
                     data: {
@@ -425,6 +429,7 @@ export class sbcUtils {
                 break
             case "feats":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: "feat",
                     data: {
@@ -438,6 +443,7 @@ export class sbcUtils {
                 break
             case "race":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: "race",
                     data: {
@@ -452,6 +458,7 @@ export class sbcUtils {
                 break
             case "misc":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: "feat",
                     data: {
@@ -465,6 +472,7 @@ export class sbcUtils {
                 break
             case "attack":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: "attack",
                     data: {
@@ -480,6 +488,7 @@ export class sbcUtils {
             case "class-abilities":
                 if (entityData.specialAbilityType !== null) {
                     entity = await Item.create({
+                        _id: randomID(16),
                         name: sbcUtils.capitalize(entityData.name),
                         type: "feat",
                         data: {
@@ -493,6 +502,7 @@ export class sbcUtils {
                     }, {temporary:true})
                 } else {
                     entity = await Item.create({
+                        _id: randomID(16),
                         name: sbcUtils.capitalize(entityData.name),
                         type: "feat",
                         data: {
@@ -509,6 +519,7 @@ export class sbcUtils {
             case "domains":
             case "mysteries":
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: "feat",
                     data: {
@@ -522,6 +533,7 @@ export class sbcUtils {
                 break
             default:
                 entity = await Item.create({
+                    _id: randomID(16),
                     name: sbcUtils.capitalize(entityData.name),
                     type: entityData.type,
                     data: {

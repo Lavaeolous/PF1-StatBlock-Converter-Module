@@ -133,6 +133,10 @@ class entityParser extends sbcParserBase {
 
             }
 
+            // Check for Weapon Finesse and set a flag accordingly
+            if (value.toLowerCase() == "weapon finesse" && type == "feats")
+                sbcConfig.options.flags.hasWeaponFinesse = true
+
             // entities were created successfully
             return true
 
@@ -698,9 +702,6 @@ class creatureTypeParser extends sbcParserBase {
                 subTypes: ""
             }
 
-            //console.log("creatureType for Search")
-            //console.log(creatureType)
-
             if (tempCreatureType.length > 1) {
                 creatureType.subTypes = tempCreatureType[1]
             }
@@ -718,12 +719,6 @@ class creatureTypeParser extends sbcParserBase {
                     useCustomTag: true,
                 }
             })
-            
-            //console.log("creatureTypeItem")
-            //console.log(creatureTypeItem)
-            
-
-            
 
             // Set flags for the conversion
             switch (creatureType.name.toLowerCase()) {
@@ -796,6 +791,7 @@ class creatureTypeParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as creatureType."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(err)
+            throw err
             return false
 
         }
@@ -2289,161 +2285,221 @@ class attacksParser extends sbcParserBase {
 
         try {
 
+            // [1] Sanitize the input
             let rawInput = value
                 .replace(/(, or)/g, " or")
                 .replace(/, \band\b /g, " and ")
                 .replace(/\band\b (?![^(]*\)|\()/g,",")
-            let attackGroups = rawInput.split(/\bor\b/g)
 
-            let attackGroupKeys = Object.keys(attackGroups)
+            // [2] Split it into attackGroups denoted by an "or"
+            //     All attacks in an attackGroup can be part of a full attack action
+            //     Loop over these attackGroups to handle each separately
+            let m_InputAttackGroups = rawInput.split(/\bor\b/g)
+            let attackGroupKeys = Object.keys(m_InputAttackGroups)
     
             for (var i = 0; i < attackGroupKeys.length; i++) {
 
-                // Attacks
-                let attacks = attackGroups[i]
+                // [3] Split the attacks found in the attackGroup
+                //     and loop over each attack separately
+                //     Goal: For version 0.81.0 of the pf1e foundry system
+                //           Create an attack document with embedded subActions
+                let m_InputAttackGroup = sbcUtils.sbcSplit(m_InputAttackGroups[i])
+                let attackKeys = Object.keys(m_InputAttackGroup)
 
-                // Split the attacks into single attacks
-                // attacks = attacks.split(/,/g);
-                //attacks = attacks.split(/(?:[^0-9]),(?:[^0-9])/g)
-                attacks = sbcUtils.sbcSplit(attacks)
-
-                let attackKeys = Object.keys(attacks)
+                let m_FullAttackActions = []
         
                 // Loop over all attacks in the attackGroup
                 for (let j = 0; j < attackKeys.length; j++) {
 
-                    /* ------------------------------------ */
-                    /* [1] PARSE THE ATTACK DATA            */
-                    /* ------------------------------------ */
+                    let m_InputAttack = m_InputAttackGroup[j].trim()
 
-                    // DIFFERENT ATTACK FORMATS
-                    // 2 Slams +10 (1d8+18)                                 Multiple attacks
-                    // +3 Longsword +15 (1d8+12)                            Magic Enhancement
-                    // scimitar +0 (1d6/18-20)                              Mundane Weapon and Crit-Range
-                    // mwk quarterstaff +0 (1d6–1)                          masterwork Weapon
-                    // bite +24 (3d8+14/19–20 plus poison)                  Natural Attacks - Primary, plus Secondary Effect Poison
-                    // tail +19 (3d6+7 plus grab)                           Natural Attacks - Secondary
-                    // swarm (2d6 plus distraction and infestation)         Swarm Attacks
-                    // electrical jolt +8 ranged touch (4d6 electricity)
-                    
-                    // mwk greatsword +16/+11 (3d6+14/19–20)                Iterative Attacks
+                    // [4] Parse the attack and save the found data in two temporary constructs
+                    // <param name="m_AttackData">Saves all parsed data related to the parent attack document.</param>
+                    // <param name="m_ActionData">Saves all parsed data related to the child action document(s).</param>
 
-                    let attack = attacks[j].trim()
-
-                    let numberOfAttacks = 1
-                    let enhancementBonus = 0
-                    let attackName = ""
-                    //let attackModifier = 0
-                    let inputAttackModifier = 0
-                    let numberOfDamageDice = 0
-                    let damageDie = 0
-                    let damageBonus = 0
-                    let damageModifier = 0
-                    let defaultDamageType = ""
-                    let damageType = ""
-                    let specialDamageType = ""
-                    let specialDamageTypeFound = false
-                    let weaponSpecial = "-"
-                    let critRange = 20
-                    let critMult = 2
-                    let attackEffects = []
-                    let mwkWeapon = false
-                    let numberOfIterativeAttacks = 0
-                    let attackNotes = ""
-                    let attackAbilityType = ""
-                    let damageAbilityType = ""
-                    let attackRangeUnits = ""
-                    let attackRangeIncrement = ""
-                                
-                    // Search for Touch or Ranged Touch
-                    if (attack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
-                        let specialAttackType = attack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
-                        attackNotes += specialAttackType + "\n";
-                        attack = attack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
-                        //No valid name remaining
-                        if (!/[a-z](?![^(]*\))/i.test(attack))
-                            attackName = "Attack " + (j + 1);
+                    let m_AttackData = {
+                        attackName: "",
+                        formattedAttackName: "",
+                        actions: [],
+                        img: "",
+                        attackType: "weapon",
+                        attackNotes: "",
+                        effectNotes: [],
+                        isMasterwork: false,
+                        enhancementBonus: 0,
+                        isPrimaryAttack: true,
+                        held: "normal",
                     }
-                             
-                    // Check if its Melee or Ranged
-                    let attackAttrModifier = 0
-                    if (type === "mwak") {
+
+                    let m_ActionData = {
+                        numberOfAttacks: 1,
+                        numberOfIterativeAttacks: 0,
+
+                        attackParts: [],
+                        formulaicAttacksCountFormula: "",
+                        formulaicAttacksBonusFormula: "",
+
+                        inputAttackModifier: 0,
+                        calculatedAttackBonus: 0,
+
+                        attackAbilityType: "",
+                        attackAbilityModifier: 0,
+
+                        damage: "",
+                        damageAbilityType: "",
+                        numberOfDamageDice: 0,
+                        damageDie: 0,
+                        damageBonus: 0,
+                        damageModifier: 0,
+
+                        damageParts: [],
+                        nonCritParts: [],
+
+                        defaultDamageType: "",
+                        damageTypes: [],
+                        customDamageTypes: "",
+                        specialDamageType: "",
+                        hasSpecialDamageType: false,
+                        weaponSpecial: "-",
+                        critRange: 20,
+                        critMult: 2,
                         
-                        // check for noStr-Flag
-                        if (!sbcConfig.options.flags.noStr) {
-                            /* 
-                             * Calculate the attackAttrModifier via the value given in the statblock,
-                             * not the one currently in the actor (as this may be changed when embeddedItems get updated in the permanent actor)
-                             */
-                            // attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.str.mod
-                            attackAttrModifier = +sbcUtils.getModifier(sbcData.notes.statistics.str)
-
-                            // set abilityTypes
-                            attackAbilityType = "str"
-                            damageAbilityType = "str"
-                            attackRangeUnits = "melee"
-                        } 
-
+                        attackRangeUnits: "",
+                        attackRangeIncrement: "",
                     }
+
+                    //       This is spaghetti, as we depend on the sequence of parsing events
+                    //       to get data, which is stupid and does not adhere to the differentiation
+                    //       of attacks and actions the pf1e system introduced in v0.81.0
+                    //
+                    //       WIP: This whole section could (and probably should) be refactored sometime
+                    //       As should sbc in general ...
+
+                    // [4.A] Parse attack related data, e.g. name, number, iterations and modifiers
+                    //       This is mainly everything not in parenthesis in any given attack
                     
-                    if (type === "rwak") {
-                        // check for noDex-Flag
-                        if (!sbcConfig.options.flags.noDex) {
-                            //attackAttrModifier = +sbcData.characterData.actorData.data.data.abilities.dex.mod
-                            attackAttrModifier = +sbcUtils.getModifier(sbcData.notes.statistics.dex)
-                            // set abilityTypes
-                            attackAbilityType = "dex"
-                            damageAbilityType = "str"
-                            // Check if its a normal bow or a crossbow, because these don't use "str" as the damage ability type
-                            if (attack.search(/(bow\b)/i) !== -1 && attack.search(/(\bcomposite\b)/i) === -1) {
-                                damageAbilityType = ""
-                            }
+                    // Search for Touch or Ranged Touch
+                    if (m_InputAttack.search(/(?:\d+\s*)(ranged\s*touch|melee\s*touch|touch)(?:\s*\()/i) !== -1) {
+                        let specialAttackType = m_InputAttack.match(/(ranged\s*touch|melee\s*touch|touch)/i)[1];
+                        m_AttackData.attackNotes += specialAttackType + "\n";
 
-                            attackRangeUnits = "ft"
-                            attackRangeIncrement = "5"
-                        } 
-
-                    }
-                                
-                    // numberOfAttacks
-                    if (attack.match(/(^\d+)/) !== null) {
-                        numberOfAttacks = attack.match(/(^\d+)/)[1];
-                        attackNotes += numberOfAttacks + " "
-                    }
-
-                    // enhancementBonus
-                    if (attack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/) !== null) {
-                        enhancementBonus = attack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/)[1];
-                        attackNotes += "+" + enhancementBonus + " "
-                    }
-
-                    // Masterwork
-                    if (attack.match(/\bmwk\b/i) !== null) {
-                        mwkWeapon = true
-                        attackNotes += "mwk "
+                        // Remove the found data from the current input
+                        m_InputAttack = m_InputAttack.replace(/(ranged\s*touch|melee\s*touch|touch)/i, "");
+                        //No valid name remaining
+                        if (!/[a-z](?![^(]*\))/i.test(m_InputAttack))
+                            m_AttackData.attackName = "Attack " + (j + 1);
                     }
 
                     // attackName
-                    if (/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/.test(attack) && !attackName) {
-                        attackName = attack.match(/((?:[a-zA-Z]| (?=[a-zA-Z])|\*)+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "").trim()
-                        
-                        // Special ActionType for swarmAttacks
-                        if (attackName.search(/\bSwarm\b/i) !== -1) {
-                            type = "other"
+                    if (/((?:[a-zA-Z’']| (?=[a-zA-Z’'])|\*)+)(?:[ +0-9(/]+\(*)/.test(m_InputAttack) && !m_AttackData.attackName) {
+                        m_AttackData.attackName = m_InputAttack.match(/((?:[a-zA-Z’']| (?=[a-zA-Z’'])|\*)+)(?:[ +0-9(/]+\(*)/)[1].replace(/^ | $/g, "").replace(/\bmwk\b /i, "").replace(/\*/, "").trim()                    
+                        m_AttackData.attackNotes += m_AttackData.attackName + " "
+                    }
+                             
+                    // Handle melee attacks
+                    if (type === "mwak") {
+
+                        m_AttackData.img = "systems/pf1/icons/items/weapons/elven-curve-blade.PNG"
+
+                        // check for noStr-Flag
+                        if (!sbcConfig.options.flags.noStr) {
+                            
+                            m_ActionData.attackAbilityModifier = +sbcUtils.getModifier(sbcData.notes.statistics.str)
+
+                            // set abilityTypes
+                            m_ActionData.attackAbilityType = "str"
+                            m_ActionData.damageAbilityType = "str"
+                            m_ActionData.attackRangeUnits = "melee"
                         }
-                        
-                        attackNotes += attackName + " "
+
+                        // Check for WeaponFinesse-Flag
+                        if (sbcConfig.options.flags.hasWeaponFinesse) {
+
+                            m_ActionData.attackAbilityModifier = +sbcUtils.getModifier(sbcData.notes.statistics.dex)
+
+                            // set abilityTypes
+                            m_ActionData.attackAbilityType = "dex"
+                            m_ActionData.damageAbilityType = "str"
+                            m_ActionData.attackRangeUnits = "melee"
+
+                        }
                     }
                     
+                    // Handle ranged attacks
+                    if (type === "rwak") {
+
+                        m_AttackData.img = "systems/pf1/icons/items/weapons/thorn-bow.PNG"
+
+                        // check for noDex-Flag
+                        if (!sbcConfig.options.flags.noDex) {
+
+                            m_ActionData.attackAbilityModifier = +sbcUtils.getModifier(sbcData.notes.statistics.dex)
+
+                            // set abilityTypes
+                            m_ActionData.attackAbilityType = "dex"
+                            m_ActionData.damageAbilityType = "str"
+
+                            // Check if its a normal bow or a crossbow, because these don't use "str" as the damage ability type
+                            if (m_InputAttack.search(/(bow\b)/i) !== -1 && m_InputAttack.search(/(\bcomposite\b)/i) === -1) {
+                                m_ActionData.damageAbilityType = ""
+                            }
+
+                            m_ActionData.attackRangeUnits = "ft"
+                            m_ActionData.attackRangeIncrement = "5" // WIP: Should this really be 5?
+                        } 
+
+                    }
+
+                    // Handle natural attacks
+                    let naturalAttacksKeys = Object.keys(sbcContent.naturalAttacks)
+                    let naturalAttacksPattern = new RegExp("(" + naturalAttacksKeys.join("s*\\b|\\b") + ")", "i")
+                    
+                    if (naturalAttacksPattern.test(m_AttackData.attackName)) {
+                    
+                        let tempNaturalAttackName = m_AttackData.attackName.match(naturalAttacksPattern)[1];
+                        let tempNaturalAttack = sbcContent.naturalAttacks[tempNaturalAttackName.replace(/s$/,"").toLowerCase()];
+                        
+                        m_AttackData.attackType = "natural"
+                        m_AttackData.isPrimaryAttack = tempNaturalAttack.isPrimaryAttack
+                        m_AttackData.img = tempNaturalAttack.img
+                    }
+
+                    // Handle swarm attacks, as these are neither melee nor ranged
+                    if (m_AttackData.attackName.search(/\bSwarm\b/i) !== -1) {
+                        type = "other"
+                    }
+                                
+                    // Handle multiple attacks of the same type
+                    // Note: These are not iterative attacks!
+                    if (m_InputAttack.match(/(^\d+)/) !== null) {
+                        m_ActionData.numberOfAttacks = m_InputAttack.match(/(^\d+)/)[1];
+                        m_AttackData.attackNotes = m_ActionData.numberOfAttacks + " " + m_AttackData.attackNotes
+                    }
+
+                    // enhancementBonus
+                    if (m_InputAttack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/) !== null) {
+                        m_AttackData.enhancementBonus = m_InputAttack.match(/(?:[^\w]\+|^\+)(\d+)(?:\s\w)/)[1];
+                        m_AttackData.attackNotes = "+" + m_AttackData.enhancementBonus + " " + m_AttackData.attackNotes
+                    }
+
+                    // Masterwork
+                    if (m_InputAttack.match(/\bmwk\b/i) !== null) {
+                        m_AttackData.isMasterwork = true
+                        m_AttackData.attackNotes = "mwk " + m_AttackData.attackNotes
+                    }
+
+                    // Set the formattedAttackName to use later
+                    m_AttackData.formattedAttackName = m_AttackData.attackNotes
+                    
                     // attackModifier
-                    if (attack.match(/(\+\d+|-\d+)(?:[+0-9/ ]*\(*)/) !== null) {
+                    if (m_InputAttack.match(/(\+\d+|-\d+)(?:[+0-9/ ]*\(*)/) !== null) {
 
                         // Prefer matches that are not at the start and are followed by a parenthesis
-                        if (attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/) !== null) {
-                            inputAttackModifier = attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/)[1]
-                        } else if (attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/) !== null) {
+                        if (m_InputAttack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/) !== null) {
+                            m_ActionData.inputAttackModifier = m_InputAttack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*\(+)/)[1]
+                        } else if (m_InputAttack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/) !== null) {
                             // Otherwise try to get just an attackModifier, e.g. for attacks without damage
-                            inputAttackModifier = attack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/)[1]
+                            m_ActionData.inputAttackModifier = m_InputAttack.match(/(?!^)(\+\d+|-\d+)(?:[+0-9/ ]*)/)[1]
                         } else {
                             // If nothing is found, fail gracefully
                             let errorMessage = "Failed to find a useable attack modifier"
@@ -2451,238 +2507,170 @@ class attacksParser extends sbcParserBase {
                             sbcData.errors.push(error)
                         }
                         
-                        
-                        attackNotes += inputAttackModifier                        
+                        m_AttackData.attackNotes += m_ActionData.inputAttackModifier                        
                     }
                         
                     // numberOfIterativeAttacks, when given in the statblock in the form of
-                    // for example: +5 Vorpal Short Sword +15/+10/+5 (1d6+15 plus Vorpal)
-                    if (attack.match(/(\/\+\d+)/) !== null) {
-                        numberOfIterativeAttacks = attack.match(/(\/\+\d+)/g).length
-                        for (let i = numberOfIterativeAttacks; i>=1; i--) {
-                            attackNotes += "/+" + (inputAttackModifier-(inputAttackModifier-(5*i)))
+                    if (m_InputAttack.match(/(\/\+\d+)/) !== null) {
+                        m_ActionData.numberOfIterativeAttacks = m_InputAttack.match(/(\/\+\d+)/g).length
+                        for (let i = m_ActionData.numberOfIterativeAttacks; i>=1; i--) {
+                            m_AttackData.attackNotes += "/+" + (m_ActionData.inputAttackModifier-(m_ActionData.inputAttackModifier-(5*i)))
                         }
                     }
                     
-                    /* ------------------------------------ */
-                    /* Damage Calculation                    */
-                    /* ------------------------------------ */
+                    // [4.B] Parse damage and effect related data, e.g. number and type of damage dice
+                    //       This is mainly everything in parenthesis in any given attack
                         
                     // If the attack has damage dice
-                    if (attack.match(/\d+d\d+/) !== null) {
+                    if (m_InputAttack.match(/\d+d\d+/) !== null) {
 
                         // NumberOfDamageDice and DamageDie
-                        if (attack.match(/\d+d\d+/) !== null) {
-                            numberOfDamageDice = attack.match(/(\d+)d(\d+)/)[1]
-                            damageDie = attack.match(/(\d+)d(\d+)/)[2]
-                            attackNotes += " (" + numberOfDamageDice + "d" + damageDie
+                        if (m_InputAttack.match(/\d+d\d+/) !== null) {
+                            m_ActionData.numberOfDamageDice = m_InputAttack.match(/(\d+)d(\d+)/)[1]
+                            m_ActionData.damageDie = m_InputAttack.match(/(\d+)d(\d+)/)[2]
+                            m_AttackData.attackNotes += " (" + m_ActionData.numberOfDamageDice + "d" + m_ActionData.damageDie
                         }
                         // damageBonus
-                        if (attack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
-                            damageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1]
-                            let notesDamageBonus = attack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1];               
-                            attackNotes += notesDamageBonus
+                        if (m_InputAttack.match(/(?:d\d+)(\+\d+|\-\d+)/) !== null) {
+                            m_ActionData.damageBonus = m_InputAttack.match(/(?:d\d+)(\+\d+|\-\d+)/)[1]
+                            m_AttackData.attackNotes += m_ActionData.damageBonus
                         }
                         // critRange
-                        if (attack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
-                            critRange = attack.match(/(?:\/)(\d+)(?:-\d+)/)[1]
-                            attackNotes += "/" + critRange + "-20"
+                        if (m_InputAttack.match(/(?:\/)(\d+)(?:-\d+)/) !== null) {
+                            m_ActionData.critRange = m_InputAttack.match(/(?:\/)(\d+)(?:-\d+)/)[1]
+                            m_AttackData.attackNotes += "/" + m_ActionData.critRange + "-20"
                         }
                         // critMult
-                        if (attack.match(/(?:\/x)(\d+)/) !== null) {
-                            critMult = attack.match(/(?:\/x)(\d+)/)[1]
-                            attackNotes += "/x" + critMult
+                        if (m_InputAttack.match(/(?:\/x)(\d+)/) !== null) {
+                            m_ActionData.critMult = m_InputAttack.match(/(?:\/x)(\d+)/)[1]
+                            m_AttackData.attackNotes += "/x" + m_ActionData.critMult
                         }
 
-                        // attackEffects
-                        if (attack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/) !== null) {
-                            attackEffects = attack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/)[1]
-                            attackNotes += " " + attackEffects
-                            attackEffects = attackEffects.replace(/(\s+\band\b\s+)/i, ",").replace(/(\s*\bplus\b\s+)/i, ",").split(",")
+                        // effectNotes
+                        if (m_InputAttack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/) !== null) {
+                            let specialEffects = m_InputAttack.match(/(?:\(\d+d\d+[\+\d\/\-x\s]*)([^\)\n]*)(?:$|\))/)[1]
+                                                .replace(/(\s+\band\b\s+|\s*\bplus\b\s+)/gi, ",")
+                                                .replace(/(^,|,$)/g,"")
+                                                .split(",")
+
+                            if (specialEffects.length > 0) {
+                                for (let e=0; e<specialEffects.length; e++) {
+                                    let specialEffect = specialEffects[e]
+                                    if (specialEffect !== "")
+                                        m_AttackData.effectNotes.push(specialEffect)
+                                }
+                                
+                                m_AttackData.attackNotes += " plus " + m_AttackData.effectNotes.join(", ")
+                            }
+                            
                         }
 
                         // add the closing parenthesis to the attack notes
-                        attackNotes += ")"
+                        m_AttackData.attackNotes += ")"
 
-                    } else if (attack.match(/\(([^)]*)\)/) !== null){
+                    } else if (m_InputAttack.match(/\(([^)]*)\)/) !== null){
                         // If there is just a specialEffect in parenthesis
-                        let specialEffect = attack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
-                        attackNotes += " (" + specialEffect + ")"
-                        attackEffects.push(specialEffect)
+                        let specialEffect = m_InputAttack.replace(/\s+/g, " ").match(/\(([^)]*)\)/)[1]
+                        m_AttackData.attackNotes += " (" + specialEffect + ")"
+                        m_AttackData.effectNotes.push(specialEffect)
                     } else {
                         // If there are neither damage dice nor special effects in parenthesis
                         sbcConfig.options.debug && sbcUtils.log("Kind of embarrasing, but this should never happen.")
                     }
-                    
-                    
 
-                    /* ------------------------------------ */
-                    /* [2] CREATE AN ATTACK WITH THAT DATA    */
-                    /* ------------------------------------ */
-              
-                    let newAttack = await Item.create({
-                        name: sbcUtils.capitalize(attackName) || "undefined",
-                        type: "attack",
-                        data: {
-                            ability: {
-                                attack: attackAbilityType,
-                                critMult: critMult,
-                                critRange: critRange,
-                                damage: damageAbilityType,
-                                damageMult: 1
-                            },
-                            actionType: type,
-                            activation: {
-                                cost: 1,
-                                type: "attack"
-                            },
-                            attackName: sbcUtils.capitalize(attackName),
-                            attackNotes: [attackNotes],
-                            attackType: "weapon",
-                            duration: {
-                                units: "inst"
-                            },
-                            //"effectNotes": attackEffects.join(", "),
-                            effectNotes: attackEffects,
-                            primaryAttack: false,
-                            range: {
-                                units: attackRangeUnits,
-                                value: attackRangeIncrement
-                            }
-                        },
-                    }, { temporary: true });
-
-                    // Check, if the attack is a natural attack
-                    let naturalAttacksKeys = Object.keys(sbcContent.naturalAttacks)
-                    let naturalAttacksPattern = new RegExp("(" + naturalAttacksKeys.join("s*\\b|\\b") + ")", "i")
-
-                    let secondaryNaturalAttackPenalty = 0
-
-                    if (naturalAttacksPattern.test(attackName)) {
-
-                        let tempNaturalAttackName = attackName.match(naturalAttacksPattern)[1];
-
-                        let tempNaturalAttack = sbcContent.naturalAttacks[tempNaturalAttackName.replace(/s$/,"").toLowerCase()];
-
-                        newAttack.data.update({
-                            data: {
-                            attackType: "natural",
-                            primaryAttack: tempNaturalAttack.primaryAttack
-                            },
-                            img: tempNaturalAttack.img,
-                        });
-                        
-                        // If its a secondary attack, give it a malus of 5
-                        if (!newAttack.data.data.primaryAttack) {
-                            secondaryNaturalAttackPenalty = 5;
-                        }
-                    }
-
-                    // Set Masterwork Status
-                    if (mwkWeapon) {
-                        newAttack.data.update({
-                            name: "Mwk " + sbcUtils.capitalize(attackName),
-                            data: {
-                                masterwork: true,
-                            }
-                        });
-                    }
-
-                    // Change the attackName if there is an enhancementBonus
-                    if (enhancementBonus) {
-                        newAttack.data.update({
-                            name: "+" + enhancementBonus + " " + sbcUtils.capitalize(attackName),
-                            data: {
-                                enh: enhancementBonus,
-                                masterwork: true
-                            }
-                        });
-                    }
-
-                    // Calculate differences between given and calculated attack modifiers
-                    let calculatedAttackBonus = 0
+                    // Calculate Attack and, if needed, compensate for differences between input attackModifier and system-derived attackModifier
                     let calculatedAttackModifier = 
-                              +sbcData.characterData.actorData.data.data.attributes.bab.total
-                            + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size]
-                            + +attackAttrModifier
-                            + +mwkWeapon                    // Use the boolean for this calculation
-                            + +enhancementBonus
-                            - +secondaryNaturalAttackPenalty
+                          +sbcData.characterData.actorData.data.data.attributes.bab.total
+                        + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size]
+                        + +m_ActionData.attackAbilityModifier
+                    
+                    if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus > 0)
+                        calculatedAttackModifier += 1
 
-                    if (+calculatedAttackModifier !== +inputAttackModifier) {
-                        calculatedAttackBonus = +inputAttackModifier - +calculatedAttackModifier
+                    if (!m_AttackData.isPrimaryAttack)
+                        calculatedAttackModifier -= 5
+                    
+                    if (+calculatedAttackModifier !== +m_ActionData.inputAttackModifier) {
+                        m_ActionData.calculatedAttackBonus = +m_ActionData.inputAttackModifier - +calculatedAttackModifier
                     }
-
-                    newAttack.data.update({"data.attackBonus": calculatedAttackBonus.toString()})
-
-                    // Push extra attacks from numberOfAttacks
-                    for (let i=1; i<numberOfAttacks; i++) {
-                        newAttack.data._source.data.attackParts.push(
-                            [
-                                "0",
-                                sbcUtils.capitalize(attackName) + ": " + i
-                            ]
-                        )
-                    }
-
-                    // Push extra attacks from numberOfIterativeAttacks
-                    for (let i=1; i<=numberOfIterativeAttacks; i++) {
-                        newAttack.data._source.data.attackParts.push(
-                            [
-                                +(i*-5),
-                                "Iterative Attack with " + (i*-5)
-                            ]
-                        )
-                    }
-
-                    // Push Damage Parts & Calculate the difference between input and calculatedDamageBonus
+                    
+                    // Calculate Damage and, if needed, compensate for differences between input damageModifier and system-derived damageModifier
                     let strDamageBonus = 0 
-                    if (damageAbilityType === "str") {
+                    if (m_ActionData.damageAbilityType === "str") {
                         // Use the value given in the statblock instead of the one currently in the actor
-                        // strDamageBonus = +sbcData.characterData.actorData.data.data.abilities.str.mod
                         strDamageBonus = +sbcUtils.getModifier(sbcData.notes.statistics.str)
                     }
 
-                    let calculatedDamageBonus =
-                          +strDamageBonus
-                        + +enhancementBonus
-                        - +secondaryNaturalAttackPenalty
+                    let calculatedDamageBonus = (m_AttackData.isPrimaryAttack) ? +strDamageBonus + +m_AttackData.enhancementBonus : +strDamageBonus + +m_AttackData.enhancementBonus - 5
+                    m_ActionData.damageModifier = +m_ActionData.damageBonus - +calculatedDamageBonus 
 
-                    damageModifier = +damageBonus - +calculatedDamageBonus
+                    // Create the string needed for the damagePart
+                    let damageDiceString =
+                            m_ActionData.numberOfDamageDice
+                        +   "d"
+                        +   m_ActionData.damageDie
 
-                    // Try to find the defaultDamageType by checking if the attackName can be found in enumAttackDamageTypes
+                    // ... and if there is a difference between the statblock and the calculation, add an adjustment modifier
+                    if (m_ActionData.damageModifier !== 0)
+                        damageDiceString += "+" + m_ActionData.damageModifier + "[adjusted by sbc]";
+
+                    // Try to find the defaultDamageType by checking if the attackName can be found in sbcContent.attackDamageTypes
                     // This is done to find common damage types of attacks and weapons
                     // e.g. bite is piercing, bludgeoning and slashing
                     let attackDamageTypeKeys = Object.keys(sbcContent.attackDamageTypes)
-                    if (attackName !== "") {
-                        let damageTypePattern = new RegExp("(^\\b" + attackName.replace(/(\bmwk\b|s$)/ig,"").trim() + "\\b$)", "ig");
-                    
-                        for (let i=0; i < attackDamageTypeKeys.length; i++) {
-                            let attackDamageTypeKey = attackDamageTypeKeys[i]
+                    if (m_AttackData.attackName !== "") {
+                        let damageTypePattern = new RegExp("(^\\b" + m_AttackData.attackName.replace(/(\bmwk\b|s$)/ig,"").trim() + "\\b$)", "ig");
+                        let damageTypeFound = false
+
+                        for (let x=0; x < attackDamageTypeKeys.length; x++) {
+                            let attackDamageTypeKey = attackDamageTypeKeys[x]
                             let attackDamageType = sbcContent.attackDamageTypes[attackDamageTypeKey]
                             if (attackDamageTypeKey.toLowerCase().search(damageTypePattern) !== -1) {
-                                defaultDamageType = attackDamageType.type
-                                weaponSpecial = attackDamageType.special
+
+                                damageTypeFound = true
+                                
+                                // Split the found damage types
+                                // If they are separated via "," or "and" they are valid for the whole action
+                                // If they are separated via "or" we need a separate action
+                                let m_TempDamageTypeGroups = attackDamageType.type.split("or")
+
+                                for (let y=0; y<m_TempDamageTypeGroups.length; y++) {
+                                    let m_TempDamageTypeGroup = m_TempDamageTypeGroups[y].trim()
+                                    let m_TempDamageTypes = m_TempDamageTypeGroup.split(/,|and/g)
+
+                                    for (let z=0; z<m_TempDamageTypes.length; z++) {
+                                        let m_TempDamageType = m_TempDamageTypes[z].trim()
+                                        let m_DamageType = sbcConfig.damageTypes[m_TempDamageType.toLowerCase()]
+                                        m_ActionData.damageTypes.push(m_DamageType)
+
+                                    }
+                                }
+
                                 // If the Weapon has Range Increment and it is used for a ranged attack
                                 // Set the range increment accordingly
                                 if (attackDamageType.rangeIncrement && type === "rwak") {
-                                    newAttack.data.update({"data.range.value": attackDamageType.rangeIncrement})
+                                    m_ActionData.attackRangeIncrement = attackDamageType.rangeIncrement
                                 }
                                 
                                 // If the weapon has special properties, add that to the attackNotes
-                                if (weaponSpecial !== "-") {
-                                    attackNotes += ", Weapon Qualities: [" + weaponSpecial + "]"
+                                m_ActionData.weaponSpecial = attackDamageType.special
+
+                                if (m_ActionData.weaponSpecial !== "-") {
+                                    m_AttackData.attackNotes += "," + m_ActionData.weaponSpecial
                                 }
                             }
                         }
+
+                        if (!damageTypeFound)
+                            m_ActionData.damageTypes.push("untyped")
                     }
 
                     // Check for specialDamageTypes
                     // Check, if the attackEffect denotes a valid damageType for the base damage,
-                    
-                    // and use this override the default damage type
-                    for (let k = 0; k<attackEffects.length; k++) {
-                        let attackEffect = attackEffects[k]
+                    // and use this to override the default damage type
+
+                    for (let k = 0; k<m_AttackData.effectNotes.length; k++) {
+                        let attackEffect = m_AttackData.effectNotes[k]
 
                         let systemSupportedDamageTypes = Object.values(CONFIG["PF1"].damageTypes).map(x => x.toLowerCase())
                         let patternDamageTypes = new RegExp("(" + systemSupportedDamageTypes.join("\\b|\\b") + ")", "gi")
@@ -2690,12 +2678,16 @@ class attacksParser extends sbcParserBase {
                         // If the attackEffect has no additional damagePools XdY ...
                         if (attackEffect.match(/\d+d\d+/) === null) {
 
+
                             // ... and it matches any of the supported damageTypes ...
                             if (attackEffect.search(patternDamageTypes) !== -1) {
+
+
                                 specialDamageType = attackEffect.match(patternDamageTypes)[0].trim()
-                                // Remove the found attackEffect from the attackEffects array
-                                attackEffects.splice(k,1)
-                                specialDamageTypeFound = true
+
+                                // Remove the found attackEffect from the effectNotes array
+                                m_AttackData.effectNotes.splice(k,1)
+                                hasSpecialDamageType = true
                             }
 
                         } else {
@@ -2704,55 +2696,254 @@ class attacksParser extends sbcParserBase {
 
                             let attackEffectDamage = attackEffect.match(/(\d+d\d+\+*\d*)/)[0]
                             
-                            let attackEffectDamageType = "untyped"
 
-                            // ... if the attackEffect has damage and a damageType
-                            // otherwise use default "untyped"
-                            if (attackEffect.search(patternDamageTypes) !== -1) {
-                                attackEffectDamageType = attackEffect.match(patternDamageTypes)[0].trim()
+                            // Check if there is something left after removing the damage
+                            let attackEffectDamageType = attackEffect.replace(attackEffectDamage, "").trim()
+                            let attackEffectCustomDamageType = ""
+
+                            if (attackEffectDamageType !== "") {
+                                if (attackEffect.search(patternDamageTypes) !== -1) {
+                                    attackEffectDamageType = attackEffect.match(patternDamageTypes)[0].trim()
+                                } else {
+                                    attackEffectCustomDamageType = attackEffectDamageType
+                                }
+                            } else {
+                                attackEffectDamageType = "untyped"
                             }
 
-                            // Push the damage values to the attack
-                            newAttack.data._source.data.damage.nonCritParts.push(
-                                [
-                                    attackEffectDamage,
-                                    attackEffectDamageType
-                                ]
-                            )
-                            // Remove the found attackEffect from the attackEffects array
-                            attackEffects.splice(k,1)
+                            // Push the damage values to the action
+                            m_ActionData.nonCritParts.push([
+                                attackEffectDamage,
+                                {
+                                    "values": [attackEffectDamageType],
+                                    "custom": attackEffectCustomDamageType
+                                }
+                            ])
+                            
+                            // Remove the found attackEffect from the effectNotes array
+                            m_AttackData.effectNotes.splice(k,1)
 
                         }
                         
                     }
 
-                    // Set the main damageType
-                    if (specialDamageTypeFound) {
-                        damageType = specialDamageType
-                    } else {
-                        damageType = defaultDamageType
+                    // ... then push the damagePart
+                    m_ActionData.damageParts.push([
+                        damageDiceString,
+                        {
+                            "values": m_ActionData.damageTypes,
+                            "custom": m_ActionData.customDamageTypes
+                        }
+                    ])
+
+                    // Push extra attacks from numberOfAttacks
+                    for (let i=1; i<m_ActionData.numberOfAttacks; i++) {
+                        let prefixAttackName = i+1 + sbcConfig.const.suffixMultiples[i]
+                        m_ActionData.attackParts.push(
+                            [
+                                "",
+                                prefixAttackName + " " + sbcUtils.capitalize(m_AttackData.attackName.replace(/s$/, ""))
+                            ]
+                        )
                     }
 
-                    // Push the damage values to the attack
-                    newAttack.data._source.data.damage.parts.unshift(
-                        [
-                            numberOfDamageDice + "d" + damageDie + "+" + damageModifier,
-                            damageType
-                        ]
-                    )
+                    // Push extra attacks from numberOfIterativeAttacks
+                    // WIP: This does not register or handle statblocks with errors in the iterations
+                    if (m_ActionData.numberOfIterativeAttacks > 0) {
+                        m_ActionData.formulaicAttacksCountFormula = "ceil(@attributes.bab.total/5)-1"
+                    }
+                    
+                    
+                    /*
+                    console.log("m_AttackData:")
+                    console.log(m_AttackData)
 
-                    // Push attackNotes and effectNotes
-                    newAttack.data.update({
-                        data: {
-                            attackNotes: [attackNotes],
-                            effectNotes: attackEffects,
-                        }
-                    })
+                    console.log("m_ActionData:")
+                    console.log(m_ActionData)
+                    */
 
-                    sbcData.characterData.items.push(newAttack)
+                    // [5] Create an attack from m_AttackData
+
+                    let m_NewAttack = await Item.create({
+                        "_id": randomID(16),
+                        "name": sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined",
+                        "type": "attack",
+                        "img": m_AttackData.img,
+                        "data": {
+                            "description": {
+                                "value": "",
+                                "chat": "",
+                                "unidentified": ""
+                            },
+                            "tags": [],
+                            "actions": [],
+                            "uses": {
+                                "per": "",
+                                "value": 0,
+                                "maxFormula": ""
+                            },
+                            "attackNotes": sbcUtils.sbcSplit(m_AttackData.attackNotes),
+                            "effectNotes": m_AttackData.effectNotes,
+                            "links": {
+                                "children": [],
+                                "charges": []
+                            },
+                            "tag": "",
+                            "useCustomTag": false,
+                            "flags": {
+                                "boolean": {},
+                                "dictionary": {}
+                            },
+                            "scriptCalls": [],
+                            "masterwork": (m_AttackData.isMasterwork || m_AttackData.enhancementBonus !== 0) ? true : false,
+                            "enh": m_AttackData.enhancementBonus,
+                            "proficient": true,
+                            "isPrimaryAttack": m_AttackData.isPrimaryAttack,
+                            "held": "normal",
+                            "showInQuickbar": true,
+                            "broken": false,
+                            "ammoType": "",
+                            "attackType": m_AttackData.attackType,
+                            "identifiedName": sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined"
+                        },
+                        "effects": [],
+                        "folder": null,
+                        "sort": 0,
+                        "permission": {
+                            "default": 0,
+                        },
+                        "flags": {}
+
+
+                    }, { temporary: true });
+
+                    m_NewAttack.prepareData()
+                    
+
+                    // [6] Create an action from m_ActionData
+                    //     which in turn needs to be pushed to the in [5] created attack
+
+                    let m_NewAction = {
+                        "_id": randomID(16),
+                        "name": sbcUtils.capitalize(m_AttackData.attackName),
+                        "img": m_AttackData.img,
+                        "description": "",
+                        "activation": {
+                            "cost": 1,
+                            "type": "standard"
+                        },
+                        "unchainedAction": {
+                            "activation": {
+                                "cost": 1,
+                                "type": ""
+                            }
+                        },
+                        "duration": {
+                            "value": null,
+                            "units": ""
+                        },
+                        "target": {
+                            "value": ""
+                        },
+                        "range": {
+                            "value": m_ActionData.attackRangeIncrement,
+                            "units": m_ActionData.attackRangeUnits,
+                            "maxIncrements": 1,
+                            "minValue": null,
+                            "minUnits": ""
+                        },
+                        "uses": {
+                            "autoDeductCharges": true,
+                            "autoDeductChargesCost": "1"
+                        },
+                        "measureTemplate": {
+                            "type": "",
+                            "size": "",
+                            "overrideColor": false,
+                            "customColor": "",
+                            "overrideTexture": false,
+                            "customTexture": ""
+                        },
+                        "attackName": sbcUtils.capitalize(m_AttackData.attackName.replace(/s$/, "")),
+                        "actionType": type,
+                        "attackBonus": m_ActionData.calculatedAttackBonus.toString() + "[adjusted by sbc]",
+                        "critConfirmBonus": "",
+                        "damage": {
+                            "critParts": [],
+                            "nonCritParts": m_ActionData.nonCritParts,
+                            "parts": m_ActionData.damageParts
+                        },
+                        "formulaicAttacks": {
+                            "count": {
+                                "formula": m_ActionData.formulaicAttacksCountFormula
+                            },
+                            "bonus": {
+                                "formula": "@formulaicAttack*-5"
+                            },
+                            "label": ""
+                        },
+                        "formula": "",
+                        "ability": {
+                            "attack": m_ActionData.attackAbilityType,
+                            "damage": m_ActionData.damageAbilityType,
+                            "damageMult": m_ActionData.damageMult,
+                            "critRange": m_ActionData.critRange,
+                            "critMult": m_ActionData.critMult
+                        },
+                        "save": {
+                            "dc": "",
+                            "type": "",
+                            "description": ""
+                        },
+                        "effectNotes": [],
+                        "attackNotes": [],
+                        "soundEffect": "",
+                        "powerAttack": {
+                            "multiplier": "",
+                            "damageBonus": 2,
+                            "critMultiplier": 1
+                        },
+                        "naturalAttack": {
+                            "secondary": {
+                                "attackBonus": "-5",
+                                "damageMult": 0.5
+                            }
+                        },
+                        "nonlethal": false,
+                        "usesAmmo": false,
+                        "spellEffect": "",
+                        "spellArea": "",
+                        "enh": {
+                          "override": false,
+                          "value": 0
+                        },
+                        "conditionals": [],
+                        "attackParts": m_ActionData.attackParts
+                    }
+
+                    // [7] Create the final document
+                    //     and push it onto the stack of embeddedDocuments (e.g. items)
+                    //     that get created in batch later
+
+                    // Push the action into the array of FullAttackActions
+                    m_FullAttackActions.push(m_NewAction)
+
+                    // Push it into this attack as well
+                    m_NewAttack.data.update({"data.actions": [ m_NewAction ] })
+                    m_NewAttack.prepareData()
+
+                    // And lastly add the attack to the item stack
+                    sbcData.characterData.items.push(m_NewAttack)
+                    
                 }
 
+                // WIP: Maybe create a "FullAttack Action"
+                console.log("m_FullAttackActions")
+                console.log(m_FullAttackActions)
+
             }
+
+            
 
             return true
 
@@ -2797,9 +2988,6 @@ class specialAttacksParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as a Special Attack."
             let error = new sbcError(1, "Parse/Offense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4661,10 +4849,7 @@ export async function checkFlags() {
 export async function createEmbeddedDocuments() {
 
     try {
-
-        //console.log("ITEMS TO CREATE")
-        //console.log(sbcData.characterData.items)
-        //return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.data.toObject()) })
+        sbcData.characterData.actorData.prepareData()
         return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.toObject()) })
     
     } catch (err) {

@@ -7,7 +7,7 @@ export const sbcConfig = {};
 /* ------------------------------------ */
 
 sbcConfig.modData = {
-    "version": "3.3.6",
+    "version": "3.4.0",
     "mod": "pf1-statblock-converter",
     "modName": "sbc | PF1 Statblock Converter"
 }
@@ -59,6 +59,12 @@ sbcConfig.const = {
         "attributes.speed.land.climb.total",
         "attributes.speed.land.burrow.total",
         "attributes.sr.total"  
+    ],
+    "suffixMultiples": [
+        "st",
+        "nd",
+        "rd",
+        "th"
     ]
 }
 
@@ -82,7 +88,8 @@ sbcConfig.options = {
         "noInt": false,
         "noWis": false,
         "noCha": false,
-        "isUndead": false
+        "isUndead": false,
+        "hasWeaponFinesse": false
         
     }
 }
@@ -429,11 +436,12 @@ sbcConfig.damageTypes = {
     "c": "cold",
     "f": "fire",
     "e": "electricity",
-    "s": "sonic",
+    "so": "sonic",
     "a": "acid",
     "force": "force",
     "negative": "negative",
-    "positive": "positive"
+    "positive": "positive",
+    "untyped": "untyped"
 }
 
 sbcConfig.armorBonusTypes = [
