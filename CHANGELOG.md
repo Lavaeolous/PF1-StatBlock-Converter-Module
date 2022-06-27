@@ -1,5 +1,12 @@
 # Change Log
 
+2022_06_27 - v3.4.0
+*  Breaking: v0.81.0 of the PF1e system introduced a new attack / action system with is not compatible with version 3.3.6 or earlier of sbc!
+*  Added support for the new attack / action system (#544, #543, #542, #540, #539, #536, #535, #534)
+*  Fixed a bug where attack effects included an empty entry in their array (#533)
+*  Added a method to change the attack ability to dex when the weapon finesse feat is found in the statblock (#538)
+*  Fixed a critical error that led to sbc changing compendium entities (#541)
+
 2022_05_30 - v3.3.6
 *  Fixed an error with placeholders for non playable races (#527)
 *  Updated the parsing of senses to be compatible to the current pf1e system version (#525, #523)

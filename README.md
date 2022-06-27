@@ -11,16 +11,16 @@ Install the SBC Module via the Add-On Module Tab in FoundryVTT using the followi
 ```
 https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json
 ```
-# Compatibility - v3.3.6
+# Compatibility - SBC v3.4.0
 
-*  GameSystem: [PF1 0.80.24](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
+*  GameSystem: [PF1 0.81.0](https://gitlab.com/Furyspark/foundryvtt-pathfinder1)
 *  FoundryVTT: 9 Build 269
 
 
 # How to Use
-1.  Copy a Statblock for the creature, enemy or npc you want to generate (beginning with the name).
-2.  In the Actor Directory tab of foundry, click on "Import Statblock"
-3.  Paste the Statblock into the textarea, check the preview for any errors and import via button as NPC or PC actor
+1  Copy &amp; Paste Statblocks into the input, you can edit the statblock after copying.
+2  Errors, warnings and information will be shown below to help you identify potential errors in the statblock.
+3  If you use multiple custom compendia, loading times may get very long.
 
 # Disclaimer
 sbc is never finished it seems :D. See change log for latest updates and issues for known bugs.
@@ -28,11 +28,14 @@ sbc is never finished it seems :D. See change log for latest updates and issues 
 If you find any errors or have a statblock that can't be converted at all, feel free to open an issue here or let me know on the FoundryVTT Discord.
 
 # What gets converted
-SBC creates a mostly complete Actor (PC or NPC) with embedded documents for feats, spells and stuff like that. Most of the time the conversion will not be complete, as for example items and gear may be imported incorrectly or as placeholders. For most actors this will be fine, for critical and important NPCs, Bosses and PCs i strongly advise you to use sbc for the bulk, but check for errors carefully!
+*  The conversion from statblock text to actor is not perfect.
+*  To reproduce the statblock as written, some adjustments are added automatically.
+*  Statblocks often include typographical errors (e.g. extra linebreaks). You may need to fix these manually.
+*  For important NPCs (e.g. named one's, bosses or the BBEG), check them manually after the conversion!
+*  Skills are almost never given in full in statblocks, sbc only fills in the ones given.
 
 # Known Bugs
-*  #522 - Imported Actors with Wildcard Token Images break the scene/map
-*  #521 - All Imports throw an error thats generated somewhere in the creation of creature type items
+*  The transition to the new attack / action system in PF1e 0.81.0 is handled now by sbc, but may include some bugs. Let me know if you find any!
 *  Not all Statblocks are equally formatted. As long as its reasonably well formed, it should work. If not, check the preview area or console.
 *  See Issues. If you find anythings thats not noted there, please let me know.
 
