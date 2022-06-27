@@ -59,6 +59,12 @@ sbcConfig.const = {
         "attributes.speed.land.climb.total",
         "attributes.speed.land.burrow.total",
         "attributes.sr.total"  
+    ],
+    "suffixMultiples": [
+        "st",
+        "nd",
+        "rd",
+        "th"
     ]
 }
 
@@ -430,11 +436,12 @@ sbcConfig.damageTypes = {
     "c": "cold",
     "f": "fire",
     "e": "electricity",
-    "s": "sonic",
+    "so": "sonic",
     "a": "acid",
     "force": "force",
     "negative": "negative",
-    "positive": "positive"
+    "positive": "positive",
+    "untyped": "untyped"
 }
 
 sbcConfig.armorBonusTypes = [

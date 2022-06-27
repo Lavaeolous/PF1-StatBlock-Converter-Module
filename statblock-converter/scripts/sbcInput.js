@@ -165,6 +165,7 @@ export class sbcInputDialog extends Application {
                         // Create a permanent actor using the data from the temporary one
 
                         let newActor = await Actor.create(sbcData.characterData.actorData.data.toObject())
+                        
 
                         // Fix health if it's off from max after all that.
                         // Needs to be done here with real actor since the temporary misbehaves with health.
@@ -173,6 +174,7 @@ export class sbcInputDialog extends Application {
 
                         // Conversion Validation
                         await sbcUtils.conversionValidation(newActor.id);
+                        newActor.prepareData();
        
                         sbcInputDialog.sbcInputDialogInstance.close()
                         sbcApp.resetSBC(false)

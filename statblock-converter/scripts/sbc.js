@@ -95,22 +95,10 @@ export class sbcApp {
 
 // Run when Foundry gets initialized
 Hooks.once("init", async function() { 
-
-    /* Why did i stop the enter propagation in the old sbc?
-    window.addEventListener("keydown",function(e) {
-        if(e.keyIdentifier=="U+000A" || e.keyIdentifier=="Enter") {
-            if(e.target.id=="sbcInput") {
-                e.stopPropagation()
-                return false
-            }
-        }
-    },true);
-    */
     
     window.SBC = {
         sbcApp, sbcUtils, sbcConfig, sbcData, sbcSettings, sbcInputDialog
     }
-   
     
 });
 
