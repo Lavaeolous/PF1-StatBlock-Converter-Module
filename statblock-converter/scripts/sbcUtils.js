@@ -358,10 +358,10 @@ export class sbcUtils {
 
         // Return the searchResult, which either is a clone of the found entity or null
         if (searchResult !== false) {
-            let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
+            let packName = searchResult.pack.metadata.id;
 
-            let pack = await game.packs.get(packName)
-            foundEntity = await pack.getDocument(searchResult.index._id)
+            let pack = await game.packs.get(packName);
+            foundEntity = await pack.getDocument(searchResult.index._id);
 
             let clone = await Item.create(foundEntity.data, {temporary: true})
             return clone;
