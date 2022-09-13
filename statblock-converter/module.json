@@ -48,8 +48,7 @@
   "languages": [
     {
       "lang": "en",
-      "name": "English",
-      "path": "languages/en.json"
+      "name": "English"
     }
   ],
   "dependencies": [],
