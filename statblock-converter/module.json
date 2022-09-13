@@ -26,14 +26,12 @@
     "verified": "10.285",
     "maximum": "10"
   },
-  "scripts": [],
   "esmodules": [
     "./scripts/sbc.js"
   ],
   "styles": [
     "./styles/sbc.css"
   ],
-  "packs": [],
   "relationships": {
     "systems": [{
       "id": "pf1",
@@ -45,13 +43,6 @@
       }
     }]
   },
-  "languages": [
-    {
-      "lang": "en",
-      "name": "English"
-    }
-  ],
-  "dependencies": [],
   "socket": false,  
   "protected": false,
   "coreTranslation": false,
