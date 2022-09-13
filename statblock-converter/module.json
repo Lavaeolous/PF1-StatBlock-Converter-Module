@@ -1,11 +1,12 @@
 {
-  "name": "pf1-statblock-converter",
+  "id": "pf1-statblock-converter",
   "title": "sbc | PF1 Stackblock Converter",
   "description": "Convert Pathfinder 1. Edition Statblocks into working NPC or PC Actors",
   "author": "Lavaeolous",
   "authors": [
     {
-      "name": "Lavaeolous"
+      "name": "Lavaeolous",
+      "discord": "Primer#2220"
     },
     {
       "name": "Noon"
@@ -14,13 +15,17 @@
       "name": "mkahvi"
     }
   ],
-  
   "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
   "bugs": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues",
+  "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json",
+  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v4.0.0/4.0.0_statblock-converter.zip",
   "flags": {},
-  "version": "3.4.0",
-  "minimumCoreVersion": "9",
-  "compatibleCoreVersion": "9",
+  "version": "4.0.0",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "10.285",
+    "maximum": "10"
+  },
   "scripts": [],
   "esmodules": [
     "./scripts/sbc.js"
@@ -28,15 +33,27 @@
   "styles": [
     "./styles/sbc.css"
   ],
-  "languages": [],
   "packs": [],
-  "system": [
-    "pf1"
+  "relationships": {
+    "systems": [{
+      "id": "pf1",
+      "type": "system",
+      "manifest": "https://gitlab.com/foundryvtt_pathfinder1e/foundryvtt-pathfinder1/-/releases/permalink/latest/downloads/system.json",
+      "compatibility": {
+        "minimum": "0.82.2",
+        "verified": "0.82.2"
+      }
+    }]
+  },
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    }
   ],
   "dependencies": [],
-  "socket": false,
-  "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json",
-  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v3.4.0/3.4.0_statblock-converter.zip",
+  "socket": false,  
   "protected": false,
   "coreTranslation": false,
   "library": false
