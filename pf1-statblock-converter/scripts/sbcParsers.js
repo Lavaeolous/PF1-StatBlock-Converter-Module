@@ -1311,14 +1311,14 @@ class hpParser extends sbcParserBase {
                     let classItem = currentItems[i]
 
                     // Reset the HP for all classItems
-                    classItem.updateSource({ "data.hp": 0 })
+                    classItem.updateSource({ "hp": 0 })
 
                     if (classItem.system.classType !== "racial") {
                         hasOnlyRacialHd = false
                         classesLeftToParse++
                     } else {
                         // Reset Level of RacialHD
-                        classItem.updateSource({ "data.level": 0 })
+                        classItem.updateSource({ "level": 0 })
                         isRacial = true
                     }
 
@@ -1347,7 +1347,7 @@ class hpParser extends sbcParserBase {
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
             // Set the current value of the actor hp
-            sbcData.characterData.actorData.updateSource({ "data.attributes.hp.value": +hpTotalInStatblock })
+            sbcData.characterData.actorData.updateSource({ "system.attributes.hp.value": +hpTotalInStatblock })
 
             let calculatedHpTotal = 0
             let calculatedHdTotal = 0
@@ -1410,7 +1410,7 @@ class hpParser extends sbcParserBase {
                                 // These use the numberOfHitDice instead of the classItem.level 
                                 calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
                                 // Set the HD for the racialHd as well
-                                foundClassItem.updateSource({"data.level": +numberOfHitDice})
+                                foundClassItem.updateSource({"level": +numberOfHitDice})
                                 
                                 numberOfHitDice -= +numberOfHitDice
                                 
@@ -1427,7 +1427,7 @@ class hpParser extends sbcParserBase {
                                     // Calculate the HP for Classes of type Class as long as there are classes left to parse
                                     calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
                                     classItem.level = +numberOfHitDice
-                                    foundClassItem.updateSource({"data.level": classItem.level})
+                                    foundClassItem.updateSource({"level": classItem.level})
                                     numberOfHitDice -= +classItem.level
                                     
                                     classItems[j].isParsed = true
@@ -1447,7 +1447,7 @@ class hpParser extends sbcParserBase {
                                 }
                             }
                                 
-                            foundClassItem.updateSource({"data.hp": +calcHp})
+                            foundClassItem.updateSource({"hp": +calcHp})
                         } 
 
                     } 
@@ -1481,12 +1481,12 @@ class hpParser extends sbcParserBase {
 
                             switch (hpAbilityType) {
                                 case "regeneration":
-                                    let parserRegeneration = new singleValueParser(["data.traits.regen"], "string")
+                                    let parserRegeneration = new singleValueParser(["system.traits.regen"], "string")
                                     await parserRegeneration.parse(tempInput, line)
                                     break
                                 case "fast healing":
                                 case "fast-healing":
-                                    let parserFastHealing = new singleValueParser(["data.traits.fastHealing"], "string")
+                                    let parserFastHealing = new singleValueParser(["system.traits.fastHealing"], "string")
                                     await parserFastHealing.parse(tempInput, line)
                                     break
                                 default:
