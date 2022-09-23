@@ -852,38 +852,38 @@ class sensesParser extends sbcParserBase {
                         // Range
                         case "blindsight":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.bs": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"system.traits.senses.bs": +range}) : null
                             break
                         case "blindsense":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.bse": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"system.traits.senses.bse": +range}) : null
                             break
                         case "darkvision":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.dv": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"system.traits.senses.dv": +range}) : null
                             break
                         case "tremorsense":
                             range = value.match(rangeRegEx)
-                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.ts": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"system.traits.senses.ts": +range}) : null
                             break
 
                         // Yes/No Toggle
                         case "scent":
-                            sbcData.characterData.actorData.updateSource({"traits.senses.sc": true})
+                            sbcData.characterData.actorData.updateSource({"system.traits.senses.sc": true})
                             break
                         case "see in darkness":
-                            sbcData.characterData.actorData.updateSource({"traits.senses.sid": true})
+                            sbcData.characterData.actorData.updateSource({"system.traits.senses.sid": true})
                             break
                         case "truesight":
                         case "true seeing":
-                            sbcData.characterData.actorData.updateSource({"traits.senses.tr": true})
+                            sbcData.characterData.actorData.updateSource({"system.traits.senses.tr": true})
                             break
                         case "see invisibility":
-                            sbcData.characterData.actorData.updateSource({"traits.senses.si": true})
+                            sbcData.characterData.actorData.updateSource({"system.traits.senses.si": true})
                             break
                         // For whatever reason lowlight is handled differently from the other toggles
                         case "low-light":
-                            sbcData.characterData.actorData.updateSource({"traits.senses.ll.enabled": true})
+                            sbcData.characterData.actorData.updateSource({"system.traits.senses.ll.enabled": true})
                             break
 
                         default:
@@ -4906,26 +4906,26 @@ export function initMapping() {
     sbcMapping.map = {
         base: {
             name: new singleValueParser(["name", "token.name"], "string"),
-            cr: new singleValueParser(["data.details.cr.base", "data.details.cr.total"], "number"),
+            cr: new singleValueParser(["system.details.cr.base", "system.details.cr.total"], "number"),
             mr: new notesParser(["base.mr"]),                                                 // currently not supported by the game system
-            level: new notesParser(["data.details.level.value"]),                             // gets calculated by foundry
-            xp: new notesParser(["data.details.xp.value"]),                                   // gets calculated by foundry
-            gender: new singleValueParser(["data.details.gender"], "string"),
+            level: new notesParser(["system.details.level.value"]),                             // gets calculated by foundry
+            xp: new notesParser(["system.details.xp.value"]),                                   // gets calculated by foundry
+            gender: new singleValueParser(["system.details.gender"], "string"),
             race: new raceParser(),
             classes: new classesParser(),
             source: new notesParser(["base.source"]),                                         // used in the notes section
-            alignment: new singleValueParser(["data.details.alignment"], "string"),
-            size: new singleValueParser(["data.traits.size"], "string"),
+            alignment: new singleValueParser(["system.details.alignment"], "string"),
+            size: new singleValueParser(["system.traits.size"], "string"),
             creatureType: new creatureTypeParser(),
-            init: new singleValueParser(["data.attributes.init.total"], "number"),
+            init: new singleValueParser(["system.attributes.init.total"], "number"),
             senses: new sensesParser(),
             aura: new auraParser()
         },
         defense: {
-            acNormal: new singleValueParser(["data.attributes.ac.normal.total"], "number"),
-            acFlatFooted: new singleValueParser(["data.attributes.ac.flatFooted.total"], "number"),
-            acTouch: new singleValueParser(["data.attributes.ac.touch.total"], "number"),
-            //"acContext": new singleValueParser(["data.attributes.acNotes"], "string"),
+            acNormal: new singleValueParser(["system.attributes.ac.normal.total"], "number"),
+            acFlatFooted: new singleValueParser(["system.attributes.ac.flatFooted.total"], "number"),
+            acTouch: new singleValueParser(["system.attributes.ac.touch.total"], "number"),
+            //"acContext": new singleValueParser(["system.attributes.acNotes"], "string"),
             acTypes: new acTypesParser(),
             
             hp: new hpParser(),
@@ -4934,7 +4934,7 @@ export function initMapping() {
             resist: new resistParser(),
             weakness: new weaknessParser(),
             defensiveAbilities: new entityParser(),
-            dr: new singleValueParser(["data.traits.dr"], "string"),
+            dr: new singleValueParser(["system.traits.dr"], "string"),
             sr: new srParser(),  
         },
         offense: {
@@ -4947,15 +4947,15 @@ export function initMapping() {
         tactics: new tacticsParser(),
         statistics: {
             
-            str: new abilityParser(["data.abilities.str.total", "data.abilities.str.value"], ["data.abilities.str.mod"], "number"),
-            dex: new abilityParser(["data.abilities.dex.total", "data.abilities.dex.value"], ["data.abilities.dex.mod"], "number"),
-            con: new abilityParser(["data.abilities.con.total", "data.abilities.con.value"], ["data.abilities.con.mod"], "number"),
-            int: new abilityParser(["data.abilities.int.total", "data.abilities.int.value"], ["data.abilities.int.mod"], "number"),
-            wis: new abilityParser(["data.abilities.wis.total", "data.abilities.wis.value"], ["data.abilities.wis.mod"], "number"),
-            cha: new abilityParser(["data.abilities.cha.total", "data.abilities.cha.value"], ["data.abilities.cha.mod"], "number"),
-            bab: new singleValueParser(["data.attributes.bab.total"], "number"),
-            cmb: new singleValueParser(["data.attributes.cmb.total"], "number"),
-            cmd: new singleValueParser(["data.attributes.cmd.total"], "number"),
+            str: new abilityParser(["system.abilities.str.total", "system.abilities.str.value"], ["system.abilities.str.mod"], "number"),
+            dex: new abilityParser(["system.abilities.dex.total", "system.abilities.dex.value"], ["system.abilities.dex.mod"], "number"),
+            con: new abilityParser(["system.abilities.con.total", "system.abilities.con.value"], ["system.abilities.con.mod"], "number"),
+            int: new abilityParser(["system.abilities.int.total", "system.abilities.int.value"], ["system.abilities.int.mod"], "number"),
+            wis: new abilityParser(["system.abilities.wis.total", "system.abilities.wis.value"], ["system.abilities.wis.mod"], "number"),
+            cha: new abilityParser(["system.abilities.cha.total", "system.abilities.cha.value"], ["system.abilities.cha.mod"], "number"),
+            bab: new singleValueParser(["system.attributes.bab.total"], "number"),
+            cmb: new singleValueParser(["system.attributes.cmb.total"], "number"),
+            cmd: new singleValueParser(["system.attributes.cmd.total"], "number"),
             feats: new entityParser(),
             skills: new skillsParser(),
             languages: new languageParser(),
