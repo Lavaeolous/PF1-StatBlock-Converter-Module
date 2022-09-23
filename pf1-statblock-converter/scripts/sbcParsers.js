@@ -4850,7 +4850,7 @@ export async function createEmbeddedDocuments() {
 
     try {
         sbcData.characterData.actorData.prepareData()
-        return sbcData.characterData.actorData.system.update({ items: sbcData.characterData.items.map(i => i.toObject()) })
+        return sbcData.characterData.actorData.updateSource({ items: sbcData.characterData.items.map(i => i.toObject()) })
     
     } catch (err) {
 
