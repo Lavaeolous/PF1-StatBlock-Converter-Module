@@ -2233,7 +2233,7 @@ class speedParser extends sbcParserBase {
                 }
 
                 sbcData.characterData.conversionValidation.attributes[type] = +speed
-                sbcData.characterData.actorData.system.update({ [`data.attributes.speed.${type}.base`]: +speed })
+                sbcData.characterData.actorData.updateSource({ [`data.attributes.speed.${type}.base`]: +speed })
 
                 // TODO: Allow abbreviations
                 let flyManeuverabilitiesPattern = new RegExp("(" + Object.values(CONFIG["PF1"].flyManeuverabilities).join("\\b|\\b") + ")", "i")
@@ -2242,7 +2242,7 @@ class speedParser extends sbcParserBase {
                     if (type === "fly") {
                         let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)?.[1];
                         if (flyManeuverability) {
-                            sbcData.characterData.actorData.system.update({ "data.attributes.speed.fly.maneuverability": flyManeuverability });
+                            sbcData.characterData.actorData.updateSource({ "data.attributes.speed.fly.maneuverability": flyManeuverability });
                         }
                         if (input[2]) {
                             speedContext = input[2]
@@ -2580,8 +2580,8 @@ class attacksParser extends sbcParserBase {
 
                     // Calculate Attack and, if needed, compensate for differences between input attackModifier and system-derived attackModifier
                     let calculatedAttackModifier = 
-                          +sbcData.characterData.actorData.system.data.attributes.bab.total
-                        + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.data.traits.size]
+                          +sbcData.characterData.actorData.system.attributes.bab.total
+                        + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.traits.size]
                         + +m_ActionData.attackAbilityModifier
                     
                     if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus > 0)
@@ -2929,7 +2929,7 @@ class attacksParser extends sbcParserBase {
                     m_FullAttackActions.push(m_NewAction)
 
                     // Push it into this attack as well
-                    m_NewAttack.data.update({"data.actions": [ m_NewAction ] })
+                    m_NewAttack.updateSource({"data.actions": [ m_NewAction ] })
                     m_NewAttack.prepareData()
 
                     // And lastly add the attack to the item stack
@@ -4536,9 +4536,9 @@ class ecologyParser extends sbcParserBase {
             
             if (alreadyHasEcologyDocument) {
 
-                let tempDesc = sbcData.characterData.items[ecologyItemIndex].data.data.description.value
+                let tempDesc = sbcData.characterData.items[ecologyItemIndex].system.description.value
 
-                sbcData.characterData.items[ecologyItemIndex].data.update({ "data.description.value": tempDesc + ecologyDesc })
+                sbcData.characterData.items[ecologyItemIndex].updateSource({ "description.value": tempDesc + ecologyDesc })
 
             } else {
 
@@ -4890,7 +4890,7 @@ export async function generateNotesSection() {
     `
     
     // WRITE EVERYTHING TO THE NOTES
-    sbcData.characterData.actorData.system.update({ "data.details.notes.value": sbcInfo + styledNotes + rawNotes })
+    sbcData.characterData.actorData.updateSource({ "details.notes.value": sbcInfo + styledNotes + rawNotes })
 }
 
 /* ------------------------------------ */
