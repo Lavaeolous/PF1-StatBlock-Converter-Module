@@ -3452,8 +3452,8 @@ export async function parseStatistics(data, startLine) {
                             let currentItem = currentItems[currentItemsKeys[i]]
 
                             // Check if the item has Changes
-                            if (currentItem.data.data.changes) {
-                                let currentItemChanges = currentItem.data.data.changes
+                            if (currentItem.system.changes) {
+                                let currentItemChanges = currentItem.system.changes
 
                                 let currentItemWithAbilityChanges = currentItemChanges.find( function (element) {
                                     if(element.subTarget === ability.toLowerCase()) {
@@ -3520,7 +3520,7 @@ export async function parseStatistics(data, startLine) {
 
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
-                    sbcData.characterData.actorData.system.update({"data.attributes.cmdNotes": cmdContext})
+                    sbcData.characterData.actorData.updateSource({"attributes.cmdNotes": cmdContext})
 
                     sbcData.characterData.conversionValidation.attributes["cmd"] = +cmd
                     //if (cmdContext) sbcData.characterData.conversionValidation.context["cmd"] = cmdContext
@@ -3621,14 +3621,14 @@ class abilityParser extends sbcParserBase {
         if (typeof (value) === this.supportedTypes) {
             try {
                 for (const valueField of this.targetValueFields) {
-                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.system, valueField, value)
+                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData, valueField, value)
                 }
                 for (const modField of this.targetModFields) {
-                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.system, modField, sbcUtils.getModifier(value))
+                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData, modField, sbcUtils.getModifier(value))
                 }
                 return true
             } catch (err) {
-                let errorMessage = `Failed to parse ${value} into ${targetValueFields} (and ${sbcUtils.getModifier(value)} into ${targetModFields})`
+                let errorMessage = `Failed to parse ${value} into ${this.targetValueFields} (and ${sbcUtils.getModifier(value)} into ${this.targetModFields})`
                 let error = new sbcError(0, "Parse", errorMessage, line)
                 sbcData.errors.push(error)
 
@@ -3662,12 +3662,12 @@ class skillsParser extends sbcParserBase {
             for (let i=0; i<currentItems.length; i++) {
                 if (currentItems[i].type === "class") {
                     let classItem = currentItems[i]
-                    let skillKeys = Object.keys(classItem.data.data.classSkills)
+                    let skillKeys = Object.keys(classItem.system.classSkills)
 
                     // Loop through the skills
                     for (let j=0; j<skillKeys.length; j++) {
                         let currentSkill = skillKeys[j]
-                        if (classItem.data.data.classSkills[currentSkill] === true) {
+                        if (classItem.system.classSkills[currentSkill] === true) {
                             if (!classSkills.includes(currentSkill)) {
                                 classSkills.push(currentSkill)
                             }
@@ -3885,15 +3885,15 @@ class skillsParser extends sbcParserBase {
                         skillKey = "skill"
                     }
 
-                    let size = sbcData.characterData.actorData.system.data.traits.size
+                    let size = sbcData.characterData.actorData.system.traits.size
                     let sizeMod = 0
 
                     // As long as its not a custom skill ...
                     if (skillKey !== "skill") {
 
                         // Seems the temporary actors does not calculate the mod or if its a classSkill beforehand, so we need to do that manually
-                        let skillAbility = sbcData.characterData.actorData.system.data.skills[skillKey].ability
-                        let skillAbilityMod = sbcData.characterData.actorData.system.data.abilities[skillAbility].mod
+                        let skillAbility = sbcData.characterData.actorData.system.skills[skillKey].ability
+                        let skillAbilityMod = sbcData.characterData.actorData.system.abilities[skillAbility].mod
                         let classSkillMod = 0
                         
                         if (classSkills.includes(skillKey)) {
@@ -3915,7 +3915,7 @@ class skillsParser extends sbcParserBase {
 
                         if (skillKey.search(/(art|crf|lor|prf|pro)/) === -1) {
                             // IF ITS NOT A SKILL WITH SUBSKILLS
-                            await sbcData.characterData.actorData.system.update({ [`data.skills.${skillKey}.rank`]: skillRanks })
+                            await sbcData.characterData.actorData.updateSource({ [`skills.${skillKey}.rank`]: skillRanks })
 
                             // Add Data to conversionValidation
                             sbcData.characterData.conversionValidation["skills"][skillKey] = {
@@ -3928,9 +3928,9 @@ class skillsParser extends sbcParserBase {
                             let subSkillKey = skillKey + (+countOfSubSkills[skillKey])
 
                             // WIP FIND A WAY TO APPEND INSTEAD OF OVERWRITE THE SUBSKILLS
-                            sbcData.characterData.actorData.system.update(
+                            sbcData.characterData.actorData.updateSource(
                                 {
-                                    [`data.skills.${skillKey}.subSkills.${subSkillKey}`]: {
+                                    [`skills.${skillKey}.subSkills.${subSkillKey}`]: {
                                         ability: sbcData.characterData.actorData.system.data.skills[skillKey].ability,
                                         acp: sbcData.characterData.actorData.system.data.skills[skillKey].acp,
                                         cs: sbcData.characterData.actorData.system.data.skills[skillKey].cs,
@@ -3959,10 +3959,10 @@ class skillsParser extends sbcParserBase {
                             customSkillKey = "skill" + (+countOfCustomSkills+1)
                         }
 
-                        let defaultAbilityMod = sbcData.characterData.actorData.system.data.abilities["int"].mod
+                        let defaultAbilityMod = sbcData.characterData.actorData.abilities["int"].mod
 
                         let skillRanks = +skillTotal - +defaultAbilityMod
-                        sbcData.characterData.actorData.system.update({
+                        sbcData.characterData.actorData.updateSource({
                             [`data.skills.${customSkillKey}`]: {
                                 ability: "int",
                                 acp: false,
