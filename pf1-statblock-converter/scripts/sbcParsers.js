@@ -4890,7 +4890,7 @@ export async function generateNotesSection() {
     `
     
     // WRITE EVERYTHING TO THE NOTES
-    sbcData.characterData.actorData.updateSource({ "details.notes.value": sbcInfo + styledNotes + rawNotes })
+    sbcData.characterData.actorData.updateSource({ "system.details.notes.value": sbcInfo + styledNotes + rawNotes })
 }
 
 /* ------------------------------------ */
