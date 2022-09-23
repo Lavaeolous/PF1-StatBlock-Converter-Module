@@ -852,38 +852,38 @@ class sensesParser extends sbcParserBase {
                         // Range
                         case "blindsight":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.bs": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.bs": +range}) : null
                             break
                         case "blindsense":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.bse": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.bse": +range}) : null
                             break
                         case "darkvision":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.dv": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.dv": +range}) : null
                             break
                         case "tremorsense":
                             range = value.match(rangeRegEx)
-                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.ts": +range}) : null
+                            range ? sbcData.characterData.actorData.updateSource({"traits.senses.ts": +range}) : null
                             break
 
                         // Yes/No Toggle
                         case "scent":
-                            sbcData.characterData.actorData.system.update({"data.traits.senses.sc": true})
+                            sbcData.characterData.actorData.updateSource({"traits.senses.sc": true})
                             break
                         case "see in darkness":
-                            sbcData.characterData.actorData.system.update({"data.traits.senses.sid": true})
+                            sbcData.characterData.actorData.updateSource({"traits.senses.sid": true})
                             break
                         case "truesight":
                         case "true seeing":
-                            sbcData.characterData.actorData.system.update({"data.traits.senses.tr": true})
+                            sbcData.characterData.actorData.updateSource({"traits.senses.tr": true})
                             break
                         case "see invisibility":
-                            sbcData.characterData.actorData.system.update({"data.traits.senses.si": true})
+                            sbcData.characterData.actorData.updateSource({"traits.senses.si": true})
                             break
                         // For whatever reason lowlight is handled differently from the other toggles
                         case "low-light":
-                            sbcData.characterData.actorData.system.update({"data.traits.senses.ll.enabled": true})
+                            sbcData.characterData.actorData.updateSource({"traits.senses.ll.enabled": true})
                             break
 
                         default:
@@ -899,7 +899,7 @@ class sensesParser extends sbcParserBase {
 
             // Set customSenses
             if (customSenses !== "") {
-                sbcData.characterData.actorData.system.update({"data.traits.senses.custom": customSenses})
+                sbcData.characterData.actorData.updateSource({"traits.senses.custom": customSenses})
             }
 
             return true
