@@ -2929,7 +2929,7 @@ class attacksParser extends sbcParserBase {
                     m_FullAttackActions.push(m_NewAction)
 
                     // Push it into this attack as well
-                    m_NewAttack.updateSource({"actions": [ m_NewAction ] })
+                    m_NewAttack.updateSource({"system.actions": [ m_NewAction ] })
                     m_NewAttack.prepareData()
 
                     // And lastly add the attack to the item stack
