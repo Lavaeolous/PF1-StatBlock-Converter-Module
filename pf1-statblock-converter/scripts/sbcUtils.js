@@ -15,6 +15,7 @@ export class sbcUtils {
         let tempActor = await Actor.create({
             name: "sbc | Actor Template",
             type: sbcConfig.const.actorType[sbcData.actorType],
+            //_id: randomID(16),
             folder: sbcData.customFolderId
         }, {temporary: true})
 
@@ -66,41 +67,41 @@ export class sbcUtils {
 
     static async resetTraits() {
         // Reset traits
-        return sbcData.characterData.actorData.data.update({
-            data: {
-                traits: {
-                    cres: "",
-                    eres: "",
-                    eres: "",
-                    senses: "",
-                    size: "",
-                    stature: "",
-                    dr: "",
-                    regen: "",
-                    fastHealing: "",
-                    ci: {
-                        custom: "",
-                        value:[],
-                    },
-                    di: {
-                        custom: "",
-                        value:[],
-                    },
-                    dv: {
-                        custom: "",
-                        value:[],
-                    },
-                    languages: {
-                        custom: "",
-                        value:[],
-                    }
+        console.log("sbcData.characterData.actorData");
+        console.log(sbcData.characterData.actorData);
+        return sbcData.characterData.actorData.updateSource({
+            traits: {
+                cres: "",
+                eres: "",
+                eres: "",
+                senses: "",
+                size: "",
+                stature: "",
+                dr: "",
+                regen: "",
+                fastHealing: "",
+                ci: {
+                    custom: "",
+                    value:[],
+                },
+                di: {
+                    custom: "",
+                    value:[],
+                },
+                dv: {
+                    custom: "",
+                    value:[],
+                },
+                languages: {
+                    custom: "",
+                    value:[],
                 }
             }
         });
     }
 
     static async resetTokenData () {
-        return sbcData.characterData.actorData.data.update({
+        return sbcData.characterData.actorData.updateSource({
             token: {
                 displayName: sbcConfig.options.tokenSettings.displayName,
                 vision: sbcConfig.options.tokenSettings.vision,
@@ -157,7 +158,7 @@ export class sbcUtils {
     static async updatePreview() {
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
-        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.data, notes: sbcData.notes })
+        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
         previewArea.append(preview)
     }
 
@@ -177,7 +178,9 @@ export class sbcUtils {
             actorTypeToggle.removeClass("createPC")
         }
         
-        sbcData.characterData.actorData.data.type = sbcConfig.const.actorType[sbcData.actorType]
+        sbcData.characterData.actorData.updateSource({
+            type: sbcConfig.const.actorType[sbcData.actorType]
+        });
 
     }
 
@@ -354,16 +357,21 @@ export class sbcUtils {
             "packs" : searchableCompendiums
         }
 
-        searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
+        searchResult = await globalThis.pf1.utils.findInCompendia(input.name, searchOptions)
+
+        console.log("searchResult");
+        console.log(searchResult);
 
         // Return the searchResult, which either is a clone of the found entity or null
         if (searchResult !== false) {
-            let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
+            let packName = searchResult.pack.metadata.packageName + "." + searchResult.pack.metadata.name
+            console.log("packname: " + packName);
 
             let pack = await game.packs.get(packName)
+            console.log(pack);
             foundEntity = await pack.getDocument(searchResult.index._id)
 
-            let clone = await Item.create(foundEntity.data, {temporary: true})
+            let clone = await Item.create(foundEntity, {temporary: true})
             return clone;
 
         } else {
@@ -616,7 +624,7 @@ export class sbcUtils {
                         subTarget: abl,
                         target: "ability",
                         value: +difference,
-                        id: randomID(8)
+                        id: randomID(16)
                     }
 
                     stage1changes.push(attributeChange)
@@ -799,7 +807,7 @@ export class sbcUtils {
                         subTarget: subTarget,
                         target: target,
                         value: +difference,
-                        id: randomID(8)
+                        id: randomID(16)
                     }
 
                     stage2changes.push(attributeChange)
@@ -876,7 +884,7 @@ export class sbcUtils {
                             subTarget: subTarget,
                             target: "skill",
                             value: +difference,
-                            id: randomID(8)
+                            id: randomID(16)
                         }
                         stage2changes.push(skillChange)
                     }

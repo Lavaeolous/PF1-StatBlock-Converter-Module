@@ -22,7 +22,7 @@ sbcParsing.parseValueToPath = async (obj, path, value) => {
 }
 
 sbcParsing.parseValueToDocPath = async (obj, path, value) => {
-    return obj.update({ [path]: value });
+    return obj.updateSource({ [path]: value });
 }
 
 
@@ -77,11 +77,11 @@ class singleValueParser extends sbcParserBase {
         if (typeof (value) === this.supportedTypes) {
             try {
                 for (const field of this.targetFields) {
-                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.data, field, value)
+                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData, field, value)
                 }
                 return true
             } catch (err) {
-                let errorMessage = `Failed to parse ${value} into ${targetFields}`
+                let errorMessage = `Failed to parse ${value} into ${this.targetFields}`
                 let error = new sbcError(0, "Parse", errorMessage, line)
                 sbcData.errors.push(error)
 
@@ -642,7 +642,7 @@ class classesParser extends sbcParserBase {
                             className = sbcUtils.capitalize(classData.name)
                         }
                         
-                        if (deity) sbcData.characterData.actorData.data.update({ "data.details.deity": deity })
+                        if (deity) sbcData.characterData.actorData.system.update({ "data.details.deity": deity })
         
                         classItem.data.update({
                             name: className,
@@ -713,9 +713,9 @@ class creatureTypeParser extends sbcParserBase {
             
             
             
-            await creatureTypeItem.data.update({
+            await creatureTypeItem.updateSource({
                 data: {
-                    tag: game.pf1.utils.createTag(creatureType.name),
+                    tag: globalThis.pf1.utils.createTag(creatureType.name),
                     useCustomTag: true,
                 }
             })
@@ -731,12 +731,12 @@ class creatureTypeParser extends sbcParserBase {
 
             
             if (creatureType.subTypes !== "") {
-                await creatureTypeItem.data.update({ name: sbcUtils.capitalize(localizedCreatureType) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")" })
+                await creatureTypeItem.updateSource({ name: sbcUtils.capitalize(localizedCreatureType) + " (" + sbcUtils.capitalize(creatureType.subTypes) + ")" })
             }
             
             
 
-            sbcData.notes.creatureType = creatureTypeItem.data.name
+            sbcData.notes.creatureType = creatureTypeItem.name
             sbcData.characterData.items.push(creatureTypeItem)
 
             /*
@@ -852,38 +852,38 @@ class sensesParser extends sbcParserBase {
                         // Range
                         case "blindsight":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.bs": +range}) : null
+                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.bs": +range}) : null
                             break
                         case "blindsense":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.bse": +range}) : null
+                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.bse": +range}) : null
                             break
                         case "darkvision":
                             range = value.match(rangeRegEx)[1]
-                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.dv": +range}) : null
+                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.dv": +range}) : null
                             break
                         case "tremorsense":
                             range = value.match(rangeRegEx)
-                            range ? sbcData.characterData.actorData.data.update({"data.traits.senses.ts": +range}) : null
+                            range ? sbcData.characterData.actorData.system.update({"data.traits.senses.ts": +range}) : null
                             break
 
                         // Yes/No Toggle
                         case "scent":
-                            sbcData.characterData.actorData.data.update({"data.traits.senses.sc": true})
+                            sbcData.characterData.actorData.system.update({"data.traits.senses.sc": true})
                             break
                         case "see in darkness":
-                            sbcData.characterData.actorData.data.update({"data.traits.senses.sid": true})
+                            sbcData.characterData.actorData.system.update({"data.traits.senses.sid": true})
                             break
                         case "truesight":
                         case "true seeing":
-                            sbcData.characterData.actorData.data.update({"data.traits.senses.tr": true})
+                            sbcData.characterData.actorData.system.update({"data.traits.senses.tr": true})
                             break
                         case "see invisibility":
-                            sbcData.characterData.actorData.data.update({"data.traits.senses.si": true})
+                            sbcData.characterData.actorData.system.update({"data.traits.senses.si": true})
                             break
                         // For whatever reason lowlight is handled differently from the other toggles
                         case "low-light":
-                            sbcData.characterData.actorData.data.update({"data.traits.senses.ll.enabled": true})
+                            sbcData.characterData.actorData.system.update({"data.traits.senses.ll.enabled": true})
                             break
 
                         default:
@@ -899,7 +899,7 @@ class sensesParser extends sbcParserBase {
 
             // Set customSenses
             if (customSenses !== "") {
-                sbcData.characterData.actorData.data.update({"data.traits.senses.custom": customSenses})
+                sbcData.characterData.actorData.system.update({"data.traits.senses.custom": customSenses})
             }
 
             return true
@@ -1216,7 +1216,7 @@ class acTypesParser extends sbcParserBase {
             // If there are context notes, set them in the actor
             if (rawAcTypes.length > 1) {
                 acContextNotes = rawAcTypes[1].trim()
-                sbcData.characterData.actorData.data.update({ "data.attributes.acNotes": acContextNotes })
+                sbcData.characterData.actorData.system.update({ "data.attributes.acNotes": acContextNotes })
             }
 
             let foundAcTypes = rawAcTypes[0].split(",")
@@ -1230,7 +1230,7 @@ class acTypesParser extends sbcParserBase {
 
                 switch (foundAcType) {
                     case "natural":
-                        sbcData.characterData.actorData.data.update({"data.attributes.naturalAC": foundAcTypeValue})
+                        sbcData.characterData.actorData.system.update({"data.attributes.naturalAC": foundAcTypeValue})
                         break
                     case "size":
                     case "dex":
@@ -1347,7 +1347,7 @@ class hpParser extends sbcParserBase {
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
             // Set the current value of the actor hp
-            sbcData.characterData.actorData.data.update({ "data.attributes.hp.value": +hpTotalInStatblock })
+            sbcData.characterData.actorData.system.update({ "data.attributes.hp.value": +hpTotalInStatblock })
 
             let calculatedHpTotal = 0
             let calculatedHdTotal = 0
@@ -1579,7 +1579,7 @@ class savesParser extends sbcParserBase {
 
             // Check if there are context notes for the saves
           if (saveContext) {
-            sbcData.characterData.actorData.data.update({ "data.attributes.saveNotes": saveContext.trim() });
+            sbcData.characterData.actorData.system.update({ "data.attributes.saveNotes": saveContext.trim() });
           }
 
             return true
@@ -1627,14 +1627,14 @@ class immuneParser extends sbcParserBase {
                 if (immunity.search(patternConditionTypes) !== -1) {
                     // its a condition immunity
                     let immunityKey = sbcUtils.getKeyByValue(CONFIG["PF1"].conditionTypes, immunity)
-                    sbcData.characterData.actorData.data._source.data.traits.ci.value.push(sbcUtils.camelize(immunityKey))
+                    sbcData.characterData.actorData.system._source.data.traits.ci.value.push(sbcUtils.camelize(immunityKey))
                 } else if (immunity.search(patternDamageTypes) !== -1) {
                     // its a damage immunity
                     let immunityKey = sbcUtils.getKeyByValue(CONFIG["PF1"].damageTypes, immunity)
-                    sbcData.characterData.actorData.data._source.data.traits.di.value.push(sbcUtils.camelize(immunityKey))
+                    sbcData.characterData.actorData.system._source.data.traits.di.value.push(sbcUtils.camelize(immunityKey))
                 } else {
                     // Its a custom immunity
-                    sbcData.characterData.actorData.data._source.data.traits.ci.custom += sbcUtils.capitalize(immunity) + ";"
+                    sbcData.characterData.actorData.system._source.data.traits.ci.custom += sbcUtils.capitalize(immunity) + ";"
                 }
             }
 
@@ -1682,13 +1682,13 @@ class resistParser extends sbcParserBase {
                 
                 if (resistance.search(patternConditionTypes) !== -1) {
                     // its a condition resistance
-                    sbcData.characterData.actorData.data._source.data.traits.cres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system._source.data.traits.cres += sbcUtils.capitalize(resistance) + ";"
                 } else if (resistance.search(patternDamageTypes) !== -1) {
                     // its a damage resistance
-                    sbcData.characterData.actorData.data._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
                 } else {
                     // Its a custom resistance, as there is no place for that, just put it into energy resistances
-                    sbcData.characterData.actorData.data._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
                 }
             }
 
@@ -1735,15 +1735,15 @@ class weaknessParser extends sbcParserBase {
                 if (weakness.search(patternDamageTypes) !== -1) {
                     let matchedWeakness = weakness.match(patternDamageTypes)[0]
                     // its a damage resistance
-                    sbcData.characterData.actorData.data._source.data.traits.dv.value.push(sbcUtils.camelize(matchedWeakness))
+                    sbcData.characterData.actorData.system._source.data.traits.dv.value.push(sbcUtils.camelize(matchedWeakness))
                 } else {
                     // Its a custom resistance, as there is no place for that, just put it into energy resistances
-                    sbcData.characterData.actorData.data._source.data.traits.dv.custom += sbcUtils.capitalize(weakness) + ";"
+                    sbcData.characterData.actorData.system._source.data.traits.dv.custom += sbcUtils.capitalize(weakness) + ";"
                 }
             }
 
             // Remove any semicolons at the end of the custom vulnerabilities
-            sbcData.characterData.actorData.data.update({ "data.traits.dv.custom": sbcData.characterData.actorData.data.data.traits.dv.custom.replace(/(;)$/, "") })
+            sbcData.characterData.actorData.system.update({ "data.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
 
             return true
 
@@ -1787,7 +1787,7 @@ class srParser extends sbcParserBase {
                 srNotes = srContext;
             }
 
-            sbcData.characterData.actorData.data.update({
+            sbcData.characterData.actorData.system.update({
               data: {
                 attributes: {
                   sr: {
@@ -2233,7 +2233,7 @@ class speedParser extends sbcParserBase {
                 }
 
                 sbcData.characterData.conversionValidation.attributes[type] = +speed
-                sbcData.characterData.actorData.data.update({ [`data.attributes.speed.${type}.base`]: +speed })
+                sbcData.characterData.actorData.system.update({ [`data.attributes.speed.${type}.base`]: +speed })
 
                 // TODO: Allow abbreviations
                 let flyManeuverabilitiesPattern = new RegExp("(" + Object.values(CONFIG["PF1"].flyManeuverabilities).join("\\b|\\b") + ")", "i")
@@ -2242,7 +2242,7 @@ class speedParser extends sbcParserBase {
                     if (type === "fly") {
                         let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)?.[1];
                         if (flyManeuverability) {
-                            sbcData.characterData.actorData.data.update({ "data.attributes.speed.fly.maneuverability": flyManeuverability });
+                            sbcData.characterData.actorData.system.update({ "data.attributes.speed.fly.maneuverability": flyManeuverability });
                         }
                         if (input[2]) {
                             speedContext = input[2]
@@ -2580,8 +2580,8 @@ class attacksParser extends sbcParserBase {
 
                     // Calculate Attack and, if needed, compensate for differences between input attackModifier and system-derived attackModifier
                     let calculatedAttackModifier = 
-                          +sbcData.characterData.actorData.data.data.attributes.bab.total
-                        + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.data.data.traits.size]
+                          +sbcData.characterData.actorData.system.data.attributes.bab.total
+                        + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.data.traits.size]
                         + +m_ActionData.attackAbilityModifier
                     
                     if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus > 0)
@@ -3047,7 +3047,7 @@ class spellBooksParser extends sbcParserBase {
             altName = sbcUtils.capitalize(spellCastingClass) + " " + spellsOrExtracts + " " + altNameSuffix;
         }
 
-        sbcData.characterData.actorData.data.update({
+        sbcData.characterData.actorData.system.update({
             data: {
                 attributes: {
                     spells: {
@@ -3074,7 +3074,7 @@ class spellBooksParser extends sbcParserBase {
         try {
             // Psychic
             if (spellCastingType == "points") {
-                sbcData.characterData.actorData.data.update({
+                sbcData.characterData.actorData.system.update({
                     data: {
                         attributes: {
                             spells: {
@@ -3087,7 +3087,7 @@ class spellBooksParser extends sbcParserBase {
                                             maxFormula: "0",
                                             max: 0,
                                         },
-                                        ability: sbcData.characterData.actorData.data.data.abilities.int.total >= sbcData.characterData.actorData.data.data.abilities.cha.total ? "int" : "cha",
+                                        ability: sbcData.characterData.actorData.system.data.abilities.int.total >= sbcData.characterData.actorData.system.data.abilities.cha.total ? "int" : "cha",
                                     }
                                 }
                             }
@@ -3122,7 +3122,7 @@ class spellBooksParser extends sbcParserBase {
                     case "spontaneous":
                         if (/^(\d+)\s*\bPE\b/.test(spellRow)) {
                             let PE = spellRow.match(/^(\d+)\s*\bPE\b/)[1];
-                            sbcData.characterData.actorData.data.update({
+                            sbcData.characterData.actorData.system.update({
                                 data: {
                                     attributes: {
                                         spells: {
@@ -3229,8 +3229,8 @@ class spellBooksParser extends sbcParserBase {
 
                             let spellDCOffset = 0
                             // Calculate the DC in the Actor
-                            let spellCastingAbility = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].ability
-                            let spellCastingAbilityModifier = sbcData.characterData.actorData.data.data.abilities[spellCastingAbility].mod
+                            let spellCastingAbility = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].ability
+                            let spellCastingAbilityModifier = sbcData.characterData.actorData.system.data.abilities[spellCastingAbility].mod
                             let spellDCInActor = 10 + +entity.data.data.level + +spellCastingAbilityModifier
 
                             spellDCOffset =  +spellDC - +spellDCInActor
@@ -3252,7 +3252,7 @@ class spellBooksParser extends sbcParserBase {
 
                             // Initialize some values for the row
                             if (!spellRowIsInitialized) {
-                                sbcData.characterData.actorData.data.update({
+                                sbcData.characterData.actorData.system.update({
                                     [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: 0
                                 })
                                 spellRowIsInitialized = true
@@ -3282,7 +3282,7 @@ class spellBooksParser extends sbcParserBase {
                                     })
                 
                                     // Change the spellbook for SLAs to prepared as long as the sheet does not support them correctly
-                                    sbcData.characterData.actorData.data.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spontaneous`]: false})
+                                    sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spontaneous`]: false})
             
                                     spellsBase = +spellsPerXTotal
                                     spellsMax = +spellsPerXTotal
@@ -3308,12 +3308,12 @@ class spellBooksParser extends sbcParserBase {
                                         }
                                     })
             
-                                    spellsBase = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].base++;
-                                    spellsMax = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].max++;
+                                    spellsBase = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].base++;
+                                    spellsMax = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].max++;
                                 }
                         
-                                if (spellsBase !== undefined) sbcData.characterData.actorData.data.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: spellsBase})
-                                if (spellsMax !== undefined) sbcData.characterData.actorData.data.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.max`]: spellsMax})
+                                if (spellsBase !== undefined) sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: spellsBase})
+                                if (spellsMax !== undefined) sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.max`]: spellsMax})
                             }
                             
                             // Set At Will for spells marked as "at will" and for cantrips
@@ -3341,8 +3341,8 @@ class spellBooksParser extends sbcParserBase {
                                     }
                                 })
 
-                                let old = sbcData.characterData.actorData.data.data.attributes.spells.spellbooks[spellBookType].spells["spell" + spellLevel]
-                                sbcData.characterData.actorData.data.update({
+                                let old = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + spellLevel]
+                                sbcData.characterData.actorData.system.update({
                                     [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${spellLevel}`]: {
                                         base: old.base - 1,
                                         max: old.max - 1,
@@ -3358,7 +3358,7 @@ class spellBooksParser extends sbcParserBase {
 
                     // Search for Domains, Mysteries, etc
                     if (spellRow.match(/(?:Domains\s)(.*$)/i) !== null) {
-                        sbcData.characterData.actorData.data.update({ [`data.attributes.spells.spellbooks.${spellBookType}.domainSlotValue`]: 1 })
+                        sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.domainSlotValue`]: 1 })
 
                         let domainNames = spellRow.match(/(?:Domains\s)(.*$)/i)[1]
 
@@ -3520,7 +3520,7 @@ export async function parseStatistics(data, startLine) {
 
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
-                    sbcData.characterData.actorData.data.update({"data.attributes.cmdNotes": cmdContext})
+                    sbcData.characterData.actorData.system.update({"data.attributes.cmdNotes": cmdContext})
 
                     sbcData.characterData.conversionValidation.attributes["cmd"] = +cmd
                     //if (cmdContext) sbcData.characterData.conversionValidation.context["cmd"] = cmdContext
@@ -3621,10 +3621,10 @@ class abilityParser extends sbcParserBase {
         if (typeof (value) === this.supportedTypes) {
             try {
                 for (const valueField of this.targetValueFields) {
-                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.data, valueField, value)
+                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.system, valueField, value)
                 }
                 for (const modField of this.targetModFields) {
-                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.data, modField, sbcUtils.getModifier(value))
+                    await sbcParsing.parseValueToDocPath(sbcData.characterData.actorData.system, modField, sbcUtils.getModifier(value))
                 }
                 return true
             } catch (err) {
@@ -3885,15 +3885,15 @@ class skillsParser extends sbcParserBase {
                         skillKey = "skill"
                     }
 
-                    let size = sbcData.characterData.actorData.data.data.traits.size
+                    let size = sbcData.characterData.actorData.system.data.traits.size
                     let sizeMod = 0
 
                     // As long as its not a custom skill ...
                     if (skillKey !== "skill") {
 
                         // Seems the temporary actors does not calculate the mod or if its a classSkill beforehand, so we need to do that manually
-                        let skillAbility = sbcData.characterData.actorData.data.data.skills[skillKey].ability
-                        let skillAbilityMod = sbcData.characterData.actorData.data.data.abilities[skillAbility].mod
+                        let skillAbility = sbcData.characterData.actorData.system.data.skills[skillKey].ability
+                        let skillAbilityMod = sbcData.characterData.actorData.system.data.abilities[skillAbility].mod
                         let classSkillMod = 0
                         
                         if (classSkills.includes(skillKey)) {
@@ -3915,7 +3915,7 @@ class skillsParser extends sbcParserBase {
 
                         if (skillKey.search(/(art|crf|lor|prf|pro)/) === -1) {
                             // IF ITS NOT A SKILL WITH SUBSKILLS
-                            await sbcData.characterData.actorData.data.update({ [`data.skills.${skillKey}.rank`]: skillRanks })
+                            await sbcData.characterData.actorData.system.update({ [`data.skills.${skillKey}.rank`]: skillRanks })
 
                             // Add Data to conversionValidation
                             sbcData.characterData.conversionValidation["skills"][skillKey] = {
@@ -3928,15 +3928,15 @@ class skillsParser extends sbcParserBase {
                             let subSkillKey = skillKey + (+countOfSubSkills[skillKey])
 
                             // WIP FIND A WAY TO APPEND INSTEAD OF OVERWRITE THE SUBSKILLS
-                            sbcData.characterData.actorData.data.update(
+                            sbcData.characterData.actorData.system.update(
                                 {
                                     [`data.skills.${skillKey}.subSkills.${subSkillKey}`]: {
-                                        ability: sbcData.characterData.actorData.data.data.skills[skillKey].ability,
-                                        acp: sbcData.characterData.actorData.data.data.skills[skillKey].acp,
-                                        cs: sbcData.characterData.actorData.data.data.skills[skillKey].cs,
+                                        ability: sbcData.characterData.actorData.system.data.skills[skillKey].ability,
+                                        acp: sbcData.characterData.actorData.system.data.skills[skillKey].acp,
+                                        cs: sbcData.characterData.actorData.system.data.skills[skillKey].cs,
                                         name: sbcUtils.capitalize(subSkill),
                                         rank: skillRanks,
-                                        rt: sbcData.characterData.actorData.data.data.skills[skillKey].rt
+                                        rt: sbcData.characterData.actorData.system.data.skills[skillKey].rt
                                     }
                                 }
                             )
@@ -3959,10 +3959,10 @@ class skillsParser extends sbcParserBase {
                             customSkillKey = "skill" + (+countOfCustomSkills+1)
                         }
 
-                        let defaultAbilityMod = sbcData.characterData.actorData.data.data.abilities["int"].mod
+                        let defaultAbilityMod = sbcData.characterData.actorData.system.data.abilities["int"].mod
 
                         let skillRanks = +skillTotal - +defaultAbilityMod
-                        sbcData.characterData.actorData.data.update({
+                        sbcData.characterData.actorData.system.update({
                             [`data.skills.${customSkillKey}`]: {
                                 ability: "int",
                                 acp: false,
@@ -4036,14 +4036,14 @@ class languageParser extends sbcParserBase {
 
                 if (language.search(patternLanguages) !== -1) {
                     let languageKey = sbcUtils.getKeyByValue(CONFIG["PF1"].languages, language)
-                    const languages = [...sbcData.characterData.actorData.data.data.traits.languages.value, languageKey];
-                    sbcData.characterData.actorData.data.update({"data.traits.languages.value": languages})
+                    const languages = [...sbcData.characterData.actorData.system.data.traits.languages.value, languageKey];
+                    sbcData.characterData.actorData.system.update({"data.traits.languages.value": languages})
                 } else {
                     specialLanguages.push(language)
                 }
 
                 if (specialLanguages !== "") {
-                    sbcData.characterData.actorData.data.update({ "data.traits.languages.custom": specialLanguages.join(";") })
+                    sbcData.characterData.actorData.system.update({ "data.traits.languages.custom": specialLanguages.join(";") })
                 }
 
             }
@@ -4850,7 +4850,7 @@ export async function createEmbeddedDocuments() {
 
     try {
         sbcData.characterData.actorData.prepareData()
-        return sbcData.characterData.actorData.data.update({ items: sbcData.characterData.items.map(i => i.toObject()) })
+        return sbcData.characterData.actorData.system.update({ items: sbcData.characterData.items.map(i => i.toObject()) })
     
     } catch (err) {
 
@@ -4866,7 +4866,7 @@ export async function createEmbeddedDocuments() {
 
 export async function generateNotesSection() {
 
-    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.data, notes: sbcData.notes })
+    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.system, notes: sbcData.notes })
 
     let d = new Date()
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -4890,7 +4890,7 @@ export async function generateNotesSection() {
     `
     
     // WRITE EVERYTHING TO THE NOTES
-    sbcData.characterData.actorData.data.update({ "data.details.notes.value": sbcInfo + styledNotes + rawNotes })
+    sbcData.characterData.actorData.system.update({ "data.details.notes.value": sbcInfo + styledNotes + rawNotes })
 }
 
 /* ------------------------------------ */
