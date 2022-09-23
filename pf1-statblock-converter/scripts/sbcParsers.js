@@ -632,7 +632,7 @@ class classesParser extends sbcParserBase {
                             className = sbcUtils.capitalize(classData.name) + " (" + sbcUtils.capitalize(classData.archetype) + ")"
                         } else if (classData.wizardClass !== "") {
                             className = sbcUtils.capitalize(classData.wizardClass)
-                            classItem.data.update({
+                            classItem.system.update({
                                 data: {
                                     tag: "wizard",
                                     useCustomTag: true,
@@ -644,11 +644,11 @@ class classesParser extends sbcParserBase {
                         
                         if (deity) sbcData.characterData.actorData.system.update({ "data.details.deity": deity })
         
-                        classItem.data.update({
+                        classItem.system.update({
                             name: className,
                             data: {
                                 level: +classData.level,
-                                hp: +classItem.data.data.hd + +Math.floor(sbcUtils.getDiceAverage(+classItem.data.data.hd) * (+classData.level-1)),
+                                hp: +classItem.system.hd + +Math.floor(sbcUtils.getDiceAverage(+classItem.system.hd) * (+classData.level-1)),
                             }
                         })
 
@@ -1216,7 +1216,7 @@ class acTypesParser extends sbcParserBase {
             // If there are context notes, set them in the actor
             if (rawAcTypes.length > 1) {
                 acContextNotes = rawAcTypes[1].trim()
-                sbcData.characterData.actorData.system.update({ "data.attributes.acNotes": acContextNotes })
+                sbcData.characterData.actorData.updateSource({ "attributes.acNotes": acContextNotes })
             }
 
             let foundAcTypes = rawAcTypes[0].split(",")
@@ -1230,7 +1230,7 @@ class acTypesParser extends sbcParserBase {
 
                 switch (foundAcType) {
                     case "natural":
-                        sbcData.characterData.actorData.system.update({"data.attributes.naturalAC": foundAcTypeValue})
+                        sbcData.characterData.actorData.updateSource({"attributes.naturalAC": foundAcTypeValue})
                         break
                     case "size":
                     case "dex":
@@ -1311,22 +1311,22 @@ class hpParser extends sbcParserBase {
                     let classItem = currentItems[i]
 
                     // Reset the HP for all classItems
-                    classItem.data.update({ "data.hp": 0 })
+                    classItem.updateSource({ "data.hp": 0 })
 
-                    if (classItem.data.data.classType !== "racial") {
+                    if (classItem.system.classType !== "racial") {
                         hasOnlyRacialHd = false
                         classesLeftToParse++
                     } else {
                         // Reset Level of RacialHD
-                        classItem.data.update({ "data.level": 0 })
+                        classItem.updateSource({ "data.level": 0 })
                         isRacial = true
                     }
 
                     // Save the classItems for later use
                     let classWithHd = {
                         name: classItem.name,
-                        hd: classItem.data.data.hd,
-                        level: classItem.data.data.level,
+                        hd: classItem.system.hd,
+                        level: classItem.system.level,
                         isParsed: false,
                         isRacial
                     }
@@ -1347,7 +1347,7 @@ class hpParser extends sbcParserBase {
             sbcData.characterData.conversionValidation.attributes["hpTotal"] = hpTotalInStatblock
 
             // Set the current value of the actor hp
-            sbcData.characterData.actorData.system.update({ "data.attributes.hp.value": +hpTotalInStatblock })
+            sbcData.characterData.actorData.updateSource({ "data.attributes.hp.value": +hpTotalInStatblock })
 
             let calculatedHpTotal = 0
             let calculatedHdTotal = 0
@@ -1410,7 +1410,7 @@ class hpParser extends sbcParserBase {
                                 // These use the numberOfHitDice instead of the classItem.level 
                                 calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
                                 // Set the HD for the racialHd as well
-                                foundClassItem.data.update({"data.level": +numberOfHitDice})
+                                foundClassItem.updateSource({"data.level": +numberOfHitDice})
                                 
                                 numberOfHitDice -= +numberOfHitDice
                                 
@@ -1427,7 +1427,7 @@ class hpParser extends sbcParserBase {
                                     // Calculate the HP for Classes of type Class as long as there are classes left to parse
                                     calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
                                     classItem.level = +numberOfHitDice
-                                    foundClassItem.data.update({"data.level": classItem.level})
+                                    foundClassItem.updateSource({"data.level": classItem.level})
                                     numberOfHitDice -= +classItem.level
                                     
                                     classItems[j].isParsed = true
@@ -1447,7 +1447,7 @@ class hpParser extends sbcParserBase {
                                 }
                             }
                                 
-                            foundClassItem.data.update({"data.hp": +calcHp})
+                            foundClassItem.updateSource({"data.hp": +calcHp})
                         } 
 
                     } 
