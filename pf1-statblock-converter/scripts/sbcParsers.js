@@ -632,7 +632,7 @@ class classesParser extends sbcParserBase {
                             className = sbcUtils.capitalize(classData.name) + " (" + sbcUtils.capitalize(classData.archetype) + ")"
                         } else if (classData.wizardClass !== "") {
                             className = sbcUtils.capitalize(classData.wizardClass)
-                            classItem.system.update({
+                            classItem.updateSource({
                                 data: {
                                     tag: "wizard",
                                     useCustomTag: true,
@@ -644,7 +644,7 @@ class classesParser extends sbcParserBase {
                         
                         if (deity) sbcData.characterData.actorData.updateSource({ "system.details.deity": deity })
         
-                        classItem.system.update({
+                        classItem.updateSource({
                             name: className,
                             data: {
                                 level: +classData.level,
@@ -1579,7 +1579,7 @@ class savesParser extends sbcParserBase {
 
             // Check if there are context notes for the saves
           if (saveContext) {
-            sbcData.characterData.actorData.system.update({ "system.attributes.saveNotes": saveContext.trim() });
+            sbcData.characterData.actorData.updateSource({ "system.attributes.saveNotes": saveContext.trim() });
           }
 
             return true
@@ -1743,7 +1743,7 @@ class weaknessParser extends sbcParserBase {
             }
 
             // Remove any semicolons at the end of the custom vulnerabilities
-            sbcData.characterData.actorData.system.update({ "system.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
+            sbcData.characterData.actorData.updateSource({ "system.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
 
             return true
 
@@ -1787,7 +1787,7 @@ class srParser extends sbcParserBase {
                 srNotes = srContext;
             }
 
-            sbcData.characterData.actorData.system.update({
+            sbcData.characterData.actorData.updateSource({
               data: {
                 attributes: {
                   sr: {
@@ -3047,7 +3047,7 @@ class spellBooksParser extends sbcParserBase {
             altName = sbcUtils.capitalize(spellCastingClass) + " " + spellsOrExtracts + " " + altNameSuffix;
         }
 
-        sbcData.characterData.actorData.system.update({
+        sbcData.characterData.actorData.updateSource({
             data: {
                 attributes: {
                     spells: {
@@ -3074,7 +3074,7 @@ class spellBooksParser extends sbcParserBase {
         try {
             // Psychic
             if (spellCastingType == "points") {
-                sbcData.characterData.actorData.system.update({
+                sbcData.characterData.actorData.updateSource({
                     data: {
                         attributes: {
                             spells: {
@@ -3122,7 +3122,7 @@ class spellBooksParser extends sbcParserBase {
                     case "spontaneous":
                         if (/^(\d+)\s*\bPE\b/.test(spellRow)) {
                             let PE = spellRow.match(/^(\d+)\s*\bPE\b/)[1];
-                            sbcData.characterData.actorData.system.update({
+                            sbcData.characterData.actorData.updateSource({
                                 data: {
                                     attributes: {
                                         spells: {
