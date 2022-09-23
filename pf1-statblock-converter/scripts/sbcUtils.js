@@ -67,8 +67,6 @@ export class sbcUtils {
 
     static async resetTraits() {
         // Reset traits
-        console.log("sbcData.characterData.actorData");
-        console.log(sbcData.characterData.actorData);
         return sbcData.characterData.actorData.updateSource({
             traits: {
                 cres: "",
@@ -359,16 +357,11 @@ export class sbcUtils {
 
         searchResult = await globalThis.pf1.utils.findInCompendia(input.name, searchOptions)
 
-        console.log("searchResult");
-        console.log(searchResult);
-
         // Return the searchResult, which either is a clone of the found entity or null
         if (searchResult !== false) {
             let packName = searchResult.pack.metadata.packageName + "." + searchResult.pack.metadata.name
-            console.log("packname: " + packName);
 
             let pack = await game.packs.get(packName)
-            console.log(pack);
             foundEntity = await pack.getDocument(searchResult.index._id)
 
             let clone = await Item.create(foundEntity, {temporary: true})
