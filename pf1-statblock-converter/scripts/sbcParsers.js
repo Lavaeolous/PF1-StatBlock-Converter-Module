@@ -642,7 +642,7 @@ class classesParser extends sbcParserBase {
                             className = sbcUtils.capitalize(classData.name)
                         }
                         
-                        if (deity) sbcData.characterData.actorData.system.update({ "data.details.deity": deity })
+                        if (deity) sbcData.characterData.actorData.updateSource({ "system.details.deity": deity })
         
                         classItem.system.update({
                             name: className,
@@ -1579,7 +1579,7 @@ class savesParser extends sbcParserBase {
 
             // Check if there are context notes for the saves
           if (saveContext) {
-            sbcData.characterData.actorData.system.update({ "data.attributes.saveNotes": saveContext.trim() });
+            sbcData.characterData.actorData.system.update({ "system.attributes.saveNotes": saveContext.trim() });
           }
 
             return true
@@ -1743,7 +1743,7 @@ class weaknessParser extends sbcParserBase {
             }
 
             // Remove any semicolons at the end of the custom vulnerabilities
-            sbcData.characterData.actorData.system.update({ "data.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
+            sbcData.characterData.actorData.system.update({ "system.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
 
             return true
 
@@ -1941,7 +1941,7 @@ export async function parseOffense(data, startLine) {
                     // This may overwrite space and reach that was automatically derived by creature size,
                     // which in theory should be fine, i guess
                     let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
-                    let parserStature = new singleValueParser(["data.traits.stature"], "string")
+                    let parserStature = new singleValueParser(["system.traits.stature"], "string")
                     
                     let space = +lineContent.match(/^Space\s*(\d+)/i)[1]
                     let spaceInSquares = +Math.floor(+space/5)
@@ -2233,7 +2233,7 @@ class speedParser extends sbcParserBase {
                 }
 
                 sbcData.characterData.conversionValidation.attributes[type] = +speed
-                sbcData.characterData.actorData.updateSource({ [`data.attributes.speed.${type}.base`]: +speed })
+                sbcData.characterData.actorData.updateSource({ [`system.attributes.speed.${type}.base`]: +speed })
 
                 // TODO: Allow abbreviations
                 let flyManeuverabilitiesPattern = new RegExp("(" + Object.values(CONFIG["PF1"].flyManeuverabilities).join("\\b|\\b") + ")", "i")
@@ -2242,7 +2242,7 @@ class speedParser extends sbcParserBase {
                     if (type === "fly") {
                         let flyManeuverability = input[1].match(flyManeuverabilitiesPattern)?.[1];
                         if (flyManeuverability) {
-                            sbcData.characterData.actorData.updateSource({ "data.attributes.speed.fly.maneuverability": flyManeuverability });
+                            sbcData.characterData.actorData.updateSource({ "system.attributes.speed.fly.maneuverability": flyManeuverability });
                         }
                         if (input[2]) {
                             speedContext = input[2]
@@ -2929,7 +2929,7 @@ class attacksParser extends sbcParserBase {
                     m_FullAttackActions.push(m_NewAction)
 
                     // Push it into this attack as well
-                    m_NewAttack.updateSource({"data.actions": [ m_NewAction ] })
+                    m_NewAttack.updateSource({"actions": [ m_NewAction ] })
                     m_NewAttack.prepareData()
 
                     // And lastly add the attack to the item stack
@@ -3217,11 +3217,11 @@ class spellBooksParser extends sbcParserBase {
                             }
 
                             // Edit the entity to match the data given in the statblock
-                            entity.data.update({"data.spellbook": spellBookType})
+                            entity.updateSource({"spellbook": spellBookType})
 
                             // Set the spellLevel
                             if (spellLevel !== -1) {
-                                entity.data.update({"data.level": +spellLevel})
+                                entity.updateSource({"level": +spellLevel})
                             }
 
                             // Set the spellDC
@@ -3237,12 +3237,12 @@ class spellBooksParser extends sbcParserBase {
 
 
                             if (spellDC !== -1) {
-                                entity.data.update({"data.save.dc": spellDCOffset.toString()})
+                                entity.updateSource({"save.dc": spellDCOffset.toString()})
                             }
                             
                             // Set the spellPE
                             if (spellPE !== -1) {
-                                entity.data.update({"data.spellPoints.cost": "" + spellPE});
+                                entity.updateSource({"spellPoints.cost": "" + spellPE});
                             }
 
                             // Set the spells uses / preparation
@@ -3252,8 +3252,8 @@ class spellBooksParser extends sbcParserBase {
 
                             // Initialize some values for the row
                             if (!spellRowIsInitialized) {
-                                sbcData.characterData.actorData.system.update({
-                                    [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: 0
+                                sbcData.characterData.actorData.updateSource({
+                                    [`system.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: 0
                                 })
                                 spellRowIsInitialized = true
                             }
@@ -3267,7 +3267,7 @@ class spellBooksParser extends sbcParserBase {
                                 // Spell-Like Abilities can be cast a number of times per day each
                                 if (spellsPerXTotal !== -1 && spellBookType === "spelllike") {
 
-                                    entity.data.update({
+                                    entity.updateSource({
                                         data: {
                                             uses: {
                                                 max: +spellsPerXTotal,
@@ -3282,7 +3282,7 @@ class spellBooksParser extends sbcParserBase {
                                     })
                 
                                     // Change the spellbook for SLAs to prepared as long as the sheet does not support them correctly
-                                    sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spontaneous`]: false})
+                                    sbcData.characterData.actorData.updateSource({ [`data.attributes.spells.spellbooks.${spellBookType}.spontaneous`]: false})
             
                                     spellsBase = +spellsPerXTotal
                                     spellsMax = +spellsPerXTotal
@@ -3299,7 +3299,7 @@ class spellBooksParser extends sbcParserBase {
 
                                     // WIP: BUILD A CHECK FOR MULTIPLE PREPARATIONS OF THE SAME SPELL
             
-                                    entity.data.update({
+                                    entity.updateSource({
                                         data: {
                                             preparation: {
                                                 maxAmount: 1,
@@ -3308,22 +3308,22 @@ class spellBooksParser extends sbcParserBase {
                                         }
                                     })
             
-                                    spellsBase = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].base++;
-                                    spellsMax = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].max++;
+                                    spellsBase = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].base++;
+                                    spellsMax = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].max++;
                                 }
                         
-                                if (spellsBase !== undefined) sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: spellsBase})
-                                if (spellsMax !== undefined) sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.max`]: spellsMax})
+                                if (spellsBase !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: spellsBase})
+                                if (spellsMax !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.max`]: spellsMax})
                             }
                             
                             // Set At Will for spells marked as "at will" and for cantrips
                             if (isAtWill || entity.data.data.level === 0) {
-                                entity.data.update({ "data.atWill": true })
+                                entity.updateSource({ "atWill": true })
                             }
 
                             // Change SpellName to reflect constant spells
                             if (isConstant) {
-                                entity.data.update({
+                                entity.updateSource({
                                     name: "Constant: " + entity.data.name,
                                     data: {
                                         atWill: true
@@ -3334,7 +3334,7 @@ class spellBooksParser extends sbcParserBase {
                             // Set data for domain spells
                             if (isDomainSpell) {
 
-                                entity.data.update({
+                                entity.updateSource({
                                     data: {
                                         domain: true,
                                         slotClost: 1,
@@ -3342,8 +3342,8 @@ class spellBooksParser extends sbcParserBase {
                                 })
 
                                 let old = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + spellLevel]
-                                sbcData.characterData.actorData.system.update({
-                                    [`data.attributes.spells.spellbooks.${spellBookType}.spells.spell${spellLevel}`]: {
+                                sbcData.characterData.actorData.updateSource({
+                                    [`system.attributes.spells.spellbooks.${spellBookType}.spells.spell${spellLevel}`]: {
                                         base: old.base - 1,
                                         max: old.max - 1,
                                     }
@@ -3358,7 +3358,7 @@ class spellBooksParser extends sbcParserBase {
 
                     // Search for Domains, Mysteries, etc
                     if (spellRow.match(/(?:Domains\s)(.*$)/i) !== null) {
-                        sbcData.characterData.actorData.system.update({ [`data.attributes.spells.spellbooks.${spellBookType}.domainSlotValue`]: 1 })
+                        sbcData.characterData.actorData.updateSource({ [`system.attributes.spells.spellbooks.${spellBookType}.domainSlotValue`]: 1 })
 
                         let domainNames = spellRow.match(/(?:Domains\s)(.*$)/i)[1]
 
@@ -4037,13 +4037,13 @@ class languageParser extends sbcParserBase {
                 if (language.search(patternLanguages) !== -1) {
                     let languageKey = sbcUtils.getKeyByValue(CONFIG["PF1"].languages, language)
                     const languages = [...sbcData.characterData.actorData.system.data.traits.languages.value, languageKey];
-                    sbcData.characterData.actorData.system.update({"data.traits.languages.value": languages})
+                    sbcData.characterData.actorData.updateSource({"system.traits.languages.value": languages})
                 } else {
                     specialLanguages.push(language)
                 }
 
                 if (specialLanguages !== "") {
-                    sbcData.characterData.actorData.system.update({ "data.traits.languages.custom": specialLanguages.join(";") })
+                    sbcData.characterData.actorData.updateSource({ "system.traits.languages.custom": specialLanguages.join(";") })
                 }
 
             }
@@ -4246,10 +4246,10 @@ class gearParser extends sbcParserBase {
                                     }
                                     break
                                 case "mwk":
-                                    entity.data.update({ "data.masterwork": change })
+                                    entity.updateSource({ "masterwork": change })
                                     break
                                 case "value":
-                                    entity.data.update({ "data.price": +change })
+                                    entity.updateSource({ "price": +change })
                                     break
                                 default:
                                     break
@@ -4404,7 +4404,7 @@ class tacticsParser extends sbcParserBase {
 
                 let tempDesc = sbcData.characterData.items[tacticsItemIndex].data.data.description.value
 
-                sbcData.characterData.items[tacticsItemIndex].data.update({ "data.description.value": tempDesc + tacticsDesc })
+                sbcData.characterData.items[tacticsItemIndex].updateSource({ "description.value": tempDesc + tacticsDesc })
 
             } else {
 
@@ -4821,7 +4821,7 @@ export async function checkFlags() {
             switch(flag) {
                 case "isUndead":
                     // When its an undead, use Cha for HP and Save Calculation
-                    fields = ["data.attributes.hpAbility", "data.attributes.savingThrows.fort.ability"]
+                    fields = ["system.attributes.hpAbility", "system.attributes.savingThrows.fort.ability"]
                     if (sbcConfig.options.flags[flag] === true) {
                         value = "cha"
                     } else {
