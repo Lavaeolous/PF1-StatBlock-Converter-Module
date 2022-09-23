@@ -344,8 +344,8 @@ export async function parseBase(data, startLine) {
                         let actorSize = sbcUtils.getKeyByValue(sbcConfig.const.actorSizes, size)
 
                         // Values derived from Size
-                        let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
-                        let parserScale = new singleValueParser(["token.scale"], "number")
+                        let parserSpace = new singleValueParser(["prototypeToken.height", "prototypeToken.width"], "number")
+                        let parserScale = new singleValueParser(["prototypeToken.texture.scaleX", "prototypeToken.texture.scaleY"], "number")
 
                         let space = CONFIG.PF1.tokenSizes[actorSize].w
                         let scale = CONFIG.PF1.tokenSizes[actorSize].scale
@@ -1940,7 +1940,7 @@ export async function parseOffense(data, startLine) {
                 if (/^Space\b.*\bReach\b/i.test(lineContent)) {
                     // This may overwrite space and reach that was automatically derived by creature size,
                     // which in theory should be fine, i guess
-                    let parserSpace = new singleValueParser(["token.height", "token.width"], "number")
+                    let parserSpace = new singleValueParser(["prototypeToken.height", "prototypeToken.width"], "number")
                     let parserStature = new singleValueParser(["system.traits.stature"], "string")
                     
                     let space = +lineContent.match(/^Space\s*(\d+)/i)[1]
@@ -2938,8 +2938,8 @@ class attacksParser extends sbcParserBase {
                 }
 
                 // WIP: Maybe create a "FullAttack Action"
-                console.log("m_FullAttackActions")
-                console.log(m_FullAttackActions)
+                //console.log("m_FullAttackActions")
+                //console.log(m_FullAttackActions)
 
             }
 
@@ -3963,7 +3963,7 @@ class skillsParser extends sbcParserBase {
 
                         let skillRanks = +skillTotal - +defaultAbilityMod
                         sbcData.characterData.actorData.updateSource({
-                            [`data.skills.${customSkillKey}`]: {
+                            [`skills.${customSkillKey}`]: {
                                 ability: "int",
                                 acp: false,
                                 background: false,
@@ -4905,7 +4905,7 @@ export function initMapping() {
 
     sbcMapping.map = {
         base: {
-            name: new singleValueParser(["name", "token.name"], "string"),
+            name: new singleValueParser(["name", "system.prototypeToken.name"], "string"),
             cr: new singleValueParser(["system.details.cr.base", "system.details.cr.total"], "number"),
             mr: new notesParser(["base.mr"]),                                                 // currently not supported by the game system
             level: new notesParser(["system.details.level.value"]),                             // gets calculated by foundry

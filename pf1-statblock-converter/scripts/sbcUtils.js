@@ -100,9 +100,11 @@ export class sbcUtils {
 
     static async resetTokenData () {
         return sbcData.characterData.actorData.updateSource({
-            token: {
+            prototypeToken: {
                 displayName: sbcConfig.options.tokenSettings.displayName,
-                vision: sbcConfig.options.tokenSettings.vision,
+                sight: {
+                    enabled: sbcConfig.options.tokenSettings.sight.enabled
+                },
                 disposition: sbcConfig.options.tokenSettings.disposition,
                 displayBars: sbcConfig.options.tokenSettings.displayBars,
                 bar1: sbcConfig.options.tokenSettings.bar1,

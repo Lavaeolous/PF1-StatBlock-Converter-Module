@@ -128,8 +128,8 @@ export class sbcSettings {
                 sbcConfig.options.tokenSettings.disposition = +game.settings.get(sbcConfig.modData.mod, "disposition")
                 break
             }
-            case "vision": {
-                sbcConfig.options.tokenSettings.vision = game.settings.get(sbcConfig.modData.mod, "vision")
+            case "sight": {
+                sbcConfig.options.tokenSettings.sight.enabled = game.settings.get(sbcConfig.modData.mod, "sight")
                 break
             }
             case "displayName": {
@@ -231,14 +231,14 @@ export const registerSettings = function () {
         onChange: _ => sbcSettings.updateCustomCompendiums()
     });
 
-    game.settings.register(sbcConfig.modData.mod, "vision", {
-        name: "Vision",
-        hint: "Define if tokens have Vision activated. Default: True",
+    game.settings.register(sbcConfig.modData.mod, "sight", {
+        name: "Sight",
+        hint: "Define if tokens have Sight activated. Default: True",
         default: true,
         scope: "world",
         type: Boolean,
         config: true,
-        onChange: _ => sbcSettings.updatePrototypeTokenSettings("vision")
+        onChange: _ => sbcSettings.updatePrototypeTokenSettings("sight")
     });
 
     game.settings.register(sbcConfig.modData.mod, "disposition", {
@@ -311,7 +311,7 @@ export const initializeSettings = async function () {
     sbcConfig.options.defaultActorType = game.settings.get(sbcConfig.modData.mod, "defaultActorType")
     sbcConfig.options.inputDelay = game.settings.get(sbcConfig.modData.mod, "inputDelay")
     sbcConfig.options.tokenSettings.disposition = +game.settings.get(sbcConfig.modData.mod, "disposition")
-    sbcConfig.options.tokenSettings.vision = game.settings.get(sbcConfig.modData.mod, "vision")
+    sbcConfig.options.tokenSettings.sight.enabled = game.settings.get(sbcConfig.modData.mod, "sight")
     sbcConfig.options.tokenSettings.displayName = +game.settings.get(sbcConfig.modData.mod, "displayName")
     sbcConfig.options.tokenSettings.displayBars = +game.settings.get(sbcConfig.modData.mod, "displayBars")
     sbcConfig.options.customFolder = game.settings.get(sbcConfig.modData.mod, "importFolder")

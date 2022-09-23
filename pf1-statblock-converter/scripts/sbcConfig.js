@@ -75,7 +75,9 @@ sbcConfig.options = {
     "defaultActorType": 0,
     "tokenSettings": {
         "displayName": 20,
-        "vision": false,
+        "sight": {
+            "enabled": false
+        },
         "disposition": -1,
         "displayBars": 20,
         "bar1": {},
