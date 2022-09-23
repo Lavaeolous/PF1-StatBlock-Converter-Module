@@ -576,12 +576,12 @@ export class sbcUtils {
                 let spellBookToValidate = spellBooksToValidate[i]
                 let casterLevelToValidate = conversionValidation.spellBooks[spellBookToValidate].casterLevel
                 let concentrationBonusToValidate = conversionValidation.spellBooks[spellBookToValidate].concentrationBonus
-                let casterLevelInActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].cl.total
+                let casterLevelInActor = actor.system.attributes.spells.spellbooks[spellBookToValidate].cl.total
 
-                let spellCastingAbility = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].ability
-                let spellCastingAbilityModifier = actor.data.data.abilities[spellCastingAbility].mod
+                let spellCastingAbility = actor.system.attributes.spells.spellbooks[spellBookToValidate].ability
+                let spellCastingAbilityModifier = actor.system.abilities[spellCastingAbility].mod
                 
-                const concentrationBonusOnActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].concentration.total;
+                const concentrationBonusOnActor = actor.system.attributes.spells.spellbooks[spellBookToValidate].concentration.total;
 
                 let differenceInCasterLevel = +casterLevelToValidate - +casterLevelInActor
                 let differenceInConcentrationBonus = +concentrationBonusToValidate - concentrationBonusOnActor
@@ -596,14 +596,14 @@ export class sbcUtils {
                 }
             }
 
-            if (!isObjectEmpty(bookUpdates)) {
+            if (!isEmpty(bookUpdates)) {
                 await actor.update(bookUpdates);
             }
 
             // Validate ability scores first as they can have cascading effects
             const abilityScoreKeys = ["str", "dex", "con", "int", "wis", "cha"];
             for (let abl of abilityScoreKeys) {
-                const totalInActor = actor.data.data.abilities[abl].total
+                const totalInActor = actor.system.abilities[abl].total
                 let totalInStatblock = conversionValidation.attributes[abl.capitalize()]
                 const difference = +totalInStatblock - +totalInActor
                 if (difference === 0) continue;
@@ -661,7 +661,7 @@ export class sbcUtils {
             attributesToValidate.push("acNormal", "acTouch", "acFlatFooted")
 
             // Get an array of all items the actor currently owns
-            let currentItems = await actor.data.items
+            let currentItems = await actor.items
      
             //let currentItemsKeys = Object.keys(currentItems)
             let currentItemsKeys = currentItems//.keys()
@@ -717,7 +717,7 @@ export class sbcUtils {
                     case "cmd":
                     case "cmb":
                     case "init":
-                        totalInActor = actor.data.data.attributes[attribute].total
+                        totalInActor = actor.system.attributes[attribute].total
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = attribute
@@ -732,7 +732,7 @@ export class sbcUtils {
                         difference = +totalInStatblock
                         break
                     case "hptotal":
-                        totalInActor = actor.data.data.attributes.hp.max
+                        totalInActor = actor.system.attributes.hp.max
 
                         modifier = "untypedPerm"
                         target = "misc"
@@ -742,7 +742,7 @@ export class sbcUtils {
 
                         break
                     case "acnormal":
-                        totalInActor = actor.data.data.attributes.ac.normal.total
+                        totalInActor = actor.system.attributes.ac.normal.total
                         modifier = "untypedPerm"
                         target = "ac"
                         subTarget = "aac"
@@ -783,7 +783,7 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "savingThrows"
                         subTarget = attribute
-                        totalInActor = actor.data.data.attributes.savingThrows[attribute].total ?? 0
+                        totalInActor = actor.system.attributes.savingThrows[attribute].total ?? 0
                         difference = +totalInStatblock - +totalInActor
                         break
                     default:
@@ -839,7 +839,7 @@ export class sbcUtils {
                 let skillToValidate = conversionValidation.skills[skillKey]
                 let skillModInActor = 0
                 
-                let skillSubKeys = Object.keys(actor.data.data.skills[parentSkillKey])
+                let skillSubKeys = Object.keys(actor.system.skills[parentSkillKey])
 
                 // For Skills with subskill --> subTarget: "skill.prf.subSkills.prf1"
                 let subTarget = ""

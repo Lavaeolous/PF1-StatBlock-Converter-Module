@@ -164,13 +164,13 @@ export class sbcInputDialog extends Application {
                     try {
                         // Create a permanent actor using the data from the temporary one
 
-                        let newActor = await Actor.create(sbcData.characterData.actorData.system.toObject())
+                        let newActor = await Actor.create(sbcData.characterData.actorData.toObject())
                         
 
                         // Fix health if it's off from max after all that.
                         // Needs to be done here with real actor since the temporary misbehaves with health.
-                        const hp = newActor.data.data.attributes.hp;
-                        if (hp.value !== hp.max) await newActor.update({ "data.attributes.hp.value": hp.max });
+                        const hp = newActor.system.attributes.hp;
+                        if (hp.value !== hp.max) await newActor.updateSource({ "attributes.hp.value": hp.max });
 
                         // Conversion Validation
                         await sbcUtils.conversionValidation(newActor.id);
