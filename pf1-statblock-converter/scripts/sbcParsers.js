@@ -4905,7 +4905,7 @@ export function initMapping() {
 
     sbcMapping.map = {
         base: {
-            name: new singleValueParser(["name", "system.prototypeToken.name"], "string"),
+            name: new singleValueParser(["name", "prototypeToken.name"], "string"),
             cr: new singleValueParser(["system.details.cr.base", "system.details.cr.total"], "number"),
             mr: new notesParser(["base.mr"]),                                                 // currently not supported by the game system
             level: new notesParser(["system.details.level.value"]),                             // gets calculated by foundry
