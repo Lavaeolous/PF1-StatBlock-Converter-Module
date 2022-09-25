@@ -1627,16 +1627,22 @@ class immuneParser extends sbcParserBase {
                 if (immunity.search(patternConditionTypes) !== -1) {
                     // its a condition immunity
                     let immunityKey = sbcUtils.getKeyByValue(CONFIG["PF1"].conditionTypes, immunity)
-                    sbcData.characterData.actorData.system._source.data.traits.ci.value.push(sbcUtils.camelize(immunityKey))
+                    sbcData.characterData.actorData.system.traits.ci.value.push(sbcUtils.camelize(immunityKey))
                 } else if (immunity.search(patternDamageTypes) !== -1) {
                     // its a damage immunity
                     let immunityKey = sbcUtils.getKeyByValue(CONFIG["PF1"].damageTypes, immunity)
-                    sbcData.characterData.actorData.system._source.data.traits.di.value.push(sbcUtils.camelize(immunityKey))
+                    sbcData.characterData.actorData.system.traits.di.value.push(sbcUtils.camelize(immunityKey))
                 } else {
                     // Its a custom immunity
-                    sbcData.characterData.actorData.system._source.data.traits.ci.custom += sbcUtils.capitalize(immunity) + ";"
+                    let existingCustomImmunities = sbcData.characterData.actorData.system.traits.ci.custom
+                    sbcData.characterData.actorData.updateSource({ "system.traits.ci.custom": existingCustomImmunities + sbcUtils.capitalize(immunity) + ";" })
                 }
+
+                
             }
+
+            // Remove any semicolons at the end of the custom immunities
+            sbcData.characterData.actorData.updateSource({ "system.traits.ci.custom": sbcData.characterData.actorData.system.traits.ci.custom.replace(/(;)$/, "") })
 
             return true
 
@@ -1682,13 +1688,13 @@ class resistParser extends sbcParserBase {
                 
                 if (resistance.search(patternConditionTypes) !== -1) {
                     // its a condition resistance
-                    sbcData.characterData.actorData.system._source.data.traits.cres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system.traits.cres += sbcUtils.capitalize(resistance) + ";"
                 } else if (resistance.search(patternDamageTypes) !== -1) {
                     // its a damage resistance
-                    sbcData.characterData.actorData.system._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system.traits.eres += sbcUtils.capitalize(resistance) + ";"
                 } else {
                     // Its a custom resistance, as there is no place for that, just put it into energy resistances
-                    sbcData.characterData.actorData.system._source.data.traits.eres += sbcUtils.capitalize(resistance) + ";"
+                    sbcData.characterData.actorData.system.traits.eres += sbcUtils.capitalize(resistance) + ";"
                 }
             }
 
@@ -1734,16 +1740,17 @@ class weaknessParser extends sbcParserBase {
                 
                 if (weakness.search(patternDamageTypes) !== -1) {
                     let matchedWeakness = weakness.match(patternDamageTypes)[0]
-                    // its a damage resistance
-                    sbcData.characterData.actorData.system._source.data.traits.dv.value.push(sbcUtils.camelize(matchedWeakness))
+                    // its a damage weakness / vulnerability
+                    sbcData.characterData.actorData.system.traits.dv.value.push(sbcUtils.camelize(matchedWeakness))
                 } else {
-                    // Its a custom resistance, as there is no place for that, just put it into energy resistances
-                    sbcData.characterData.actorData.system._source.data.traits.dv.custom += sbcUtils.capitalize(weakness) + ";"
+                    // Its a custom weakness / vulnerability
+                    let existingCustomWeakness = sbcData.characterData.actorData.system.traits.dv.custom
+                    sbcData.characterData.actorData.updateSource({ "system.traits.dv.custom": existingCustomWeakness + sbcUtils.capitalize(weakness) + ";" })
                 }
             }
 
             // Remove any semicolons at the end of the custom vulnerabilities
-            sbcData.characterData.actorData.updateSource({ "system.traits.dv.custom": sbcData.characterData.actorData.system.data.traits.dv.custom.replace(/(;)$/, "") })
+            sbcData.characterData.actorData.updateSource({ "system.traits.dv.custom": sbcData.characterData.actorData.system.traits.dv.custom.replace(/(;)$/, "") })
 
             return true
 
@@ -1788,14 +1795,12 @@ class srParser extends sbcParserBase {
             }
 
             sbcData.characterData.actorData.updateSource({
-              data: {
                 attributes: {
                   sr: {
                     formula: srTotal.toString(),
-                  },
-                  srNotes,
+                },
+                srNotes,
                 }
-              }
             });
 
             return true;
