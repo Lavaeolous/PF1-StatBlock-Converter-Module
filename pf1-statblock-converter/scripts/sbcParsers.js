@@ -1389,6 +1389,8 @@ class hpParser extends sbcParserBase {
 
                 calculatedHpTotal += +tempHp
                 calculatedHdTotal += +numberOfHitDice
+
+                
                 
                 // Loop through the classItems
                 for (let j=0; j<classItems.length; j++) {
@@ -1410,7 +1412,7 @@ class hpParser extends sbcParserBase {
                                 // These use the numberOfHitDice instead of the classItem.level 
                                 calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * +numberOfHitDice)
                                 // Set the HD for the racialHd as well
-                                foundClassItem.updateSource({"level": +numberOfHitDice})
+                                foundClassItem.updateSource({"system.level": +numberOfHitDice})
                                 
                                 numberOfHitDice -= +numberOfHitDice
                                 
@@ -1427,7 +1429,7 @@ class hpParser extends sbcParserBase {
                                     // Calculate the HP for Classes of type Class as long as there are classes left to parse
                                     calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+numberOfHitDice-1))
                                     classItem.level = +numberOfHitDice
-                                    foundClassItem.updateSource({"level": classItem.level})
+                                    foundClassItem.updateSource({"system.level": classItem.level})
                                     numberOfHitDice -= +classItem.level
                                     
                                     classItems[j].isParsed = true
