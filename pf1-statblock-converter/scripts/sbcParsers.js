@@ -1216,7 +1216,7 @@ class acTypesParser extends sbcParserBase {
             // If there are context notes, set them in the actor
             if (rawAcTypes.length > 1) {
                 acContextNotes = rawAcTypes[1].trim()
-                sbcData.characterData.actorData.updateSource({ "attributes.acNotes": acContextNotes })
+                sbcData.characterData.actorData.updateSource({ "system.attributes.acNotes": acContextNotes })
             }
 
             let foundAcTypes = rawAcTypes[0].split(",")
@@ -1230,7 +1230,7 @@ class acTypesParser extends sbcParserBase {
 
                 switch (foundAcType) {
                     case "natural":
-                        sbcData.characterData.actorData.updateSource({"attributes.naturalAC": foundAcTypeValue})
+                        sbcData.characterData.actorData.updateSource({"system.attributes.naturalAC": foundAcTypeValue})
                         break
                     case "size":
                     case "dex":
@@ -3510,7 +3510,10 @@ export async function parseStatistics(data, startLine) {
                     let cmbContext = sbcUtils.parseSubtext(cmbRaw)[1]
 
                     sbcData.characterData.conversionValidation.attributes["cmb"] = +cmb
-                    if (cmbContext) sbcData.characterData.conversionValidation.context["cmb"] = cmbContext
+                    if (cmbContext) {
+                        sbcData.characterData.conversionValidation.context["cmb"] = cmbContext
+                        sbcData.notes.statistics.cmbContext = " (" + cmbContext + ")"
+                    }
 
                     parsedSubCategories["cmb"] = await parserCmb.parse(+cmb, startLine + line)
                 }
@@ -3527,10 +3530,10 @@ export async function parseStatistics(data, startLine) {
 
                     let cmdContext = sbcUtils.parseSubtext(cmdRaw)[1]
 
-                    sbcData.characterData.actorData.updateSource({"attributes.cmdNotes": cmdContext})
+                    sbcData.characterData.actorData.updateSource({"system.attributes.cmdNotes": cmdContext})
+                    if (cmdContext) sbcData.notes.statistics.cmdContext = " (" + cmdContext + ")"
 
                     sbcData.characterData.conversionValidation.attributes["cmd"] = +cmd
-                    //if (cmdContext) sbcData.characterData.conversionValidation.context["cmd"] = cmdContext
                     parsedSubCategories["cmd"] = await parserCmd.parse(+cmd, startLine + line)
                 }
             }
