@@ -4887,7 +4887,7 @@ export async function createEmbeddedDocuments() {
 
 export async function generateNotesSection() {
 
-    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.system, notes: sbcData.notes })
+    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
 
     let d = new Date()
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
