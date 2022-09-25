@@ -3055,23 +3055,21 @@ class spellBooksParser extends sbcParserBase {
         }
 
         sbcData.characterData.actorData.updateSource({
-            data: {
-                attributes: {
-                    spells: {
-                        spellbooks: {
-                            [spellBookType]: {
-                                inUse: true,
-                                altName,
-                                class: castingClass,
-                                clNotes: "sbc | Total in statblock was CL " + casterLevel + ", adjust as needed.",
-                                concentrationNotes: "sbc | Total in statblock was +" + concentrationBonus + ", adjust as needed.",
-                                arcaneSpellFailure,
-                                domainSlotValue: 0,
-                                autoSpellLevelCalculation: false,
-                                autoSpellLevels: false,
-                                spontaneous: spellCastingType !== "prepared",
-                                spellPreparationMode: spellCastingType == "prepared" ? "prepared" : "spontaneous"
-                            }
+            "system.attributes": {
+                spells: {
+                    spellbooks: {
+                        [spellBookType]: {
+                            inUse: true,
+                            altName,
+                            class: castingClass,
+                            clNotes: "sbc | Total in statblock was CL " + casterLevel + ", adjust as needed.",
+                            concentrationNotes: "sbc | Total in statblock was +" + concentrationBonus + ", adjust as needed.",
+                            arcaneSpellFailure,
+                            domainSlotValue: 0,
+                            autoSpellLevelCalculation: false,
+                            autoSpellLevels: false,
+                            spontaneous: spellCastingType !== "prepared",
+                            spellPreparationMode: spellCastingType == "prepared" ? "prepared" : "spontaneous"
                         }
                     }
                 }
@@ -3082,20 +3080,18 @@ class spellBooksParser extends sbcParserBase {
             // Psychic
             if (spellCastingType == "points") {
                 sbcData.characterData.actorData.updateSource({
-                    data: {
-                        attributes: {
-                            spells: {
-                                spellbooks: {
-                                    [spellBookType]: {
-                                        spontaneous: false,
-                                        spellPreparationMode: "spontaneous",
-                                        spellPoints: {
-                                            useSystem: true,
-                                            maxFormula: "0",
-                                            max: 0,
-                                        },
-                                        ability: sbcData.characterData.actorData.system.data.abilities.int.total >= sbcData.characterData.actorData.system.data.abilities.cha.total ? "int" : "cha",
-                                    }
+                    "system.attributes": {
+                        spells: {
+                            spellbooks: {
+                                [spellBookType]: {
+                                    spontaneous: false,
+                                    spellPreparationMode: "spontaneous",
+                                    spellPoints: {
+                                        useSystem: true,
+                                        maxFormula: "0",
+                                        max: 0,
+                                    },
+                                    ability: sbcData.characterData.actorData.system.data.abilities.int.total >= sbcData.characterData.actorData.system.data.abilities.cha.total ? "int" : "cha",
                                 }
                             }
                         }
@@ -3130,19 +3126,17 @@ class spellBooksParser extends sbcParserBase {
                         if (/^(\d+)\s*\bPE\b/.test(spellRow)) {
                             let PE = spellRow.match(/^(\d+)\s*\bPE\b/)[1];
                             sbcData.characterData.actorData.updateSource({
-                                data: {
-                                    attributes: {
-                                        spells: {
-                                            spellbooks: {
-                                                [spellBookType]: {
-                                                    spellPoints: {
-                                                        maxFormula: PE,
-                                                        value: +PE,
-                                                    }
+                                "system.attributes": {
+                                    spells: {
+                                        spellbooks: {
+                                            [spellBookType]: {
+                                                spellPoints: {
+                                                    maxFormula: PE,
+                                                    value: +PE,
                                                 }
                                             }
-                                        }
-                                    }
+                                         }
+                                     }
                                 }
                             })
                             isSpellRow = true;
@@ -3218,33 +3212,51 @@ class spellBooksParser extends sbcParserBase {
                             // If the input is found in one of the compendiums, generate an entity from that
                             let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
 
+                            console.log("SPELL ENTITY")
+                            console.log(entity)
+
                             // otherwise overwrite "entity" with a placeholder
                             if (entity === null) {
                                 entity = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
                             }
 
                             // Edit the entity to match the data given in the statblock
-                            entity.updateSource({"spellbook": spellBookType})
+                            entity.updateSource({"system.spellbook": spellBookType})
 
                             // Set the spellLevel
                             if (spellLevel !== -1) {
-                                entity.updateSource({"level": +spellLevel})
+                                entity.updateSource({"system.level": +spellLevel})
                             }
 
                             // Set the spellDC
                             // This is the offset for the dc, not the total!
 
                             let spellDCOffset = 0
+
+                            console.log("entity in spellbooks")
+                            console.log(entity)
                             // Calculate the DC in the Actor
-                            let spellCastingAbility = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].ability
-                            let spellCastingAbilityModifier = sbcData.characterData.actorData.system.data.abilities[spellCastingAbility].mod
-                            let spellDCInActor = 10 + +entity.data.data.level + +spellCastingAbilityModifier
+                            let spellCastingAbility = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].ability
+                            let spellCastingAbilityModifier = sbcData.characterData.actorData.system.abilities[spellCastingAbility].mod
+                            let spellDCInActor = 10 + +entity.system.level + +spellCastingAbilityModifier
 
                             spellDCOffset =  +spellDC - +spellDCInActor
 
-
+                            // WIP, Save DC is now found in the action, not in the spell
                             if (spellDC !== -1) {
-                                entity.updateSource({"save.dc": spellDCOffset.toString()})
+
+                                // Try yo get the action
+                                let spellAction = entity.firstAction
+                                console.log("spellaction")
+                                console.log(spellAction)
+
+                                //spellAction.update({"data.save.dc": spellDCOffset.toString()})
+                                entity.updateSource({
+                                    firstAction: {
+                                        "save.dc": 99
+                                    }
+                                })
+                                //entity.updateSource({"firstAction.data.save.dc": "" + spellDCOffset.toString()});
                             }
                             
                             // Set the spellPE
@@ -3260,7 +3272,7 @@ class spellBooksParser extends sbcParserBase {
                             // Initialize some values for the row
                             if (!spellRowIsInitialized) {
                                 sbcData.characterData.actorData.updateSource({
-                                    [`system.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: 0
+                                    [`system.attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.system.level}.base`]: 0
                                 })
                                 spellRowIsInitialized = true
                             }
@@ -3315,16 +3327,16 @@ class spellBooksParser extends sbcParserBase {
                                         }
                                     })
             
-                                    spellsBase = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].base++;
-                                    spellsMax = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.data.data.level].max++;
+                                    spellsBase = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.system.level].base++;
+                                    spellsMax = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + entity.system.level].max++;
                                 }
                         
-                                if (spellsBase !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.base`]: spellsBase})
-                                if (spellsMax !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.data.data.level}.max`]: spellsMax})
+                                if (spellsBase !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.system.level}.base`]: spellsBase})
+                                if (spellsMax !== undefined) sbcData.characterData.actorData.updateSource({ [`attributes.spells.spellbooks.${spellBookType}.spells.spell${entity.system.level}.max`]: spellsMax})
                             }
                             
                             // Set At Will for spells marked as "at will" and for cantrips
-                            if (isAtWill || entity.data.data.level === 0) {
+                            if (isAtWill || entity.system.level === 0) {
                                 entity.updateSource({ "atWill": true })
                             }
 
@@ -4221,10 +4233,12 @@ class gearParser extends sbcParserBase {
                     entity = await sbcUtils.findEntityInCompendium(spellCompendium, {name: spellName});
                     if (entity) {
                         const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
+                        console.log("consumable")
+                        console.log(consumable)
                         if (consumableType == "wand")
-                            consumable.data.uses.value = parseInt(charges);
+                            consumable.system.uses.value = parseInt(charges);
                         else
-                            consumable.data.quantity = parseInt(charges);
+                            consumable.system.quantity = parseInt(charges);
                         gear.rawName = consumable.name;
                         // Following is somewhat redundant re-creation
                         entity = await Item.create(consumable, {temporary: true});
@@ -4235,9 +4249,9 @@ class gearParser extends sbcParserBase {
 
                 if (entity && Object.keys(entity).length !== 0) {
 
-                    entity.data.update({
+                    entity.updateSource({
                         name: sbcUtils.capitalize(gear.rawName),
-                        data: {
+                        system: {
                             identifiedName: sbcUtils.capitalize(gear.rawName)
                         }
                     })
@@ -4250,15 +4264,15 @@ class gearParser extends sbcParserBase {
                             switch (key) {
                                 case "enhancementValue":
                                     if (gear.type === "weapon") {
-                                        entity.data.update({
-                                            data: {
+                                        entity.updateSource({
+                                            system: {
                                                 enh: +change,
                                                 masterwork: true,
                                             }
                                         })
                                     } else if (gear.type === "equipment") {
-                                        entity.data.update({
-                                            data: {
+                                        entity.updateSource({
+                                            system: {
                                                 masterwork: true,
                                                 armor: {
                                                     enh: +change,
@@ -4426,7 +4440,7 @@ class tacticsParser extends sbcParserBase {
             
             if (alreadyHasTacticsDocument) {
 
-                let tempDesc = sbcData.characterData.items[tacticsItemIndex].data.data.description.value
+                let tempDesc = sbcData.characterData.items[tacticsItemIndex].system.description.value
 
                 sbcData.characterData.items[tacticsItemIndex].updateSource({ "description.value": tempDesc + tacticsDesc })
 
