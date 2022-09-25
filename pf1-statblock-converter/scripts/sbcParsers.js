@@ -4036,7 +4036,7 @@ class languageParser extends sbcParserBase {
 
                 if (language.search(patternLanguages) !== -1) {
                     let languageKey = sbcUtils.getKeyByValue(CONFIG["PF1"].languages, language)
-                    const languages = [...sbcData.characterData.actorData.system.data.traits.languages.value, languageKey];
+                    const languages = [...sbcData.characterData.actorData.system.traits.languages.value, languageKey];
                     sbcData.characterData.actorData.updateSource({"system.traits.languages.value": languages})
                 } else {
                     specialLanguages.push(language)
