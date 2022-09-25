@@ -3925,7 +3925,7 @@ class skillsParser extends sbcParserBase {
 
                         if (skillKey.search(/(art|crf|lor|prf|pro)/) === -1) {
                             // IF ITS NOT A SKILL WITH SUBSKILLS
-                            await sbcData.characterData.actorData.updateSource({ [`skills.${skillKey}.rank`]: skillRanks })
+                            await sbcData.characterData.actorData.updateSource({ [`system.skills.${skillKey}.rank`]: skillRanks })
 
                             // Add Data to conversionValidation
                             sbcData.characterData.conversionValidation["skills"][skillKey] = {
@@ -3940,13 +3940,13 @@ class skillsParser extends sbcParserBase {
                             // WIP FIND A WAY TO APPEND INSTEAD OF OVERWRITE THE SUBSKILLS
                             sbcData.characterData.actorData.updateSource(
                                 {
-                                    [`skills.${skillKey}.subSkills.${subSkillKey}`]: {
-                                        ability: sbcData.characterData.actorData.system.data.skills[skillKey].ability,
-                                        acp: sbcData.characterData.actorData.system.data.skills[skillKey].acp,
-                                        cs: sbcData.characterData.actorData.system.data.skills[skillKey].cs,
+                                    [`system.skills.${skillKey}.subSkills.${subSkillKey}`]: {
+                                        ability: sbcData.characterData.actorData.system.skills[skillKey].ability,
+                                        acp: sbcData.characterData.actorData.system.skills[skillKey].acp,
+                                        cs: sbcData.characterData.actorData.system.skills[skillKey].cs,
                                         name: sbcUtils.capitalize(subSkill),
                                         rank: skillRanks,
-                                        rt: sbcData.characterData.actorData.system.data.skills[skillKey].rt
+                                        rt: sbcData.characterData.actorData.system.skills[skillKey].rt
                                     }
                                 }
                             )
@@ -3973,7 +3973,7 @@ class skillsParser extends sbcParserBase {
 
                         let skillRanks = +skillTotal - +defaultAbilityMod
                         sbcData.characterData.actorData.updateSource({
-                            [`skills.${customSkillKey}`]: {
+                            [`system.skills.${customSkillKey}`]: {
                                 ability: "int",
                                 acp: false,
                                 background: false,
