@@ -70,6 +70,8 @@ export class sbcInputDialog extends Application {
 
             await sbcUtils.resetCategoryCounter()
             await sbcUtils.updateActorType()
+
+            await sbcUtils.resetCharacterData()
             
             if (sbcData.input) {
                 await sbcParser.prepareInput(sbcInputDialog.characterData, sbcInputDialog.input)

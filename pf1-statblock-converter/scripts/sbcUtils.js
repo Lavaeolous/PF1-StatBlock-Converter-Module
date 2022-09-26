@@ -63,12 +63,15 @@ export class sbcUtils {
         this.resetCategoryCounter()
         await this.resetTraits()
         await this.resetTokenData()
+
+        console.log("CharacterData after Reset")
+        console.log(sbcData.characterData)
     }
 
     static async resetTraits() {
         // Reset traits
         return sbcData.characterData.actorData.updateSource({
-            traits: {
+            "system.traits": {
                 cres: "",
                 eres: "",
                 eres: "",
@@ -888,46 +891,6 @@ export class sbcUtils {
                 }
 
             }
-
-            // Create the conversionBuffItem as an embedded entity
-            /*let conversionBuffItem = await Item.create({
-                "name": "sbc | Conversion Buff",
-                "type": "buff",
-                "data": {
-                    "description": {
-                        "value": `<h2>sbc | Conversion Buff</h2>
-                        This Buff was created by <strong>sbc</strong> to compensate for differences between the input and the values FoundryVTT calculates automatically.
-                        <br><br>
-                        Especially when the pathfinder system gets upgraded, entries in compendiums get updated or foundry changes in some way, this buff may become outdated.
-                        <br><br>
-                        For most mooks the conversion should more or less work, but for important NPCs or creatures it is adviced to double check the conversion manually.`
-                    },
-                    "active": true,
-                    "buffType": "perm",
-                    "changeFlags": {
-                        "heavyArmorFullSpeed": false,
-                        "loseDexToAC": false,
-                        "mediumArmorFullSpeed": false,
-                        "noDex": false,
-                        "noEncumbrance": false,
-                        "noStr": false,
-                        "oneCha": false,
-                        "oneInt": false,
-                        "oneWis": false
-                    },
-                    "changes": changes,
-                    "contextNotes": contextNotes,
-                    "hideFromToken": true,
-                    "level": 0,
-                    "links": {children: Array(0)},
-                    "tag": "sbcConversionBuff",
-                    "tags": [],
-                    "useCustomTag": true,
-                    "uses": {value: 0, max: 0}
-                },
-                "img": "systems/pf1/icons/skills/yellow_36.jpg"
-            }, { temporary : true })
-            */
 
             let conversionBuffItem2 = {
                 name: "sbc | Conversion Buff",
