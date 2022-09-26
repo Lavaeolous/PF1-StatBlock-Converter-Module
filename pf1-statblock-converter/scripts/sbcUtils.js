@@ -64,8 +64,6 @@ export class sbcUtils {
         await this.resetTraits()
         await this.resetTokenData()
 
-        console.log("CharacterData after Reset")
-        console.log(sbcData.characterData)
     }
 
     static async resetTraits() {
@@ -161,7 +159,6 @@ export class sbcUtils {
     static async updatePreview() {
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
-        console.log(sbcData.characterData.actorData)
         let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
         previewArea.append(preview)
     }
