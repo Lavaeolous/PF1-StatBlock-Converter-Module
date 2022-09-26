@@ -1,5 +1,11 @@
 # Change Log
 
+2022_09_26 - v4.0.0
+*  Breaking: v10 of FoundryVTT introduced breaking changes to the underlying data model.
+*  Breaking: sbc v4.0.0+ will not work with FoundryVTT v9 or earlier
+*  Breaking: sbc v3.4.0 or earlier will not work with Foundry v10+
+*  Changed the data model used according to FoundryVTT v10, for a list of all changes, see [PR #595](https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/pull/595)
+
 2022_06_27 - v3.4.0
 *  Breaking: v0.81.0 of the PF1e system introduced a new attack / action system with is not compatible with version 3.3.6 or earlier of sbc!
 *  Added support for the new attack / action system (#544, #543, #542, #540, #539, #536, #535, #534)
