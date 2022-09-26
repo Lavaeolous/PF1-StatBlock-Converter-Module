@@ -9,7 +9,7 @@
             {{#if notes.base.source}}<strong>Source: </strong>{{notes.base.source}}<br/>{{/if}}
             {{#if notes.base.xp}}<strong>XP {{notes.base.xp}}</strong><br/>{{/if}}
             
-            {{#if data.details.gender}}{{data.details.gender}} {{/if}} 
+            {{#if data.system.details.gender}}{{data.system.details.gender}} {{/if}} 
             {{#if notes.base.template}}{{notes.base.template}} {{/if}}
             {{#if notes.base.race}}{{notes.base.race}} {{/if}}
             {{#if notes.base.classes}}{{notes.base.classes}}{{/if}}{{#if notes.base.race}}<br/>{{/if}}
@@ -23,7 +23,7 @@
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>AC</strong> {{data.attributes.ac.normal.total}}, <strong>Touch</strong> {{data.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{data.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
+            <strong>AC</strong> {{data.system.attributes.ac.normal.total}}, <strong>Touch</strong> {{data.system.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{data.system.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
             <strong>Hit Points</strong> {{notes.defense.hpTotal}} ({{notes.defense.hdTotal}} HD; {{notes.defense.hdPool}}){{#if notes.defense.hdAbilities}}; {{notes.defense.hdAbilities}}{{/if}}<br/>
             <strong>Fort</strong> {{notes.defense.fortSave}}, <strong>Ref</strong> {{notes.defense.refSave}}, <strong>Will</strong> {{notes.defense.willSave}}{{#if data.system.attributes.saveNotes}}; {{data.system.attributes.saveNotes}}{{/if}}
             {{#if notes.defense.defensiveAbilities}}<br/><strong>Defensive Abilities</strong> {{notes.defense.defensiveAbilities}}; {{/if}}
