@@ -3212,9 +3212,6 @@ class spellBooksParser extends sbcParserBase {
                             // If the input is found in one of the compendiums, generate an entity from that
                             let entity = await sbcUtils.findEntityInCompendium(compendium, searchEntity)
 
-                            console.log("SPELL ENTITY")
-                            console.log(entity)
-
                             // otherwise overwrite "entity" with a placeholder
                             if (entity === null) {
                                 entity = await sbcUtils.generatePlaceholderEntity(searchEntity, line)
@@ -3233,8 +3230,6 @@ class spellBooksParser extends sbcParserBase {
 
                             let spellDCOffset = 0
 
-                            console.log("entity in spellbooks")
-                            console.log(entity)
                             // Calculate the DC in the Actor
                             let spellCastingAbility = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].ability
                             let spellCastingAbilityModifier = sbcData.characterData.actorData.system.abilities[spellCastingAbility].mod
@@ -3247,8 +3242,8 @@ class spellBooksParser extends sbcParserBase {
 
                                 // Try yo get the action
                                 let spellAction = entity.firstAction
-                                console.log("spellaction")
-                                console.log(spellAction)
+                                
+                                // TODO: This may still be broken, check after v4.0.0
 
                                 //spellAction.update({"data.save.dc": spellDCOffset.toString()})
                                 entity.updateSource({
@@ -4233,8 +4228,7 @@ class gearParser extends sbcParserBase {
                     entity = await sbcUtils.findEntityInCompendium(spellCompendium, {name: spellName});
                     if (entity) {
                         const consumable = await CONFIG.Item.documentClasses.spell.toConsumable(entity.toObject(), consumableType);
-                        console.log("consumable")
-                        console.log(consumable)
+
                         if (consumableType == "wand")
                             consumable.system.uses.value = parseInt(charges);
                         else

@@ -177,9 +177,6 @@ export class sbcInputDialog extends Application {
                         // Conversion Validation
                         await sbcUtils.conversionValidation(newActor.id);
                         newActor.prepareData();
-
-                        console.log("trying to validate")
-                        console.log(newActor.validate());
        
                         sbcInputDialog.sbcInputDialogInstance.close()
                         sbcApp.resetSBC(false)
