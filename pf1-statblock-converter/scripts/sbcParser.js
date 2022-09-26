@@ -35,7 +35,9 @@ export class sbcParser {
             .replace(/⅙/gm, "1/6")
             .replace(/⅛/gm, "1/8")
             // Remove Source Superscript (e.g. ^APG, ^UE)
-            .replace(/(APG\b|ACG\b|U[CEM]\b|HA\b|OA\b|ISWG\b|[^CM]B\b)/gm, "")
+            .replace(/(APG\b|ACG\b|U[CEM]\b|HA\b|OA\b|ISWG\b)/gm, "")
+            // Remove Bestiary Source Superscript (e.g. ^B)
+            .replace(/([a-z])B\b/gm, "$1")
             
             // Replace ligatures
             .replace(/ﬂ/igm, "fl")

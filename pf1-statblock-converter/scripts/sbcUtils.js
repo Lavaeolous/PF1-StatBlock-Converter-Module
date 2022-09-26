@@ -15,6 +15,7 @@ export class sbcUtils {
         let tempActor = await Actor.create({
             name: "sbc | Actor Template",
             type: sbcConfig.const.actorType[sbcData.actorType],
+            //_id: randomID(16),
             folder: sbcData.customFolderId
         }, {temporary: true})
 
@@ -62,48 +63,51 @@ export class sbcUtils {
         this.resetCategoryCounter()
         await this.resetTraits()
         await this.resetTokenData()
+
+        console.log("CharacterData after Reset")
+        console.log(sbcData.characterData)
     }
 
     static async resetTraits() {
         // Reset traits
-        return sbcData.characterData.actorData.data.update({
-            data: {
-                traits: {
-                    cres: "",
-                    eres: "",
-                    eres: "",
-                    senses: "",
-                    size: "",
-                    stature: "",
-                    dr: "",
-                    regen: "",
-                    fastHealing: "",
-                    ci: {
-                        custom: "",
-                        value:[],
-                    },
-                    di: {
-                        custom: "",
-                        value:[],
-                    },
-                    dv: {
-                        custom: "",
-                        value:[],
-                    },
-                    languages: {
-                        custom: "",
-                        value:[],
-                    }
+        return sbcData.characterData.actorData.updateSource({
+            "system.traits": {
+                cres: "",
+                eres: "",
+                eres: "",
+                senses: "",
+                size: "",
+                stature: "",
+                dr: "",
+                regen: "",
+                fastHealing: "",
+                ci: {
+                    custom: "",
+                    value:[],
+                },
+                di: {
+                    custom: "",
+                    value:[],
+                },
+                dv: {
+                    custom: "",
+                    value:[],
+                },
+                languages: {
+                    custom: "",
+                    value:[],
                 }
             }
         });
     }
 
     static async resetTokenData () {
-        return sbcData.characterData.actorData.data.update({
-            token: {
+        return sbcData.characterData.actorData.updateSource({
+            prototypeToken: {
                 displayName: sbcConfig.options.tokenSettings.displayName,
-                vision: sbcConfig.options.tokenSettings.vision,
+                sight: {
+                    enabled: sbcConfig.options.tokenSettings.sight.enabled
+                },
                 disposition: sbcConfig.options.tokenSettings.disposition,
                 displayBars: sbcConfig.options.tokenSettings.displayBars,
                 bar1: sbcConfig.options.tokenSettings.bar1,
@@ -157,7 +161,8 @@ export class sbcUtils {
     static async updatePreview() {
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
-        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData.data, notes: sbcData.notes })
+        console.log(sbcData.characterData.actorData)
+        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
         previewArea.append(preview)
     }
 
@@ -177,7 +182,9 @@ export class sbcUtils {
             actorTypeToggle.removeClass("createPC")
         }
         
-        sbcData.characterData.actorData.data.type = sbcConfig.const.actorType[sbcData.actorType]
+        sbcData.characterData.actorData.updateSource({
+            type: sbcConfig.const.actorType[sbcData.actorType]
+        });
 
     }
 
@@ -354,16 +361,16 @@ export class sbcUtils {
             "packs" : searchableCompendiums
         }
 
-        searchResult = await game.pf1.utils.findInCompendia(input.name, searchOptions)
+        searchResult = await globalThis.pf1.utils.findInCompendia(input.name, searchOptions)
 
         // Return the searchResult, which either is a clone of the found entity or null
         if (searchResult !== false) {
-            let packName = searchResult.pack.metadata.package + "." + searchResult.pack.metadata.name
+            let packName = searchResult.pack.metadata.id;
 
-            let pack = await game.packs.get(packName)
-            foundEntity = await pack.getDocument(searchResult.index._id)
+            let pack = await game.packs.get(packName);
+            foundEntity = await pack.getDocument(searchResult.index._id);
 
-            let clone = await Item.create(foundEntity.data, {temporary: true})
+            let clone = await Item.create(foundEntity, {temporary: true})
             return clone;
 
         } else {
@@ -574,12 +581,12 @@ export class sbcUtils {
                 let spellBookToValidate = spellBooksToValidate[i]
                 let casterLevelToValidate = conversionValidation.spellBooks[spellBookToValidate].casterLevel
                 let concentrationBonusToValidate = conversionValidation.spellBooks[spellBookToValidate].concentrationBonus
-                let casterLevelInActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].cl.total
+                let casterLevelInActor = actor.system.attributes.spells.spellbooks[spellBookToValidate].cl.total
 
-                let spellCastingAbility = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].ability
-                let spellCastingAbilityModifier = actor.data.data.abilities[spellCastingAbility].mod
+                let spellCastingAbility = actor.system.attributes.spells.spellbooks[spellBookToValidate].ability
+                let spellCastingAbilityModifier = actor.system.abilities[spellCastingAbility].mod
                 
-                const concentrationBonusOnActor = actor.data.data.attributes.spells.spellbooks[spellBookToValidate].concentration.total;
+                const concentrationBonusOnActor = actor.system.attributes.spells.spellbooks[spellBookToValidate].concentration.total;
 
                 let differenceInCasterLevel = +casterLevelToValidate - +casterLevelInActor
                 let differenceInConcentrationBonus = +concentrationBonusToValidate - concentrationBonusOnActor
@@ -594,14 +601,14 @@ export class sbcUtils {
                 }
             }
 
-            if (!isObjectEmpty(bookUpdates)) {
+            if (!isEmpty(bookUpdates)) {
                 await actor.update(bookUpdates);
             }
 
             // Validate ability scores first as they can have cascading effects
             const abilityScoreKeys = ["str", "dex", "con", "int", "wis", "cha"];
             for (let abl of abilityScoreKeys) {
-                const totalInActor = actor.data.data.abilities[abl].total
+                const totalInActor = actor.system.abilities[abl].total
                 let totalInStatblock = conversionValidation.attributes[abl.capitalize()]
                 const difference = +totalInStatblock - +totalInActor
                 if (difference === 0) continue;
@@ -616,7 +623,7 @@ export class sbcUtils {
                         subTarget: abl,
                         target: "ability",
                         value: +difference,
-                        id: randomID(8)
+                        id: randomID(16)
                     }
 
                     stage1changes.push(attributeChange)
@@ -659,7 +666,7 @@ export class sbcUtils {
             attributesToValidate.push("acNormal", "acTouch", "acFlatFooted")
 
             // Get an array of all items the actor currently owns
-            let currentItems = await actor.data.items
+            let currentItems = await actor.items
      
             //let currentItemsKeys = Object.keys(currentItems)
             let currentItemsKeys = currentItems//.keys()
@@ -715,7 +722,7 @@ export class sbcUtils {
                     case "cmd":
                     case "cmb":
                     case "init":
-                        totalInActor = actor.data.data.attributes[attribute].total
+                        totalInActor = actor.system.attributes[attribute].total
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = attribute
@@ -730,7 +737,7 @@ export class sbcUtils {
                         difference = +totalInStatblock
                         break
                     case "hptotal":
-                        totalInActor = actor.data.data.attributes.hp.max
+                        totalInActor = actor.system.attributes.hp.max
 
                         modifier = "untypedPerm"
                         target = "misc"
@@ -740,7 +747,7 @@ export class sbcUtils {
 
                         break
                     case "acnormal":
-                        totalInActor = actor.data.data.attributes.ac.normal.total
+                        totalInActor = actor.system.attributes.ac.normal.total
                         modifier = "untypedPerm"
                         target = "ac"
                         subTarget = "aac"
@@ -781,7 +788,7 @@ export class sbcUtils {
                         modifier = "untypedPerm"
                         target = "savingThrows"
                         subTarget = attribute
-                        totalInActor = actor.data.data.attributes.savingThrows[attribute].total ?? 0
+                        totalInActor = actor.system.attributes.savingThrows[attribute].total ?? 0
                         difference = +totalInStatblock - +totalInActor
                         break
                     default:
@@ -799,7 +806,7 @@ export class sbcUtils {
                         subTarget: subTarget,
                         target: target,
                         value: +difference,
-                        id: randomID(8)
+                        id: randomID(16)
                     }
 
                     stage2changes.push(attributeChange)
@@ -837,7 +844,7 @@ export class sbcUtils {
                 let skillToValidate = conversionValidation.skills[skillKey]
                 let skillModInActor = 0
                 
-                let skillSubKeys = Object.keys(actor.data.data.skills[parentSkillKey])
+                let skillSubKeys = Object.keys(actor.system.skills[parentSkillKey])
 
                 // For Skills with subskill --> subTarget: "skill.prf.subSkills.prf1"
                 let subTarget = ""
@@ -876,7 +883,7 @@ export class sbcUtils {
                             subTarget: subTarget,
                             target: "skill",
                             value: +difference,
-                            id: randomID(8)
+                            id: randomID(16)
                         }
                         stage2changes.push(skillChange)
                     }
@@ -884,46 +891,6 @@ export class sbcUtils {
                 }
 
             }
-
-            // Create the conversionBuffItem as an embedded entity
-            /*let conversionBuffItem = await Item.create({
-                "name": "sbc | Conversion Buff",
-                "type": "buff",
-                "data": {
-                    "description": {
-                        "value": `<h2>sbc | Conversion Buff</h2>
-                        This Buff was created by <strong>sbc</strong> to compensate for differences between the input and the values FoundryVTT calculates automatically.
-                        <br><br>
-                        Especially when the pathfinder system gets upgraded, entries in compendiums get updated or foundry changes in some way, this buff may become outdated.
-                        <br><br>
-                        For most mooks the conversion should more or less work, but for important NPCs or creatures it is adviced to double check the conversion manually.`
-                    },
-                    "active": true,
-                    "buffType": "perm",
-                    "changeFlags": {
-                        "heavyArmorFullSpeed": false,
-                        "loseDexToAC": false,
-                        "mediumArmorFullSpeed": false,
-                        "noDex": false,
-                        "noEncumbrance": false,
-                        "noStr": false,
-                        "oneCha": false,
-                        "oneInt": false,
-                        "oneWis": false
-                    },
-                    "changes": changes,
-                    "contextNotes": contextNotes,
-                    "hideFromToken": true,
-                    "level": 0,
-                    "links": {children: Array(0)},
-                    "tag": "sbcConversionBuff",
-                    "tags": [],
-                    "useCustomTag": true,
-                    "uses": {value: 0, max: 0}
-                },
-                "img": "systems/pf1/icons/skills/yellow_36.jpg"
-            }, { temporary : true })
-            */
 
             let conversionBuffItem2 = {
                 name: "sbc | Conversion Buff",

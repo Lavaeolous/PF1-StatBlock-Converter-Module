@@ -2,7 +2,7 @@
  * sbc | Statblock Converter for Pathfinder 1. Edition on FoundryVTT
  *
  * Author: Lavaeolous
- * Additional Authors: Noon, mkahvi
+ * Contributions by: Noon, mkahvi
  *
  */
 
@@ -61,7 +61,7 @@ export class sbcApp {
 
         let customFolderId = ""
         let customFolderName = game.settings.get(sbcConfig.modData.mod, "importFolder")
-        let searchForExistingFolder = await game.folders.find(entry => entry.data.name === customFolderName && entry.data.type === "Actor")
+        let searchForExistingFolder = await game.folders.find(entry => entry.name === customFolderName && entry.type === "Actor")
 
         // Check, if a custom input folder still exists, as it could have been deleted after changing the module settings
         if(searchForExistingFolder === null || searchForExistingFolder === undefined) {
