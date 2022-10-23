@@ -159,7 +159,7 @@ export class sbcUtils {
     static async updatePreview() {
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
-        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
+        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {actor: sbcData.characterData.actorData, notes: sbcData.notes })
         previewArea.append(preview)
     }
 
@@ -922,8 +922,7 @@ export class sbcUtils {
             let errorMessage = "Failed to validate the conversion and create a conversion buff"
             let error = new sbcError(1, "Validation", errorMessage)
             sbcData.errors.push(error)
-            throw err
-
+            return false
         }
 
         sbcConfig.options.debug && console.groupEnd()
@@ -1139,7 +1138,7 @@ export class sbcUtils {
             }
         } catch (err) {
             sbcUtils.log(`stringStartsWith('${string}', '${searchString}', ${bCaseSensitive}) threw an error: ${err}`);
-            throw err;
+            throw err
         }
     }
 
