@@ -1,7 +1,7 @@
 <div style="width: 100%; background-color: #ffe9c7; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); columns: 2 150px">
     <hr style="margin-left: 0; margin-top:-2px; width: 100%; height: 4px; background-color: #e0a100; border: 1px solid #000; column-span: all;" />
     <div style="padding: 5px;">
-        <h1 style="border: none; font-family: 'Nodesto', 'Signika', 'Palatino Linotype', serif; color: #7a0800;">{{data.name}} {{#if notes.base.cr}}CR {{notes.base.cr}}{{/if}} {{#if notes.base.mr}}/MR {{notes.base.mr}}{{/if}}</h1>
+        <h1 style="border: none; font-family: 'Nodesto', 'Signika', 'Palatino Linotype', serif; color: #7a0800;">{{actor.name}} {{#if notes.base.cr}} CR {{notes.base.cr}}{{/if}} {{#if notes.base.mr}}/MR {{notes.base.mr}}{{/if}}</h1>
         {{#if notes.base.shortDescription}}<div><em>{{notes.base.shortDescription}}</em></div>{{/if}}
         <!-- BASE -->
         <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
@@ -9,29 +9,29 @@
             {{#if notes.base.source}}<strong>Source: </strong>{{notes.base.source}}<br/>{{/if}}
             {{#if notes.base.xp}}<strong>XP {{notes.base.xp}}</strong><br/>{{/if}}
             
-            {{#if data.system.details.gender}}{{data.system.details.gender}} {{/if}} 
+            {{#if actor.system.details.gender}}{{actor.system.details.gender}} {{/if}} 
             {{#if notes.base.template}}{{notes.base.template}} {{/if}}
             {{#if notes.base.race}}{{notes.base.race}} {{/if}}
             {{#if notes.base.classes}}{{notes.base.classes}}{{/if}}{{#if notes.base.race}}<br/>{{/if}}
             {{#if notes.base.alignment}}{{notes.base.alignment}} {{/if}}
             {{#if notes.base.size}}{{notes.base.size}} {{/if}}
             {{#if notes.creatureType}}{{notes.creatureType}} {{/if}}<br/>
-            <strong>Init</strong> {{data.system.attributes.init.total}};
+            <strong>Init</strong> {{actor.system.attributes.init.total}};
             {{#if notes.base.senses}}<strong>Senses</strong> {{notes.base.senses}}; {{/if}}
             {{#if notes.aura}}<strong>Aura</strong> {{notes.aura}}{{/if}}
         </div>
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>AC</strong> {{data.system.attributes.ac.normal.total}}, <strong>Touch</strong> {{data.system.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{data.system.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
+            <strong>AC</strong> {{actor.system.attributes.ac.normal.total}}, <strong>Touch</strong> {{actor.system.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{actor.system.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
             <strong>Hit Points</strong> {{notes.defense.hpTotal}} ({{notes.defense.hdTotal}} HD; {{notes.defense.hdPool}}){{#if notes.defense.hdAbilities}}; {{notes.defense.hdAbilities}}{{/if}}<br/>
-            <strong>Fort</strong> {{notes.defense.fortSave}}, <strong>Ref</strong> {{notes.defense.refSave}}, <strong>Will</strong> {{notes.defense.willSave}}{{#if data.system.attributes.saveNotes}}; {{data.system.attributes.saveNotes}}{{/if}}
+            <strong>Fort</strong> {{notes.defense.fortSave}}, <strong>Ref</strong> {{notes.defense.refSave}}, <strong>Will</strong> {{notes.defense.willSave}}{{#if actor.system.attributes.saveNotes}}; {{actor.system.attributes.saveNotes}}{{/if}}
             {{#if notes.defense.defensiveAbilities}}<br/><strong>Defensive Abilities</strong> {{notes.defense.defensiveAbilities}}; {{/if}}
-            {{#if data.system.traits.dr}}<strong>DR</strong> {{data.system.traits.dr}}{{/if}}
+            {{#if actor.system.traits.dr}}<strong>DR</strong> {{actor.system.traits.dr}}{{/if}}
             {{#if notes.defense.immune}}<strong>Immune</strong> {{notes.defense.immune}}; {{/if}}
             {{#if notes.defense.resist}}<strong>Resist</strong> {{notes.defense.resist}}; {{/if}}
-            {{#if data.system.attributes.sr.formula}}<strong>SR</strong> {{data.system.attributes.sr.formula}}{{/if}}
-            {{#if data.system.attributes.srNotes}} ({{data.system.attributes.srNotes}}){{/if}}
+            {{#if actor.system.attributes.sr.formula}}<strong>SR</strong> {{actor.system.attributes.sr.formula}}{{/if}}
+            {{#if actor.system.attributes.srNotes}} ({{actor.system.attributes.srNotes}}){{/if}}
             {{#if notes.defense.weakness}}<br/><strong>Weakness</strong> {{notes.defense.weakness}}{{/if}}
         </div>
         <div>
@@ -77,7 +77,7 @@
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Statistics</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
             <strong>Str</strong> {{notes.statistics.str}}, <strong>Dex</strong> {{notes.statistics.dex}}, <strong>Con</strong> {{notes.statistics.con}}, <strong>Int</strong> {{notes.statistics.int}}, <strong>Wis</strong> {{notes.statistics.wis}}, <strong>Cha</strong> {{notes.statistics.cha}}<br/>
-            <strong>Base Atk</strong> +{{data.system.attributes.bab.total}}; <strong>CMB</strong> +{{data.system.attributes.cmb.total}}{{#if notes.statistics.cmbContext}}{{notes.statistics.cmbContext}}{{/if}}; <strong>CMD</strong> {{data.system.attributes.cmd.total}}{{#if notes.statistics.cmdContext}}{{notes.statistics.cmdContext}}{{/if}}<br/>
+            <strong>Base Atk</strong> +{{actor.system.attributes.bab.total}}; <strong>CMB</strong> +{{actor.system.attributes.cmb.total}}{{#if notes.statistics.cmbContext}}{{notes.statistics.cmbContext}}{{/if}}; <strong>CMD</strong> {{actor.system.attributes.cmd.total}}{{#if notes.statistics.cmdContext}}{{notes.statistics.cmdContext}}{{/if}}<br/>
             <strong>Feats</strong> {{notes.statistics.feats}}<br/>
             <strong>Skills</strong> {{notes.statistics.skills}}<br/>
             <strong>Languages</strong> {{notes.statistics.languages}}<br/>

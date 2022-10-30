@@ -10,6 +10,11 @@ export class sbcData {
     static characterData = {}
     static notes = {}
     static customFolderId = ""
+    static treasureParsing = {
+        treasureToParse: "",
+        lineToRemove: 0,
+        statisticsStartLine: 0
+    }
 
 }
 

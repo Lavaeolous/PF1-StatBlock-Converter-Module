@@ -25,7 +25,6 @@ sbcParsing.parseValueToDocPath = async (obj, path, value) => {
     return obj.updateSource({ [path]: value });
 }
 
-
 // Base class for specialized parsers
 export class sbcParserBase {
     constructor() {
@@ -55,9 +54,6 @@ class notesParser extends sbcParserBase {
             let errorMessage = `Failed to parse ${value} into notes.${targetFields}`
             let error = new sbcError(2, "Parse", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
         }
     }
@@ -84,9 +80,6 @@ class singleValueParser extends sbcParserBase {
                 let errorMessage = `Failed to parse ${value} into ${this.targetFields}`
                 let error = new sbcError(0, "Parse", errorMessage, line)
                 sbcData.errors.push(error)
-
-                throw err
-
                 return false
             }
         } else {
@@ -145,8 +138,7 @@ class entityParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as " + type + "."
             let error = new sbcError(1, "Parse/" + type.toUpperCase(), errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
+            return false
 
         }
         
@@ -406,7 +398,6 @@ export async function parseBase(data, startLine) {
             sbcData.errors.push(error)
             sbcData.parsedInput.success = false
 
-            throw err
             return false
         }
 
@@ -468,8 +459,6 @@ class raceParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as race."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
             return false
 
         }
@@ -588,7 +577,7 @@ class classesParser extends sbcParserBase {
                         let classItem = await Item.create({
                             name: sbcUtils.capitalize(className),
                             type: "class",
-                            data: {
+                            system: {
                                 description: {
                                     value: "sbc | As the PF1-System currently does not include prestige classes, a placeholder was generated."
                                 },
@@ -633,7 +622,7 @@ class classesParser extends sbcParserBase {
                         } else if (classData.wizardClass !== "") {
                             className = sbcUtils.capitalize(classData.wizardClass)
                             classItem.updateSource({
-                                data: {
+                                system: {
                                     tag: "wizard",
                                     useCustomTag: true,
                                 }
@@ -646,7 +635,7 @@ class classesParser extends sbcParserBase {
         
                         classItem.updateSource({
                             name: className,
-                            data: {
+                            system: {
                                 level: +classData.level,
                                 hp: +classItem.system.hd + +Math.floor(sbcUtils.getDiceAverage(+classItem.system.hd) * (+classData.level-1)),
                             }
@@ -714,7 +703,7 @@ class creatureTypeParser extends sbcParserBase {
             
             
             await creatureTypeItem.updateSource({
-                data: {
+                system: {
                     tag: globalThis.pf1.utils.createTag(creatureType.name),
                     useCustomTag: true,
                 }
@@ -791,7 +780,6 @@ class creatureTypeParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as creatureType."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(err)
-            throw err
             return false
 
         }
@@ -977,7 +965,7 @@ class auraParser extends sbcParserBase {
                     let aura = await Item.create({
                         name: "Aura: " + sbcUtils.capitalize(auraName),
                         type: "feat",
-                        data: {
+                        system: {
                             abilityType: "none",
                             actionType: actionType,
                             activation: {
@@ -1020,9 +1008,6 @@ class auraParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as aura."
             let error = new sbcError(1, "Parse/Base", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1183,9 +1168,6 @@ export async function parseDefense(data, startLine) {
             let errorMessage = `Parsing the defense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Defense", errorMessage, line+startLine)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
         }
 
@@ -1278,9 +1260,6 @@ class acTypesParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as Armor Class Types."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1522,9 +1501,6 @@ class hpParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as HP/HD."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1591,9 +1567,6 @@ class savesParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as Saves."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1653,9 +1626,6 @@ class immuneParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as Immunities."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1707,9 +1677,6 @@ class resistParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as Resistances."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1761,9 +1728,6 @@ class weaknessParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as Weaknesses."
             let error = new sbcError(1, "Parse/Defense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -1809,13 +1773,10 @@ class srParser extends sbcParserBase {
 
         } catch (err) {
 
-            let errorMessage = "Failed to parse " + value + " as Spell Resistance.";
-            let error = new sbcError(1, "Parse/Defense", errorMessage, line);
-            sbcData.errors.push(error);
-
-            throw err;
-
-            return false;
+            let errorMessage = "Failed to parse " + value + " as Spell Resistance."
+            let error = new sbcError(1, "Parse/Defense", errorMessage, line)
+            sbcData.errors.push(error)
+            return false
 
         }
 
@@ -2200,9 +2161,6 @@ export async function parseOffense(data, startLine) {
             let errorMessage = `Parsing the offense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Offense", errorMessage, line+startLine)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
         }
     
@@ -2270,13 +2228,10 @@ class speedParser extends sbcParserBase {
 
         } catch (err) {
 
-            let errorMessage = "Failed to parse " + value + " as Speed of type " + type + ".";
-            let error = new sbcError(1, "Parse/Offense", errorMessage, line);
-            sbcData.errors.push(error);
-
-            throw err;
-
-            return false;
+            let errorMessage = "Failed to parse " + value + " as Speed of type " + type + "."
+            let error = new sbcError(1, "Parse/Offense", errorMessage, line)
+            sbcData.errors.push(error)
+            return false
 
         }
 
@@ -2959,9 +2914,6 @@ class attacksParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as " + type + "-Attack." + err
             let error = new sbcError(1, "Parse/Offense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err 
-
             return false
 
         }
@@ -3282,7 +3234,7 @@ class spellBooksParser extends sbcParserBase {
                                 if (spellsPerXTotal !== -1 && spellBookType === "spelllike") {
 
                                     entity.updateSource({
-                                        data: {
+                                        system: {
                                             uses: {
                                                 max: +spellsPerXTotal,
                                                 value: +spellsPerXTotal,
@@ -3314,7 +3266,7 @@ class spellBooksParser extends sbcParserBase {
                                     // WIP: BUILD A CHECK FOR MULTIPLE PREPARATIONS OF THE SAME SPELL
             
                                     entity.updateSource({
-                                        data: {
+                                        system: {
                                             preparation: {
                                                 maxAmount: 1,
                                                 preparedAmount: 1
@@ -3339,7 +3291,7 @@ class spellBooksParser extends sbcParserBase {
                             if (isConstant) {
                                 entity.updateSource({
                                     name: "Constant: " + entity.data.name,
-                                    data: {
+                                    system: {
                                         atWill: true
                                     }
                                 })
@@ -3349,13 +3301,13 @@ class spellBooksParser extends sbcParserBase {
                             if (isDomainSpell) {
 
                                 entity.updateSource({
-                                    data: {
+                                    system: {
                                         domain: true,
                                         slotClost: 1,
                                     }
                                 })
 
-                                let old = sbcData.characterData.actorData.system.data.attributes.spells.spellbooks[spellBookType].spells["spell" + spellLevel]
+                                let old = sbcData.characterData.actorData.system.attributes.spells.spellbooks[spellBookType].spells["spell" + spellLevel]
                                 sbcData.characterData.actorData.updateSource({
                                     [`system.attributes.spells.spellbooks.${spellBookType}.spells.spell${spellLevel}`]: {
                                         base: old.base - 1,
@@ -3413,9 +3365,6 @@ class spellBooksParser extends sbcParserBase {
             sbcConfig.options.debug && console.log(value)
             let error = new sbcError(1, "Parse/Offense", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -3430,6 +3379,7 @@ export async function parseStatistics(data, startLine) {
     
     let parsedSubCategories = []
     sbcData.notes["statistics"] = {}
+    sbcData.treasureParsing.statisticsStartLine = startLine
 
     // Loop through the lines
     for (let line = 0; line < data.length; line++) {
@@ -3501,6 +3451,7 @@ export async function parseStatistics(data, startLine) {
                 if (/^Base Atk\b/i.test(lineContent)) {
                     let parserBab = sbcMapping.map.statistics.bab
                     let bab = lineContent.match(/(?:Base Atk\b\s*)([\+\-]?\d+)/ig)[0].replace(/Base Atk\b\s*/i,"")
+
                     //sbcData.characterData.conversionValidation.attributes["bab"] = +bab
                     parsedSubCategories["bab"] = await parserBab.parse(+bab, startLine + line)
                 }
@@ -3607,9 +3558,6 @@ export async function parseStatistics(data, startLine) {
             let error = new sbcError(1, "Parse/Statistics", errorMessage, (startLine+line) )
             sbcData.errors.push(error)
             sbcData.parsedInput.success = false
-
-            throw err
-
             return false
 
         }
@@ -3648,9 +3596,6 @@ class abilityParser extends sbcParserBase {
                 let errorMessage = `Failed to parse ${value} into ${this.targetValueFields} (and ${sbcUtils.getModifier(value)} into ${this.targetModFields})`
                 let error = new sbcError(0, "Parse", errorMessage, line)
                 sbcData.errors.push(error)
-
-                throw err
-
                 return false
             }
         } else {
@@ -4007,7 +3952,6 @@ class skillsParser extends sbcParserBase {
                     let errorMessage = "Failed to parse " + skill + "."
                     let error = new sbcError(1, "Parse/Statistics", errorMessage, line)
                     sbcData.errors.push(error)
-                    throw err
                     return false
 
                 }
@@ -4022,9 +3966,6 @@ class skillsParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as skills."
             let error = new sbcError(1, "Parse/Statistics", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4086,9 +4027,6 @@ class languageParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as languages."
             let error = new sbcError(1, "Parse/Statistics", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4123,9 +4061,6 @@ class sqParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as SQ."
             let error = new sbcError(1, "Parse/Statistics", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4313,9 +4248,6 @@ class gearParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as gear."
             let error = new sbcError(2, "Parse/Statistics", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4458,9 +4390,6 @@ class tacticsParser extends sbcParserBase {
             let errorMessage = "Failed to parse " + value + " as tactics."
             let error = new sbcError(2, "Parse/Ecology", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
         }
     }
@@ -4517,6 +4446,20 @@ export async function parseEcology(data, startLine) {
                         name: "Treasure",
                         entry: lineContent.match(/(?:Treasure)([\s\S]*?)$/i)[1]                     
                     }
+                    if (lineContent.match(/(NPC Gear)/i)[1])
+                    {
+                        let npcGear = lineContent.match(/(?:NPC Gear\s*\()([^)]*)/gi)[0].replace(/NPC Gear\s*\(/i,"");
+                        sbcData.treasureParsing.treasureToParse = npcGear
+                        sbcData.treasureParsing.lineToRemove = startLine + line
+
+                        let errorMessage = `
+                        This is treasure and will not be included as items in the actor. If you want to parse these as real items, press here:<br/>
+                        <input type="button" id="parseTreasureAsGearButton" value="Parse Treasure as Gear"></input>`                        
+
+                        let error = new sbcError(2, "Parse/Ecology", errorMessage, startLine + line)
+                        sbcData.errors.push(error)
+                    }
+
                     sbcData.notes.ecology.treasure = treasure.entry
                     parsedSubCategories["treasure"] = await parserEcology.parse(treasure, startLine + line)
                 }
@@ -4527,9 +4470,6 @@ export async function parseEcology(data, startLine) {
             let error = new sbcError(2, "Parse/Ecology", errorMessage, line+startLine)
             sbcData.errors.push(error)
             // This is non-critical, so parse the rest
-
-            throw err
-
             return false
         }
 
@@ -4565,7 +4505,6 @@ class ecologyParser extends sbcParserBase {
                 }
             }
 
-            
             if (alreadyHasEcologyDocument) {
 
                 let tempDesc = sbcData.characterData.items[ecologyItemIndex].system.description.value
@@ -4586,27 +4525,12 @@ class ecologyParser extends sbcParserBase {
 
             }
 
-            /*
-            let ecologyEntry = {
-                "name": value.name + ": " + value.entry,
-                "type": "misc",
-                "desc": "sbc | Here you’ll find information on how the monster fits into the world, notes on its ecology and society, and other bits of useful lore and flavor that will help you breathe life into the creature when your PCs encounter it."
-            }
-
-            let placeholder = await sbcUtils.generatePlaceholderEntity(ecologyEntry, line)
-           
-            sbcData.characterData.items.push(placeholder)
-            */
-
             return true
 
         } catch (err) {
             let errorMessage = "Failed to parse " + value + " as ecology."
             let error = new sbcError(2, "Parse/Ecology", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
         }
     }
@@ -4647,9 +4571,6 @@ export async function parseSpecialAbilities(data, startLine) {
             let error = new sbcError(2, "Parse/Special Abilities", errorMessage, line+startLine)
             sbcData.errors.push(error)
             // This is non-critical, so parse the rest
-
-            throw err
-
             return false
         }
 
@@ -4764,9 +4685,6 @@ class specialAbilityParser extends sbcParserBase {
             let errorMessage = "Failed to parse [" + value + "] as Special Ability."
             let error = new sbcError(1, "Parse/Special Abilties", errorMessage, line)
             sbcData.errors.push(error)
-
-            throw err
-
             return false
 
         }
@@ -4807,9 +4725,6 @@ export async function parseDescription(data, startLine) {
             let error = new sbcError(2, "Parse/Description", errorMessage, line+startLine)
             sbcData.errors.push(error)
             sbcData.parsedInput.success = false
-
-            throw err
-
             return false
         }
 
@@ -4898,7 +4813,7 @@ export async function createEmbeddedDocuments() {
 
 export async function generateNotesSection() {
 
-    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
+    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {system: sbcData.characterData.actorData, notes: sbcData.notes })
 
     let d = new Date()
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

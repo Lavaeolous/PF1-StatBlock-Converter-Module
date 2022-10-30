@@ -11,11 +11,11 @@
   "url": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module",
   "bugs": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/issues",
   "manifest": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/latest/download/module.json",
-  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v4.0.0/4.0.0_pf1-statblock-converter.zip",
-  "version": "4.0.0",
+  "download": "https://github.com/Lavaeolous/PF1-StatBlock-Converter-Module/releases/download/v4.0.2/4.0.2_pf1-statblock-converter.zip",
+  "version": "4.0.2",
   "compatibility": {
     "minimum": "10",
-    "verified": "10.286",
+    "verified": "10.288",
     "maximum": "10"
   },
   "esmodules": [

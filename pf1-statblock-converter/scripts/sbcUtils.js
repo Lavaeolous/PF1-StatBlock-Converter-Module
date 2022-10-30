@@ -159,12 +159,18 @@ export class sbcUtils {
     static async updatePreview() {
         this.resetPreview()
         let previewArea = $(".sbcContainer #sbcPreview")
-        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {data: sbcData.characterData.actorData, notes: sbcData.notes })
+        let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {actor: sbcData.characterData.actorData, notes: sbcData.notes })
         previewArea.append(preview)
     }
 
     static updateErrorArea() {
         sbcUtils.logErrors()
+
+        // Check, if there are buttons in the area
+        let parseTreasureAsGearButton = $("#parseTreasureAsGearButton")
+        parseTreasureAsGearButton.on("click", async function() {
+            sbcUtils.parseTreasureAsGear()
+        })
     }
 
     static async updateActorType() {
@@ -183,6 +189,26 @@ export class sbcUtils {
             type: sbcConfig.const.actorType[sbcData.actorType]
         });
 
+    }
+
+    // Hacky Stuff
+    static parseTreasureAsGear() {
+        
+        // Remove the treasure line
+        sbcData.preparedInput.data.splice(sbcData.treasureParsing.lineToRemove, 1)
+
+        // Add the treasure line into statistics
+        sbcData.preparedInput.data.splice(sbcData.treasureParsing.statisticsStartLine+1, 0, "Gear " + sbcData.treasureParsing.treasureToParse)
+
+        let newInput = sbcData.preparedInput.data.join("\n")
+
+        // Reset sbc and reparse with the new values
+        let inputArea = $(".sbcContainer #sbcInput")
+        sbcApp.resetSBC()
+        inputArea.val(newInput)
+        inputArea.keyup()
+
+        
     }
 
     /* ------------------------------------ */
@@ -922,8 +948,7 @@ export class sbcUtils {
             let errorMessage = "Failed to validate the conversion and create a conversion buff"
             let error = new sbcError(1, "Validation", errorMessage)
             sbcData.errors.push(error)
-            throw err
-
+            return false
         }
 
         sbcConfig.options.debug && console.groupEnd()
@@ -993,6 +1018,8 @@ export class sbcUtils {
         return items
 
     }
+
+    
 
     // 
     static parseSubtext(value) {
@@ -1139,7 +1166,7 @@ export class sbcUtils {
             }
         } catch (err) {
             sbcUtils.log(`stringStartsWith('${string}', '${searchString}', ${bCaseSensitive}) threw an error: ${err}`);
-            throw err;
+            throw err
         }
     }
 

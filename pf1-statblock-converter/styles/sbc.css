@@ -72,6 +72,15 @@
     margin-left: 50px;
 }
 
+.sbcSelectableError {
+    user-select: text;
+    padding: 5px;
+    border-radius: 5px;
+    line-height: 2;
+    background: grey;
+    color: black;
+}
+
 .sbcVisible {
     visibility: visible;
 }
