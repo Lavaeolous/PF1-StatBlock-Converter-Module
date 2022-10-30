@@ -1,5 +1,10 @@
 # Change Log
 
+2022_10_30 - v4.0.2
+*  I had a v4.0.1 but lost in while building a new pc :shrug:
+*  Fixed the preview generation, as some fields were not filled correctly (#603)
+*  Added a method to parse NPC Gear when it is found in the treasure section (by editing the input and reparsing everything ...) (see discussion in #601)
+
 2022_09_26 - v4.0.0
 *  Breaking: v10 of FoundryVTT introduced breaking changes to the underlying data model.
 *  Breaking: sbc v4.0.0+ will not work with FoundryVTT v9 or earlier
