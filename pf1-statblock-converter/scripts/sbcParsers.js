@@ -25,7 +25,6 @@ sbcParsing.parseValueToDocPath = async (obj, path, value) => {
     return obj.updateSource({ [path]: value });
 }
 
-
 // Base class for specialized parsers
 export class sbcParserBase {
     constructor() {
@@ -519,9 +518,6 @@ class classesParser extends sbcParserBase {
                     if (classInput.match(/(\d+)/)?.[0]) {
                         classLevel = classInput.match(/(\d+)/)[0]
                     }
-
-                    console.log("ClassLevel for " + tempClassName)
-                    console.log(classLevel)
 
                     let classData = {
                         name: "",
@@ -1401,8 +1397,6 @@ class hpParser extends sbcParserBase {
                                 
                             } else if (hasClassAndRacialHd) {
 
-                                console.log("CLASS AND RACIAL HD")
-
                                 // Calculate the HP for Entries with Class and Racial Hit Dice
                                 if (parsedClasses < classesLeftToParse && !classItem.isRacial && numberOfHitDice == classItem.level) {                                    
                                     // Calculate the HP for Classes of type Class as long as there are classes left to parse
@@ -1426,17 +1420,7 @@ class hpParser extends sbcParserBase {
                             } else {
                                 // Calculate the HP for Entries with just Class Hit Dice
                                 if (parsedClasses < classesLeftToParse) {
-
-                                    console.log("JUST CLASS HD")
-
-                                    console.log("classItem")
-                                    console.log(classItem)
-
                                     // Calculate the HP for Classes of type Class as long as there are classes left to parse
-
-                                    console.log("foundClassItem")
-                                    console.log(foundClassItem)
-
                                     calcHp = +sizeOfHitDice + +Math.floor(+sbcUtils.getDiceAverage(+sizeOfHitDice) * (+classItem.level-1))
                                     numberOfHitDice -= +classItem.level
                                     classItems[j].isParsed = true
@@ -3395,6 +3379,7 @@ export async function parseStatistics(data, startLine) {
     
     let parsedSubCategories = []
     sbcData.notes["statistics"] = {}
+    sbcData.treasureParsing.statisticsStartLine = startLine
 
     // Loop through the lines
     for (let line = 0; line < data.length; line++) {
@@ -3466,8 +3451,6 @@ export async function parseStatistics(data, startLine) {
                 if (/^Base Atk\b/i.test(lineContent)) {
                     let parserBab = sbcMapping.map.statistics.bab
                     let bab = lineContent.match(/(?:Base Atk\b\s*)([\+\-]?\d+)/ig)[0].replace(/Base Atk\b\s*/i,"")
-
-                    console.log("bab to parse: " + bab)
 
                     //sbcData.characterData.conversionValidation.attributes["bab"] = +bab
                     parsedSubCategories["bab"] = await parserBab.parse(+bab, startLine + line)
@@ -4463,6 +4446,20 @@ export async function parseEcology(data, startLine) {
                         name: "Treasure",
                         entry: lineContent.match(/(?:Treasure)([\s\S]*?)$/i)[1]                     
                     }
+                    if (lineContent.match(/(NPC Gear)/i)[1])
+                    {
+                        let npcGear = lineContent.match(/(?:NPC Gear\s*\()([^)]*)/gi)[0].replace(/NPC Gear\s*\(/i,"");
+                        sbcData.treasureParsing.treasureToParse = npcGear
+                        sbcData.treasureParsing.lineToRemove = startLine + line
+
+                        let errorMessage = `
+                        This is treasure and will not be included as items in the actor. If you want to parse these as real items, press here:<br/>
+                        <input type="button" id="parseTreasureAsGearButton" value="Parse Treasure as Gear"></input>`                        
+
+                        let error = new sbcError(2, "Parse/Ecology", errorMessage, startLine + line)
+                        sbcData.errors.push(error)
+                    }
+
                     sbcData.notes.ecology.treasure = treasure.entry
                     parsedSubCategories["treasure"] = await parserEcology.parse(treasure, startLine + line)
                 }
@@ -4508,7 +4505,6 @@ class ecologyParser extends sbcParserBase {
                 }
             }
 
-            
             if (alreadyHasEcologyDocument) {
 
                 let tempDesc = sbcData.characterData.items[ecologyItemIndex].system.description.value
@@ -4528,18 +4524,6 @@ class ecologyParser extends sbcParserBase {
                 sbcData.characterData.items.push(placeholder)
 
             }
-
-            /*
-            let ecologyEntry = {
-                "name": value.name + ": " + value.entry,
-                "type": "misc",
-                "desc": "sbc | Here you’ll find information on how the monster fits into the world, notes on its ecology and society, and other bits of useful lore and flavor that will help you breathe life into the creature when your PCs encounter it."
-            }
-
-            let placeholder = await sbcUtils.generatePlaceholderEntity(ecologyEntry, line)
-           
-            sbcData.characterData.items.push(placeholder)
-            */
 
             return true
 
