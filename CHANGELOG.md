@@ -6,6 +6,7 @@
 *  Fixed critical error in treasure parsing (#614)
 *  Fixed preview generation in the notes section (#619)
 *  Fixed parsing of primary natural attacks (#617)
+
 2022_10_30 - v4.0.2
 *  I had a v4.0.1 but lost in while building a new pc :shrug:
 *  Fixed the preview generation, as some fields were not filled correctly (#603)
