@@ -23,7 +23,7 @@
         <div style="break-inside: avoid;">
             <h4 style="border: none; text-transform: uppercase; color: #7a0800; padding-top:6px;">Defense</h4>
             <hr style="margin-left: 0; width: 275px; height: 0; border-style: solid; border-width: 2px 0 2px 275px; border-color: transparent transparent transparent #7a0800;" />
-            <strong>AC</strong> {{actor.system.attributes.ac.normal.total}}, <strong>Touch</strong> {{actor.system.attributes.ac.touch.total}}, <strong>Flat-Footed</strong> {{actor.system.attributes.ac.flatFooted.total}} {{notes.defense.acTypes}}<br/>
+            <strong>AC</strong> {{notes.defense.acNormal}}, <strong>Touch</strong> {{notes.defense.acTouch}}, <strong>Flat-Footed</strong> {{notes.defense.acFlatFooted}} {{notes.defense.acTypes}}<br/>
             <strong>Hit Points</strong> {{notes.defense.hpTotal}} ({{notes.defense.hdTotal}} HD; {{notes.defense.hdPool}}){{#if notes.defense.hdAbilities}}; {{notes.defense.hdAbilities}}{{/if}}<br/>
             <strong>Fort</strong> {{notes.defense.fortSave}}, <strong>Ref</strong> {{notes.defense.refSave}}, <strong>Will</strong> {{notes.defense.willSave}}{{#if actor.system.attributes.saveNotes}}; {{actor.system.attributes.saveNotes}}{{/if}}
             {{#if notes.defense.defensiveAbilities}}<br/><strong>Defensive Abilities</strong> {{notes.defense.defensiveAbilities}}; {{/if}}

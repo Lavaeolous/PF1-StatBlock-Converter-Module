@@ -61,7 +61,8 @@ export class sbcUtils {
         await this.reinitActor();
 
         this.resetCategoryCounter()
-        await this.resetTraits()
+        //await this.resetTraits()
+        await this.resetDefaults()
         await this.resetTokenData()
 
     }
@@ -75,7 +76,7 @@ export class sbcUtils {
                 eres: "",
                 senses: "",
                 size: "",
-                stature: "",
+                stature: "tall",
                 dr: "",
                 regen: "",
                 fastHealing: "",
@@ -97,6 +98,67 @@ export class sbcUtils {
                 }
             }
         });
+    }
+
+    static async resetDefaults() {
+        return sbcData.characterData.actorData.updateSource({
+            "system.details": {
+                gender: "",
+                deity: "",
+                age: "",
+                height: "",
+                weight: ""
+            },
+            "system.traits": {
+                cres: "",
+                eres: "",
+                eres: "",
+                senses: "",
+                size: "",
+                stature: "tall",
+                dr: "",
+                regen: "",
+                fastHealing: "",
+                ci: {
+                    custom: "",
+                    value:[],
+                },
+                di: {
+                    custom: "",
+                    value:[],
+                },
+                dv: {
+                    custom: "",
+                    value:[],
+                },
+                languages: {
+                    custom: "",
+                    value:[],
+                }
+            },
+            "system.attributes": {
+                woundThresholds: {
+                    override: -1
+                },
+                spells: {
+                    spellbooks: {
+                        primary: {
+                            inUse: false
+                        },
+                        secondary: {
+                            inUse: false
+                        },
+                        tertiary: {
+                            inUse: false
+                        },
+                        spelllike: {
+                            inUse: false
+                        }
+                    }
+                }
+            }
+
+        })
     }
 
     static async resetTokenData () {
@@ -761,13 +823,10 @@ export class sbcUtils {
                         break
                     case "hptotal":
                         totalInActor = actor.system.attributes.hp.max
-
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = "mhp"
-                        
                         difference = +totalInStatblock - +totalInActor
-
                         break
                     case "acnormal":
                         totalInActor = actor.system.attributes.ac.normal.total
@@ -795,7 +854,7 @@ export class sbcUtils {
                     case "penalty":
                         modifier = attribute
                         target = "ac"
-                        subTarget = "ac"
+                        subTarget = "aac"
                         difference = +totalInStatblock - +valueInItems
                         valueInAcTypes += +totalInStatblock
                         break
@@ -948,6 +1007,7 @@ export class sbcUtils {
             let errorMessage = "Failed to validate the conversion and create a conversion buff"
             let error = new sbcError(1, "Validation", errorMessage)
             sbcData.errors.push(error)
+            throw err
             return false
         }
 

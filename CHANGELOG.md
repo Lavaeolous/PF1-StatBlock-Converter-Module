@@ -1,5 +1,12 @@
 # Change Log
 
+2022_11_23 - v4.0.3
+*  Fixed critical bugs regarding wrong attack (#613, #616) and ac (#609, #610) calculations
+*  Fixed attack and action generation (#618, #620, #616)
+*  Fixed critical error in treasure parsing (#614)
+*  Fixed preview generation in the notes section (#619)
+*  Fixed parsing of primary natural attacks (#617)
+
 2022_10_30 - v4.0.2
 *  I had a v4.0.1 but lost in while building a new pc :shrug:
 *  Fixed the preview generation, as some fields were not filled correctly (#603)

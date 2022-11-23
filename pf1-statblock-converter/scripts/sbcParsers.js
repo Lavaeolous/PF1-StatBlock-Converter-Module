@@ -1037,6 +1037,7 @@ export async function parseDefense(data, startLine) {
                     let parserAcNormal = sbcMapping.map.defense.acNormal
                     let acNormal = lineContent.match(/^AC\s*(\d+)/i)[1].trim()
 
+                    sbcData.notes.defense["acNormal"] = acNormal
                     sbcData.characterData.conversionValidation.attributes["acNormal"] = +acNormal
 
                     parsedSubCategories["acNormal"] = await parserAcNormal.parse(+acNormal, line+startLine)
@@ -1049,6 +1050,7 @@ export async function parseDefense(data, startLine) {
                     let parserAcTouch = sbcMapping.map.defense.acTouch
                     let acTouch = lineContent.match(/Touch\s*(\d+)/i)[1].trim()
 
+                    sbcData.notes.defense["acTouch"] = acTouch
                     sbcData.characterData.conversionValidation.attributes["acTouch"] = +acTouch
 
                     parsedSubCategories["acTouch"] = await parserAcTouch.parse(+acTouch, line+startLine)
@@ -1060,7 +1062,7 @@ export async function parseDefense(data, startLine) {
                 if (/flat-footed\s*(\d+)/i.test(lineContent)) {
                     let parserAcFlatFooted = sbcMapping.map.defense.acFlatFooted
                     let acFlatFooted = lineContent.match(/flat-footed\s*(\d+)/i)[1].trim()
-
+                    sbcData.notes.defense["acFlatFooted"] = acFlatFooted
                     sbcData.characterData.conversionValidation.attributes["acFlatFooted"] = +acFlatFooted
 
                     parsedSubCategories["acFlatFooted"] = await parserAcFlatFooted.parse(+acFlatFooted, line+startLine)
@@ -1168,6 +1170,7 @@ export async function parseDefense(data, startLine) {
             let errorMessage = `Parsing the defense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Defense", errorMessage, line+startLine)
             sbcData.errors.push(error)
+            //throw err
             return false
         }
 
@@ -1245,7 +1248,6 @@ class acTypesParser extends sbcParserBase {
                          * so that acNormal etc get handled after handling
                          * acTypes */
                         sbcData.characterData.conversionValidation.attributes[foundAcType] = foundAcTypeValue
-                        
                         break
                     default:
                         break
@@ -1903,7 +1905,7 @@ export async function parseOffense(data, startLine) {
                 }
             }
 
-            // Parse Space, Reach and Stature
+            // Parse Space, Reach and StatureparserStature
             if (!parsedSubCategories["spaceStature"]) {
                 if (/^Space\b.*\bReach\b/i.test(lineContent)) {
                     // This may overwrite space and reach that was automatically derived by creature size,
@@ -1946,7 +1948,6 @@ export async function parseOffense(data, startLine) {
             // Spellcasting support functions
             const getCasterLevel = (line) => line.match(/\bCL\b\s*(?<cl>\d+)/i)?.groups.cl;
             const getConcentrationBonus = (line) => line.match(/\b(Concentration\b|Conc\.)\s*\+(?<bonus>\d+)/i)?.groups.bonus;
-
                     
             // Parse Spell-Like Abilities
             if (!parsedSubCategories["spellLikeAbilities"]) {
@@ -2325,6 +2326,7 @@ class attacksParser extends sbcParserBase {
                         weaponSpecial: "-",
                         critRange: 20,
                         critMult: 2,
+                        damageMult: 1,
                         
                         attackRangeUnits: "",
                         attackRangeIncrement: "",
@@ -2451,7 +2453,7 @@ class attacksParser extends sbcParserBase {
                     }
 
                     // Set the formattedAttackName to use later
-                    m_AttackData.formattedAttackName = m_AttackData.attackNotes
+                    m_AttackData.formattedAttackName = m_AttackData.attackNotes.trim()
                     
                     // attackModifier
                     if (m_InputAttack.match(/(\+\d+|-\d+)(?:[+0-9/ ]*\(*)/) !== null) {
@@ -2475,8 +2477,10 @@ class attacksParser extends sbcParserBase {
                     // numberOfIterativeAttacks, when given in the statblock in the form of
                     if (m_InputAttack.match(/(\/\+\d+)/) !== null) {
                         m_ActionData.numberOfIterativeAttacks = m_InputAttack.match(/(\/\+\d+)/g).length
+
                         for (let i = m_ActionData.numberOfIterativeAttacks; i>=1; i--) {
-                            m_AttackData.attackNotes += "/+" + (m_ActionData.inputAttackModifier-(m_ActionData.inputAttackModifier-(5*i)))
+                            let counter = +m_ActionData.numberOfIterativeAttacks+1-i
+                            m_AttackData.attackNotes += "/+" + (+m_ActionData.inputAttackModifier-(5*counter))
                         }
                     }
                     
@@ -2542,12 +2546,15 @@ class attacksParser extends sbcParserBase {
 
                     // Calculate Attack and, if needed, compensate for differences between input attackModifier and system-derived attackModifier
                     let calculatedAttackModifier = 
-                          +sbcData.characterData.actorData.system.attributes.bab.total
+                          +sbcData.characterData.conversionValidation.attributes.bab
                         + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.traits.size]
                         + +m_ActionData.attackAbilityModifier
                     
-                    if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus > 0)
+                    if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus == 1)
                         calculatedAttackModifier += 1
+
+                    if (m_AttackData.enhancementBonus > 1)
+                        calculatedAttackModifier += m_AttackData.enhancementBonus
 
                     if (!m_AttackData.isPrimaryAttack)
                         calculatedAttackModifier -= 5
@@ -2640,10 +2647,8 @@ class attacksParser extends sbcParserBase {
                         // If the attackEffect has no additional damagePools XdY ...
                         if (attackEffect.match(/\d+d\d+/) === null) {
 
-
                             // ... and it matches any of the supported damageTypes ...
                             if (attackEffect.search(patternDamageTypes) !== -1) {
-
 
                                 specialDamageType = attackEffect.match(patternDamageTypes)[0].trim()
 
@@ -2658,7 +2663,6 @@ class attacksParser extends sbcParserBase {
 
                             let attackEffectDamage = attackEffect.match(/(\d+d\d+\+*\d*)/)[0]
                             
-
                             // Check if there is something left after removing the damage
                             let attackEffectDamageType = attackEffect.replace(attackEffectDamage, "").trim()
                             let attackEffectCustomDamageType = ""
@@ -2714,67 +2718,58 @@ class attacksParser extends sbcParserBase {
                     if (m_ActionData.numberOfIterativeAttacks > 0) {
                         m_ActionData.formulaicAttacksCountFormula = "ceil(@attributes.bab.total/5)-1"
                     }
-                    
-                    
-                    /*
-                    console.log("m_AttackData:")
-                    console.log(m_AttackData)
-
-                    console.log("m_ActionData:")
-                    console.log(m_ActionData)
-                    */
 
                     // [5] Create an attack from m_AttackData
 
                     let m_NewAttack = await Item.create({
-                        "_id": randomID(16),
-                        "name": sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined",
-                        "type": "attack",
-                        "img": m_AttackData.img,
-                        "data": {
-                            "description": {
-                                "value": "",
-                                "chat": "",
-                                "unidentified": ""
+                        _id: randomID(16),
+                        name: sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined",
+                        type: "attack",
+                        img: m_AttackData.img,
+                        system: {
+                            description: {
+                                value: "",
+                                chat: "",
+                                unidentified: ""
                             },
-                            "tags": [],
-                            "actions": [],
-                            "uses": {
-                                "per": "",
-                                "value": 0,
-                                "maxFormula": ""
+                            tags: [],
+                            actions: [],
+                            uses: {
+                                per: "",
+                                value: 0,
+                                maxFormula: ""
                             },
-                            "attackNotes": sbcUtils.sbcSplit(m_AttackData.attackNotes),
-                            "effectNotes": m_AttackData.effectNotes,
-                            "links": {
-                                "children": [],
-                                "charges": []
+                            attackNotes: sbcUtils.sbcSplit(m_AttackData.attackNotes),
+                            effectNotes: m_AttackData.effectNotes,
+                            links: {
+                                children: [],
+                                charges: []
                             },
-                            "tag": "",
-                            "useCustomTag": false,
-                            "flags": {
+                            tag: "",
+                            useCustomTag: false,
+                            flags: {
                                 "boolean": {},
                                 "dictionary": {}
                             },
-                            "scriptCalls": [],
-                            "masterwork": (m_AttackData.isMasterwork || m_AttackData.enhancementBonus !== 0) ? true : false,
-                            "enh": m_AttackData.enhancementBonus,
-                            "proficient": true,
-                            "isPrimaryAttack": m_AttackData.isPrimaryAttack,
-                            "held": "normal",
-                            "showInQuickbar": true,
-                            "broken": false,
-                            "ammoType": "",
-                            "attackType": m_AttackData.attackType,
-                            "identifiedName": sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined"
+                            scriptCalls: [],
+                            masterwork: (m_AttackData.isMasterwork || m_AttackData.enhancementBonus !== 0) ? true : false,
+                            enh: m_AttackData.enhancementBonus,
+                            proficient: true,
+                            isPrimaryAttack: m_AttackData.isPrimaryAttack,
+                            held: "normal",
+                            showInQuickbar: true,
+                            broken: false,
+                            ammoType: "",
+                            attackType: m_AttackData.attackType,
+                            identifiedName: sbcUtils.capitalize(m_AttackData.formattedAttackName) || "undefined"
                         },
-                        "effects": [],
-                        "folder": null,
-                        "sort": 0,
-                        "permission": {
-                            "default": 0,
+                        effects: [],
+                        folder: null,
+                        sort: 0,
+                        permission: {
+                            default: 0,
                         },
-                        "flags": {}
+                        flags: {}
 
 
                     }, { temporary: true });
@@ -2786,101 +2781,107 @@ class attacksParser extends sbcParserBase {
                     //     which in turn needs to be pushed to the in [5] created attack
 
                     let m_NewAction = {
-                        "_id": randomID(16),
-                        "name": sbcUtils.capitalize(m_AttackData.attackName),
-                        "img": m_AttackData.img,
-                        "description": "",
-                        "activation": {
-                            "cost": 1,
-                            "type": "standard"
+                        _id: randomID(16),
+                        name: sbcUtils.capitalize(m_AttackData.attackName),
+                        img: m_AttackData.img,
+                        description: "",
+                        activation: {
+                            cost: 1,
+                            type: "standard"
                         },
-                        "unchainedAction": {
-                            "activation": {
-                                "cost": 1,
-                                "type": ""
+                        unchainedAction: {
+                            activation: {
+                                cost: 1,
+                                type: ""
                             }
                         },
-                        "duration": {
-                            "value": null,
-                            "units": ""
+                        duration: {
+                            value: null,
+                            units: ""
                         },
-                        "target": {
-                            "value": ""
+                        target: {
+                            value: ""
                         },
-                        "range": {
-                            "value": m_ActionData.attackRangeIncrement,
-                            "units": m_ActionData.attackRangeUnits,
-                            "maxIncrements": 1,
-                            "minValue": null,
-                            "minUnits": ""
+                        range: {
+                            value: m_ActionData.attackRangeIncrement,
+                            units: m_ActionData.attackRangeUnits,
+                            maxIncrements: 1,
+                            ninValue: null,
+                            minUnits: ""
                         },
-                        "uses": {
-                            "autoDeductCharges": true,
-                            "autoDeductChargesCost": "1"
-                        },
-                        "measureTemplate": {
-                            "type": "",
-                            "size": "",
-                            "overrideColor": false,
-                            "customColor": "",
-                            "overrideTexture": false,
-                            "customTexture": ""
-                        },
-                        "attackName": sbcUtils.capitalize(m_AttackData.attackName.replace(/s$/, "")),
-                        "actionType": type,
-                        "attackBonus": m_ActionData.calculatedAttackBonus.toString() + "[adjusted by sbc]",
-                        "critConfirmBonus": "",
-                        "damage": {
-                            "critParts": [],
-                            "nonCritParts": m_ActionData.nonCritParts,
-                            "parts": m_ActionData.damageParts
-                        },
-                        "formulaicAttacks": {
-                            "count": {
-                                "formula": m_ActionData.formulaicAttacksCountFormula
-                            },
-                            "bonus": {
-                                "formula": "@formulaicAttack*-5"
-                            },
-                            "label": ""
-                        },
-                        "formula": "",
-                        "ability": {
-                            "attack": m_ActionData.attackAbilityType,
-                            "damage": m_ActionData.damageAbilityType,
-                            "damageMult": m_ActionData.damageMult,
-                            "critRange": m_ActionData.critRange,
-                            "critMult": m_ActionData.critMult
-                        },
-                        "save": {
-                            "dc": "",
-                            "type": "",
-                            "description": ""
-                        },
-                        "effectNotes": [],
-                        "attackNotes": [],
-                        "soundEffect": "",
-                        "powerAttack": {
-                            "multiplier": "",
-                            "damageBonus": 2,
-                            "critMultiplier": 1
-                        },
-                        "naturalAttack": {
-                            "secondary": {
-                                "attackBonus": "-5",
-                                "damageMult": 0.5
+                        uses: {
+                            autoDeductCharges: false,
+                            autoDeductChargesCost: "1",
+                            self: {
+                                per: ""
                             }
                         },
-                        "nonlethal": false,
-                        "usesAmmo": false,
-                        "spellEffect": "",
-                        "spellArea": "",
-                        "enh": {
-                          "override": false,
-                          "value": 0
+                        measureTemplate: {
+                            type: "",
+                            size: "",
+                            overrideColor: false,
+                            customColor: "",
+                            overrideTexture: false,
+                            customTexture: ""
                         },
-                        "conditionals": [],
-                        "attackParts": m_ActionData.attackParts
+                        attackName: sbcUtils.capitalize(m_AttackData.attackName.replace(/s$/, "")),
+                        actionType: type,
+                        attackBonus: m_ActionData.calculatedAttackBonus.toString() + "[adjusted by sbc]",
+                        critConfirmBonus: "",
+                        damage: {
+                            critParts: [],
+                            nonCritParts: m_ActionData.nonCritParts,
+                            parts: m_ActionData.damageParts
+                        },
+                        formulaicAttacks: {
+                            count: {
+                                formula: m_ActionData.formulaicAttacksCountFormula,
+                                value: 0
+                            },
+                            bonus: {
+                                formula: "@formulaicAttack*-5"
+                            },
+                            label: ""
+                        },
+                        formula: "",
+                        ability: {
+                            attack: m_ActionData.attackAbilityType,
+                            damage: m_ActionData.damageAbilityType,
+                            damageMult: m_ActionData.damageMult,
+                            critRange: m_ActionData.critRange,
+                            critMult: m_ActionData.critMult
+                        },
+                        save: {
+                            dc: "",
+                            type: "",
+                            description: ""
+                        },
+                        effectNotes: [],
+                        attackNotes: [],
+                        soundEffect: "",
+                        powerAttack: {
+                            multiplier: "",
+                            damageBonus: 2,
+                            critMultiplier: 1
+                        },
+                        naturalAttack: {
+                            secondary: {
+                                attackBonus: "-5",
+                                damageMult: 0.5
+                            },
+                            primaryAttack: m_AttackData.isPrimaryAttack
+                        },
+                        nonlethal: false,
+                        usesAmmo: false,
+                        spellEffect: "",
+                        spellArea: "",
+                        enh: {
+                          override: false,
+                          value: 0
+                        },
+                        conditionals: [],
+                        attackParts: m_ActionData.attackParts,
+                        tag: ""
                     }
 
                     // [7] Create the final document
@@ -2976,7 +2977,7 @@ class spellBooksParser extends sbcParserBase {
         }
         
         // Set the spellBook data
-        let altNameSuffix = spellCastingType == "prepared" ? "Prepared" : "Knonwn"
+        let altNameSuffix = spellCastingType == "prepared" ? "Prepared" : "Known"
         if (spellCastingType == "points") altNameSuffix = "Psychic"
 
             // WIP: Check for special cases Arcanist and Red Mantis Assassin
@@ -3451,6 +3452,8 @@ export async function parseStatistics(data, startLine) {
                 if (/^Base Atk\b/i.test(lineContent)) {
                     let parserBab = sbcMapping.map.statistics.bab
                     let bab = lineContent.match(/(?:Base Atk\b\s*)([\+\-]?\d+)/ig)[0].replace(/Base Atk\b\s*/i,"")
+
+                    sbcData.characterData.conversionValidation.attributes["bab"] = +bab
 
                     //sbcData.characterData.conversionValidation.attributes["bab"] = +bab
                     parsedSubCategories["bab"] = await parserBab.parse(+bab, startLine + line)
@@ -4446,7 +4449,11 @@ export async function parseEcology(data, startLine) {
                         name: "Treasure",
                         entry: lineContent.match(/(?:Treasure)([\s\S]*?)$/i)[1]                     
                     }
-                    if (lineContent.match(/(NPC Gear)/i)[1])
+
+                    // Check for npc gear
+                    let hasNPCgear = lineContent.match(/(NPC Gear)/i);
+
+                    if (hasNPCgear)
                     {
                         let npcGear = lineContent.match(/(?:NPC Gear\s*\()([^)]*)/gi)[0].replace(/NPC Gear\s*\(/i,"");
                         sbcData.treasureParsing.treasureToParse = npcGear
@@ -4470,6 +4477,7 @@ export async function parseEcology(data, startLine) {
             let error = new sbcError(2, "Parse/Ecology", errorMessage, line+startLine)
             sbcData.errors.push(error)
             // This is non-critical, so parse the rest
+            throw err
             return false
         }
 
@@ -4813,7 +4821,7 @@ export async function createEmbeddedDocuments() {
 
 export async function generateNotesSection() {
 
-    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {system: sbcData.characterData.actorData, notes: sbcData.notes })
+    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {actor: sbcData.characterData.actorData, notes: sbcData.notes })
 
     let d = new Date()
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
