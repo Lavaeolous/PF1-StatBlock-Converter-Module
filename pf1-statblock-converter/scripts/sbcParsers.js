@@ -1037,6 +1037,7 @@ export async function parseDefense(data, startLine) {
                     let parserAcNormal = sbcMapping.map.defense.acNormal
                     let acNormal = lineContent.match(/^AC\s*(\d+)/i)[1].trim()
 
+                    sbcData.notes.defense["acNormal"] = acNormal
                     sbcData.characterData.conversionValidation.attributes["acNormal"] = +acNormal
 
                     parsedSubCategories["acNormal"] = await parserAcNormal.parse(+acNormal, line+startLine)
@@ -1049,6 +1050,7 @@ export async function parseDefense(data, startLine) {
                     let parserAcTouch = sbcMapping.map.defense.acTouch
                     let acTouch = lineContent.match(/Touch\s*(\d+)/i)[1].trim()
 
+                    sbcData.notes.defense["acTouch"] = acTouch
                     sbcData.characterData.conversionValidation.attributes["acTouch"] = +acTouch
 
                     parsedSubCategories["acTouch"] = await parserAcTouch.parse(+acTouch, line+startLine)
@@ -1060,7 +1062,7 @@ export async function parseDefense(data, startLine) {
                 if (/flat-footed\s*(\d+)/i.test(lineContent)) {
                     let parserAcFlatFooted = sbcMapping.map.defense.acFlatFooted
                     let acFlatFooted = lineContent.match(/flat-footed\s*(\d+)/i)[1].trim()
-
+                    sbcData.notes.defense["acFlatFooted"] = acFlatFooted
                     sbcData.characterData.conversionValidation.attributes["acFlatFooted"] = +acFlatFooted
 
                     parsedSubCategories["acFlatFooted"] = await parserAcFlatFooted.parse(+acFlatFooted, line+startLine)
@@ -1168,6 +1170,7 @@ export async function parseDefense(data, startLine) {
             let errorMessage = `Parsing the defense data failed at line ${line+startLine}`
             let error = new sbcError(1, "Parse/Defense", errorMessage, line+startLine)
             sbcData.errors.push(error)
+            //throw err
             return false
         }
 
@@ -1245,7 +1248,6 @@ class acTypesParser extends sbcParserBase {
                          * so that acNormal etc get handled after handling
                          * acTypes */
                         sbcData.characterData.conversionValidation.attributes[foundAcType] = foundAcTypeValue
-                        
                         break
                     default:
                         break
@@ -2374,8 +2376,6 @@ class attacksParser extends sbcParserBase {
                             m_ActionData.attackRangeUnits = "melee"
                         }
 
-                        console.log("m_ActionData.attackAbilityModifier: " + m_ActionData.attackAbilityModifier) // = 4
-
                         // Check for WeaponFinesse-Flag
                         if (sbcConfig.options.flags.hasWeaponFinesse) {
 
@@ -2422,9 +2422,6 @@ class attacksParser extends sbcParserBase {
                     
                         let tempNaturalAttackName = m_AttackData.attackName.match(naturalAttacksPattern)[1];
                         let tempNaturalAttack = sbcContent.naturalAttacks[tempNaturalAttackName.replace(/s$/,"").toLowerCase()];
-
-                        console.log("tempNaturalAttack")
-                        console.log(tempNaturalAttack)
                         
                         m_AttackData.attackType = "natural"
                         m_AttackData.isPrimaryAttack = tempNaturalAttack.isPrimaryAttack
@@ -2480,8 +2477,10 @@ class attacksParser extends sbcParserBase {
                     // numberOfIterativeAttacks, when given in the statblock in the form of
                     if (m_InputAttack.match(/(\/\+\d+)/) !== null) {
                         m_ActionData.numberOfIterativeAttacks = m_InputAttack.match(/(\/\+\d+)/g).length
+
                         for (let i = m_ActionData.numberOfIterativeAttacks; i>=1; i--) {
-                            m_AttackData.attackNotes += "/+" + (m_ActionData.inputAttackModifier-(m_ActionData.inputAttackModifier-(5*i)))
+                            let counter = +m_ActionData.numberOfIterativeAttacks+1-i
+                            m_AttackData.attackNotes += "/+" + (+m_ActionData.inputAttackModifier-(5*counter))
                         }
                     }
                     
@@ -2550,12 +2549,6 @@ class attacksParser extends sbcParserBase {
                           +sbcData.characterData.conversionValidation.attributes.bab
                         + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.traits.size]
                         + +m_ActionData.attackAbilityModifier
-
-                    console.log("size: " + +CONFIG["PF1"].sizeMods[sbcData.characterData.actorData.system.traits.size])
-                    console.log("abilityMod: " + +m_ActionData.attackAbilityModifier)
-                    console.log("m_AttackData.isMasterwork (+1 if true): " + m_AttackData.isMasterwork)
-                    console.log("m_AttackData.enhancementBonus (+x if != 0): " + m_AttackData.enhancementBonus)
-                    console.log("m_AttackData.isPrimaryAttack (+5 if true)" + m_AttackData.isPrimaryAttack)
                     
                     if (m_AttackData.isMasterwork || m_AttackData.enhancementBonus == 1)
                         calculatedAttackModifier += 1
@@ -2565,8 +2558,6 @@ class attacksParser extends sbcParserBase {
 
                     if (!m_AttackData.isPrimaryAttack)
                         calculatedAttackModifier -= 5
-
-                    console.log("calculatedAttackModifier: " + calculatedAttackModifier)
                     
                     if (+calculatedAttackModifier !== +m_ActionData.inputAttackModifier) {
                         m_ActionData.calculatedAttackBonus = +m_ActionData.inputAttackModifier - +calculatedAttackModifier
@@ -2727,15 +2718,6 @@ class attacksParser extends sbcParserBase {
                     if (m_ActionData.numberOfIterativeAttacks > 0) {
                         m_ActionData.formulaicAttacksCountFormula = "ceil(@attributes.bab.total/5)-1"
                     }
-                    
-                    
-                    /*
-                    console.log("m_AttackData:")
-                    console.log(m_AttackData)
-
-                    console.log("m_ActionData:")
-                    console.log(m_ActionData)
-                    */
 
                     // [5] Create an attack from m_AttackData
 
@@ -2828,8 +2810,11 @@ class attacksParser extends sbcParserBase {
                             minUnits: ""
                         },
                         uses: {
-                            autoDeductCharges: true,
-                            autoDeductChargesCost: "1"
+                            autoDeductCharges: false,
+                            autoDeductChargesCost: "1",
+                            self: {
+                                per: ""
+                            }
                         },
                         measureTemplate: {
                             type: "",
@@ -4836,7 +4821,7 @@ export async function createEmbeddedDocuments() {
 
 export async function generateNotesSection() {
 
-    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {system: sbcData.characterData.actorData, notes: sbcData.notes })
+    let preview = await renderTemplate('modules/pf1-statblock-converter/templates/sbcPreview.hbs' , {actor: sbcData.characterData.actorData, notes: sbcData.notes })
 
     let d = new Date()
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

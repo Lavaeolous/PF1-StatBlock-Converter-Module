@@ -823,13 +823,10 @@ export class sbcUtils {
                         break
                     case "hptotal":
                         totalInActor = actor.system.attributes.hp.max
-
                         modifier = "untypedPerm"
                         target = "misc"
                         subTarget = "mhp"
-                        
                         difference = +totalInStatblock - +totalInActor
-
                         break
                     case "acnormal":
                         totalInActor = actor.system.attributes.ac.normal.total
@@ -857,7 +854,7 @@ export class sbcUtils {
                     case "penalty":
                         modifier = attribute
                         target = "ac"
-                        subTarget = "ac"
+                        subTarget = "aac"
                         difference = +totalInStatblock - +valueInItems
                         valueInAcTypes += +totalInStatblock
                         break
@@ -1010,6 +1007,7 @@ export class sbcUtils {
             let errorMessage = "Failed to validate the conversion and create a conversion buff"
             let error = new sbcError(1, "Validation", errorMessage)
             sbcData.errors.push(error)
+            throw err
             return false
         }
 
